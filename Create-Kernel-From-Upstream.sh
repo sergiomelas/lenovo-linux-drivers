@@ -50,6 +50,16 @@ cp -v /boot/config-$(uname -r) .config
 make olddefconfig
 
 #Cofigure modules
+
+#Enable rust (uncomment all of them)
+#scripts/config --set-val CONFIG_RUST                  y
+#scripts/config --set-val MODVERSIONS                  n
+#scripts/config --set-val GENDWARFKSYMS                y
+#scripts/config --set-val GCC_PLUGIN_RANDSTRUCT        n
+#scripts/config --set-val RANDSTRUCT                   n
+#scripts/config --set-val DEBUG_INFO_BTF               n
+#scripts/config --set-val CFI_CLANG                    n
+
 #Eample Lenovo 14'' AMD my system
 #scripts/config --set-val CONFIG_THINKPAD_ACPI         y
 #scripts/config --set-val CONFIG_LENOVO_YMC            y
