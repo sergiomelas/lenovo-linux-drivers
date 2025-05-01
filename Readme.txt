@@ -27,7 +27,7 @@ WARNING & DISCLAIMER: ━━━━━━━━━━━━━━━━━━━�
 
 Usage Instructions Create-Kernel-From-Upstream.sh:
  0)- Make the scrit executable and copy to a directory where you will store the created debs
- 1)- Edit the script to change some options (autoinstall, kustom modules)
+ 1)- Edit the script to change some options (autoinstall, kustom modules, rust support)
  2)- Open terminal
  3)- Run the Create-Kernel-From-Upstream.sh script (Just drag and drop file the rest is automatic), give root acess whes the sudo prompt appear
  4)- a directory is created and after kernel compilation will contain the latest and greates deb packages of the linux Kernel:
@@ -41,7 +41,7 @@ Usage Instructions Create-Kernel-From-Upstream.sh:
  7)- Reboot and enjoy the new kernel
 
 If you want to compile a partcular release of the Kernel download from https://www.kernel.org/
-Then extract the archive, copy auto_compile.sh inside and drag and drop it in a terminal. The rest is the same
+Then extract the archive, copy auto_compile.sh or auto_compile_rust.sh (if you want rust support) inside and drag and drop it in a terminal. The rest is the same
 
 Removal instructions:
 
@@ -87,3 +87,5 @@ V0.2: 2024-07-21
   -First release: Adding many functionality
 V0.3: 2024-10-02
   -Corrected bug on old kernel modules removal
+V0.4: 2025-05-01
+  -Added support for Rust

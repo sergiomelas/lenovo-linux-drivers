@@ -31,6 +31,10 @@ sudo apt-get install build-essential libncurses-dev bison flex libssl-dev libelf
 cp -v /boot/config-$(uname -r) .config
 make olddefconfig
 
+#To see option dependencies run
+# make menuconfig
+# Press / for search (use arrows to scroll)
+
 #Cofigure modules
 #Eample Lenovo 14'' AMD my system
 #scripts/config --set-val CONFIG_THINKPAD_ACPI         y
