@@ -15,7 +15,7 @@ Compile it and make Debian pakages then installs it (if configured so)
 
 WARNING & DISCLAIMER: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃                                                                                                  ┃
-┃             NEVER USE NON OFFICIAL KERNELS IN PRODUCTION,  THIS COULD DAMAGE YOUR SYSTEM         ┃
+┃                   NEVER USE NON OFFICIAL KERNELS,  THIS COULD DAMAGE YOUR SYSTEM                 ┃
 ┃                              Run instead officially distributed kernels                          ┃
 ┃                                                                                                  ┃
 ┃ We assume no responsibility for errors or omissions in the software or documentation available.  ┃
@@ -25,11 +25,16 @@ WARNING & DISCLAIMER: ━━━━━━━━━━━━━━━━━━━�
 ┃ liability, arising out of or in  connection with the use of this software.                       ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-Usage Instructions Create-Kernel-From-Upstream.sh:
- 0)- Make the scrit executable and copy to a directory where you will store the created debs
- 1)- Edit the script to change some options (autoinstall, kustom modules, rust support)
+Installation Instructions:
+ 0)- Make the scrits executable and copy to a directory where you will store the created debs
+ 1)- Edit the scripts to change some options (autoinstall, kustom modules)
  2)- Open terminal
- 3)- Run the Create-Kernel-From-Upstream.sh script (Just drag and drop file the rest is automatic), give root acess whes the sudo prompt appear
+ 3)- Run the scripts following your need
+        - Create-Kernel-From-Upstream.sh  : To download and install the latest and greatest kernel, run this file from a empty directory
+        - Auto_Compile.sh : To compile a paticular kernel downloaded from kernel.org (Simplest kernel)
+        - Auto_Compile_Rust.sh : To compile a paticular kernel downloaded from kernel.org but with rust support
+     This last 2 files need to be placed in the root directory of the dowloaded and extracted kernel source.
+     (Just drag and drop file the rest is automatic), give root acess whes the sudo prompt appear
  4)- a directory is created and after kernel compilation will contain the latest and greates deb packages of the linux Kernel:
        linux-headers-xxxxxxxxxxx_amd64.deb
        linux-image-xxxxxxxxxxx_amd64.deb
@@ -39,9 +44,6 @@ Usage Instructions Create-Kernel-From-Upstream.sh:
         sudo apt-get install linux-headers-xxxxxxxxxxx_amd64.deb linux-image-xxxxxxxxxxx_amd64.deb  linux-libc-xxxxxxxxxxx_amd64.deb
      or the packages are auto installed if you activated the option in the script
  7)- Reboot and enjoy the new kernel
-
-If you want to compile a partcular release of the Kernel download from https://www.kernel.org/
-Then extract the archive, copy auto_compile.sh or auto_compile_rust.sh (if you want rust support) inside and drag and drop it in a terminal. The rest is the same
 
 Removal instructions:
 
@@ -76,7 +78,45 @@ To remove an old kernel or the newest one in case of problems
 
  c)- Check if old  kernel modules in /lib/modules of the unused kernels has been removed
 
- !!Inportant never remove current kernel (use "uname -r" to find it) otherwise you could brick your system
+ d)- To fully control the kernel remove autoupdate virtual Packages:
+       sudo apt-get --purge remove linux-image-amd64   linux-headers-amd64
+     to restore autoupdate reinstall
+       sudo apt-get install linux-image-amd64   linux-headers-amd64   linux-libc-dev
+
+ e)- Lenovo only: With the current configuration after installation of the new kenel do the following:
+    1. Install & Enable the Power Daemon
+     First, ensure you have the service that communicates between the UI and your new kernel driver.
+     bash
+     sudo apt update
+     sudo apt install power-profiles-daemon
+     sudo systemctl enable --now power-profiles-daemon
+
+    2. Configure Automatic Switching in KDE
+     KDE Plasma allows you to set specific behaviors for On AC Power versus On Battery.
+     Open System Settings → Power Management → Energy Saving.
+     On AC Power Tab: Look for the dropdown labeled "Switch to power profile" and set it to Performance.
+     On Battery Tab: Set the same dropdown to Power Save or Balanced.
+     Click Apply.
+    3. Verify it works with your Custom Kernel
+     Once you boot into your custom kernel, you can verify that the Active P-State driver is correctly passing these hints to your hardware. Open a terminal and run:
+     bash
+     # Check if the correct driver is active
+     cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
+     # Result should be: amd-pstate-epp
+
+     # Check the current Energy Performance Preference (EPP) hint
+     cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference
+
+     When you toggle the KDE power slider (or it switches automatically when you unplug), the value in that file should change from performance (AC) to power or balance_power (Battery).
+     Why this is the "best" way for 2025:
+     Seamless Integration: You get a native battery icon slider in your Plasma tray.
+     Driver Support: Since power-profiles-daemon v0.20+, it natively supports the amd_pstate driver you enabled in your script, meaning it doesn't just "throttle" the CPU; it tells the CPU to change its internal efficiency targets.
+     Hardware Safety: It uses the standard ACPI interfaces for your Lenovo Yoga, ensuring your fans and thermals stay within safe limits while switching modes.
+     Explore how to integrate "power-profiles-daemon" with KDE Plasma to dynamically adjust CPU performance and energy usage based on power source.
+     After kernel installation run:
+     sudo apt install mesa-vulkan-drivers mesa-opencl-icd libglx-mesa0 libgl1-mesa-dri
+
+!!Inportant never remove current kernel (use "uname -r" to find it) otherwise you could brick your system
 
 ##################################################################################################################
 Change log:
@@ -85,7 +125,10 @@ V0.1: 2023-12-28
   -Initial version for personal use
 V0.2: 2024-07-21
   -First release: Adding many functionality
-V0.3: 2024-10-02
-  -Corrected bug on old kernel modules removal
+V0.3: 2025-07-27
+  -Added Rust support
 V0.4: 2025-05-01
   -Added support for Rust
+V0.5: 2025-12-31
+  -Added pesonalization of kernel name and BSOD
+  -Added full otimization for lenovo 14cACN
