@@ -121,14 +121,8 @@ To remove an old kernel or the newest one in case of problems
 ##################################################################################################################
 Change log:
 
-V0.1: 2023-12-28
-  -Initial version for personal use
-V0.2: 2024-07-21
-  -First release: Adding many functionality
-V0.3: 2025-07-27
-  -Added Rust support
-V0.4: 2025-05-01
-  -Added support for Rust
-V0.5: 2025-12-31
-  -Added pesonalization of kernel name and BSOD
-  -Added full otimization for lenovo 14cACN
+V0.1: 2023-12-28 - Initial version for personal use
+V0.2: 2024-07-21 - First release: Adding many functionality
+V0.3: 2025-07-27 - Added Rust support
+V0.4: 2025-05-01 - Added support for Rust
+V0.5: 2025-12-31 - Added pesonalization of kernel name and BSOD, added full otimization for lenovo 14cACN
