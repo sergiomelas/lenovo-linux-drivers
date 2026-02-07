@@ -92,13 +92,12 @@ make olddefconfig
 
 #Compile kernel
 # Added KDEB_PKGVERSION to ensure the .deb filenames also include your custom tag
-make -j$(nproc) bindeb-pkg KDEB_PKGVERSION="$(make kernelversion)-$postfix"
+make -j$(nproc) bindeb-pkg KDEB_PKGVERSION="$(make kernelversion)" KDEB_SOURCENAME=linux-upstream NO_VMLINUX_DEBUG=1
 
 #Clean up
 cd ../
 rm *.buildinfo
 rm *.changes
-rm linux-image*-dbg_*amd64.deb
 
 #Install new kernel
 sudo apt-mark unhold linux-libc-dev
