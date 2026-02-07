@@ -31,7 +31,17 @@ echo  ""
 sudo apt-get install build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang   libdw-dev:native bc
 
 #Configure kernel
-cp -v /boot/config-$(uname -r) .config
+# Find the latest official Debian config (ignores your -"$postfix"  builds)
+LATEST_CONFIG=$(ls -v /boot/config-* 2>/dev/null | grep -v "$postfix" | tail -n 1)
+
+if [ -n "$LATEST_CONFIG" ]; then
+    echo "Found latest system config from Debian: $LATEST_CONFIG"
+    cp -v "$LATEST_CONFIG" .config
+else
+    echo "Warning: No official Debian config found. Falling back to running kernel."
+    cp -v /boot/config-$(uname -r) .config
+fi
+read -p "Press enter to continue"
 
 
 #To see option dependencies run
@@ -101,13 +111,14 @@ make olddefconfig
 
 #Compile kernel
 # Added KDEB_PKGVERSION to ensure the .deb filenames also include your custom tag
-#make -j$(nproc) bindeb-pkg KDEB_PKGVERSION="$(make kernelversion)-$postfix"
-make -j$(nproc) bindeb-pkg LOCALVERSION="-$postfix" KDEB_PKGVERSION="$(make kernelversion)-$postfix" KDEB_SOURCENAME=linux-upstream NO_VMLINUX_DEBUG=1
+make -j$(nproc) bindeb-pkg KDEB_PKGVERSION="$(make kernelversion)" KDEB_SOURCENAME=linux-upstream NO_VMLINUX_DEBUG=1
+
+
+
 #Clean up
 cd ../
 rm *.buildinfo
 rm *.changes
-rm linux-image*-dbg_*amd64.deb
 
 #Install new kernel
 sudo apt-mark unhold linux-libc-dev

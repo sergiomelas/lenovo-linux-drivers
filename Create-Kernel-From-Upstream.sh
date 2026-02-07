@@ -123,7 +123,8 @@ make olddefconfig
 
 #Compile kernel
 # Added KDEB_PKGVERSION to ensure the .deb filenames also include your custom tag
-make -j$(nproc) bindeb-pkg KDEB_PKGVERSION="$(make kernelversion)-$postfix"
+make -j$(nproc) bindeb-pkg KDEB_PKGVERSION="$(make kernelversion)" KDEB_SOURCENAME=linux-upstream NO_VMLINUX_DEBUG=1
+
 
 #Clean up
 cd ../
@@ -131,8 +132,6 @@ rm -r ./linux-master
 #rm ./master.zip
 rm *.buildinfo
 rm *.changes
-# Comment following line to not remove debug immage
-rm linux-image*-dbg_*amd64.deb
 
 #To install automatically uncomment next line
 sudo dpkg -i linux-*.deb
