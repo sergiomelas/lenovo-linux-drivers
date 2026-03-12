@@ -31,8 +31,9 @@ Installation Instructions:
  2)- Open terminal
  3)- Run the scripts following your need
         - Create-Kernel-From-Upstream.sh  : To download and install the latest and greatest kernel, run this file from a empty directory
-        - Auto_Compile.sh : To compile a paticular kernel downloaded from kernel.org (Simplest kernel)
-        - Auto_Compile_Rust.sh : To compile a paticular kernel downloaded from kernel.org but with rust support
+        - Auto_Compile.sh                     : To compile a kernel (Simplest kernel)
+        - Auto_Compile_Rust.sh                : To compile a kernel (Rust support)
+        - auto_compile_rust_lenovo_drivers.sh : To compile a kernel (Rust support and all Lenovo AMD Otimization + Driver for Fan)
      This last 2 files need to be placed in the root directory of the dowloaded and extracted kernel source.
      (Just drag and drop file the rest is automatic), give root acess whes the sudo prompt appear
  4)- a directory is created and after kernel compilation will contain the latest and greates deb packages of the linux Kernel:
