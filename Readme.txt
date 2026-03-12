@@ -83,38 +83,75 @@ To remove an old kernel or the newest one in case of problems
      to restore autoupdate reinstall
        sudo apt-get install linux-image-amd64   linux-headers-amd64   linux-libc-dev
 
- e)- Lenovo only: With the current configuration after installation of the new kenel do the following:
-    1. Install & Enable the Power Daemon
-     First, ensure you have the service that communicates between the UI and your new kernel driver.
-     bash
-     sudo apt update
-     sudo apt install power-profiles-daemon
-     sudo systemctl enable --now power-profiles-daemon
 
-    2. Configure Automatic Switching in KDE
-     KDE Plasma allows you to set specific behaviors for On AC Power versus On Battery.
-     Open System Settings → Power Management → Energy Saving.
-     On AC Power Tab: Look for the dropdown labeled "Switch to power profile" and set it to Performance.
-     On Battery Tab: Set the same dropdown to Power Save or Balanced.
-     Click Apply.
-    3. Verify it works with your Custom Kernel
-     Once you boot into your custom kernel, you can verify that the Active P-State driver is correctly passing these hints to your hardware. Open a terminal and run:
-     bash
-     # Check if the correct driver is active
-     cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
-     # Result should be: amd-pstate-epp
+ e)- Lenovo only: With the current configuration after installation of the new kernel do the following:
 
-     # Check the current Energy Performance Preference (EPP) hint
-     cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference
+      1. Universal Fan & Sensor Support (NEW for 2026)
+      This build includes the new generalized "yogafan" driver for hardware monitoring.
+      It has been refactored into "Platform Mode" to bypass kernel namespace locks
+      and ensure native compatibility with modern desktops like KDE 6.
 
-     When you toggle the KDE power slider (or it switches automatically when you unplug), the value in that file should change from performance (AC) to power or balance_power (Battery).
-     Why this is the "best" way for 2025:
-     Seamless Integration: You get a native battery icon slider in your Plasma tray.
-     Driver Support: Since power-profiles-daemon v0.20+, it natively supports the amd_pstate driver you enabled in your script, meaning it doesn't just "throttle" the CPU; it tells the CPU to change its internal efficiency targets.
-     Hardware Safety: It uses the standard ACPI interfaces for your Lenovo Yoga, ensuring your fans and thermals stay within safe limits while switching modes.
-     Explore how to integrate "power-profiles-daemon" with KDE Plasma to dynamically adjust CPU performance and energy usage based on power source.
-     After kernel installation run:
-     sudo apt install mesa-vulkan-drivers mesa-opencl-icd libglx-mesa0 libgl1-mesa-dri
+      To ensure the sensor is active after every restart, you must register the
+      module to load at boot:
+
+      bash
+      echo "yoga_fan" | sudo tee /etc/modules-load.d/yoga_fan.conf
+
+      To verify detection after reboot, run:
+
+      bash
+      sensors
+      # Look for 'yogafan-platform-0' and a valid 'System Fan' RPM value.
+
+      If the sensor is missing in the KDE System Monitor, refresh the sensor daemon:
+
+      bash
+      killall ksystemstats
+
+      This driver ensures your custom kernel can monitor cooling performance natively
+      without needing third-party tools like 'isw' or 'thinkfan', and is fully
+      visible in the Plasma 6 "Sensors" dashboard.
+
+      To compile this kernel use the script:
+      auto_compile_rust_lenovo_drivers.sh
+
+      This will inject the Sergio Melas driver into the kernel tree before compilation.
+
+      NOTE: Ensure your GRUB configuration allows ACPI resource overrides.
+      If sensors show 0 RPM, add "acpi_enforce_resources=lax" to your
+      GRUB_CMDLINE_LINUX_DEFAULT in /etc/default/grub and run sudo update-grub.
+
+     2. Install & Enable the Power Daemon
+     First, ensure you have the service that communicates between the UI and your new kernel driver.
+     bash
+     sudo apt update
+     sudo apt install power-profiles-daemon
+     sudo systemctl enable --now power-profiles-daemon
+
+     3. Configure Automatic Switching in KDE
+     KDE Plasma allows you to set specific behaviors for On AC Power versus On Battery.
+     Open System Settings → Power Management → Energy Saving.
+     On AC Power Tab: Look for the dropdown labeled "Switch to power profile" and set it to Performance.
+     On Battery Tab: Set the same dropdown to Power Save or Balanced.
+     Click Apply.
+
+     4. Verify it works with your Custom Kernel
+     Once you boot into your custom kernel, you can verify that the Active P-State driver is correctly passing these hints to your hardware. Open a terminal and run:
+     bash
+     # Check if the correct driver is active
+     cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
+     # Result should be: amd-pstate-epp
+
+     # Check the current Energy Performance Preference (EPP) hint
+     cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference
+
+     When you toggle the KDE power slider (or it switches automatically when you unplug), the value in that file should change from performance (AC) to power or balance_power (Battery).
+     Why this is the "best" way for 2025:
+     Seamless Integration: You get a native battery icon slider in your Plasma tray.
+     Driver Support: Since power-profiles-daemon v0.20+, it natively supports the amd_pstate driver you enabled in your script, meaning it doesn't just "throttle" the CPU; it tells the CPU to change its internal efficiency targets.
+     Hardware Safety: It uses the standard ACPI interfaces for your Lenovo Yoga, ensuring your fans and thermals stay within safe limits while switching modes.
+
+
 
 !!Inportant never remove current kernel (use "uname -r" to find it) otherwise you could brick your system
 
@@ -125,6 +162,10 @@ V0.1: 2023-12-28 - Initial version for personal use
 V0.2: 2024-07-21 - First release: Adding many functionality
 V0.3: 2025-07-27 - Added Rust support
 V0.4: 2025-05-01 - Added support for Rust
-V0.5: 2026-02-07 - Added pesonalization of kernel name and BSOD, added full otimization for lenovo 14cACN,
-                   compilation optimization avoiding debug simbol and deb creation
+V0.5: 2026-02-08 - Added pesonalization of kernel name and BSOD, added full otimization for lenovo 14cACN,
+                   added retriving config from latest official debian kernel with fallback,
+                   personalization of kernel name and local version,
+                   compilation optimization avoiding debug simbol and deb creation.
+
+V0.6: 2026-02-08 - Created kernel driver module for yoga fan
 

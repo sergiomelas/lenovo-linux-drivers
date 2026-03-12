@@ -3,21 +3,47 @@
 #This script will compile a kernel and create the deb packages
 #the file has to be at the same level of .\Kernel acpi . Run this file in a sh terminal
 
-echo  " "
+# ANSI Color Codes
+CYAN='\033[0;36m'
+GOLD='\033[1;33m'
+GREEN='\033[0;32m'
+BLUE='\033[1;34m'
+NC='\033[0m' # No Color
 
-echo  " "
-echo  " ##################################################################"
-echo  " #                   Kernel Download & Compile  Script            #"
-echo  " #            Developed   by sergio melas 2021-24                 #"
-echo  " #                                                                #"
-echo  " #                Emai: sergiomelas@gmail.com                     #"
-echo  " #                   Released unde GPV V2.0                       #"
-echo  " #                                                                #"
-echo  " ##################################################################"
-echo  " "
+echo -e "${GOLD} "
+echo -e " ##################################################################"
+echo -e " #                                                                #"
+echo -e " # ${CYAN}                 Kernel Compile Script  ${GOLD}                       #"
+echo -e " # ${CYAN}          Developed by Sergio Melas 2021-26 ${GOLD}                   #"
+echo -e " #                                                                #"
+echo -e " # ${BLUE}              Email: ${GREEN}sergiomelas@gmail.com ${GOLD}                    #"
+echo -e " # ${BLUE}                 Released under GPL V2.0 ${GOLD}                      #"
+echo -e " #                                                                #"
+echo -e " ##################################################################"
+echo -e " ${NC}"
 
-#Postfix custom tag to particularize your kernel
+# 1. Your manual personalization string
 postfix="yoga"
+
+# 2. Automated Architecture Detection (Comprehensive Version)
+# Map hardware names (uname -m) to Debian architecture names
+ARCH_TYPE=$(uname -m)
+case "$ARCH_TYPE" in
+    x86_64)   ARCH_SUFFIX="amd64" ;;
+    aarch64)  ARCH_SUFFIX="arm64" ;;
+    armv7l)   ARCH_SUFFIX="armhf" ;;   # 32-bit ARM (e.g. Raspberry Pi 2/3/4 32bit OS)
+    armv6l)   ARCH_SUFFIX="armel" ;;   # Older ARM (e.g. Raspberry Pi Zero/1)
+    i386|i686) ARCH_SUFFIX="i386" ;;    # Legacy 32-bit x86
+    riscv64)  ARCH_SUFFIX="riscv64" ;; # RISC-V 64-bit
+    ppc64le)  ARCH_SUFFIX="ppc64el" ;; # PowerPC Little Endian
+    s390x)    ARCH_SUFFIX="s390x" ;;   # IBM System z
+    *)        ARCH_SUFFIX="$ARCH_TYPE" ;; # Fallback to raw hardware name
+esac
+
+# 3. Combine them for the final string
+# Result will be "yoga-amd64" or "yoga-arm64"
+full_postfix="${postfix}-${ARCH_SUFFIX}"
+
 
 
 #Admin login
@@ -59,71 +85,46 @@ cp -v /boot/config-$(uname -r) .config
 # Press / for search (use arrows to scroll)
 
 
-#Cofigure modules
+# --- START OF OPTIMIZED MODULE CONFIGURATION ---
 
 
-#  AMD Zen 3 & Power Optimizations (for Ryzen 5800U)
-scripts/config --set-val CONFIG_MZEN3 y                        # Optimizes kernel code for Zen 3 microarchitecture
-scripts/config --enable  CONFIG_X86_AMD_PSTATE                 # Enables modern AMD hardware-controlled CPU frequency scaling
-scripts/config --set-val CONFIG_X86_AMD_PSTATE_DEFAULT_MODE 3  # Sets p-state to "Active" mode for best performance/watt balance
-scripts/config --enable  CONFIG_X86_AMD_PSTATE_UT              # Enables unit tests for the AMD P-State driver to ensure stability
-scripts/config --enable  CONFIG_AMD_PMC                        # Manages AMD Power Management Controller for s2idle (sleep) support
-scripts/config --enable  CONFIG_X86_AMD_PLATFORM_DEVICE        # Enables support for unique AMD platform-specific hardware devices
+# 1. Enable Rust (2026 Toolchain)
+scripts/config --set-val CONFIG_RUST y                         # Enables Rust infrastructure
+scripts/config --set-val MODVERSIONS n                         # Required for Rust compatibility
+scripts/config --set-val GENDWARFKSYMS y                       # Safe Rust module loading
+scripts/config --set-val RANDSTRUCT n                          # Prevents C-to-Rust memory mismatches
+scripts/config --set-val DEBUG_INFO_BTF n                       # Prevents Rust symbol length conflicts
 
-# Ensure AMDGPU is enabled (it should be by default in modern kernels)
-scripts/config --enable CONFIG_DRM_AMDGPU                      # Main driver for modern AMD Radeon graphics
-scripts/config --enable CONFIG_DRM_AMDGPU_SI                   # Adds support for older Southern Islands GPUs (Tahiti/Oland)
-scripts/config --enable CONFIG_DRM_AMDGPU_CIK                  # Adds support for Sea Islands GPUs (Bonaire/Hawaii)
-scripts/config --enable CONFIG_DRM_AMDGPU_USERPTR              # Allows GPU to use system memory pointers directly (useful for OpenCL/ROCm)
-scripts/config --enable CONFIG_DRM_AMDGPU_VGA_AUX_IRQ          # Enables interrupt handling for VGA-adapter auxiliary channels
-scripts/config --enable CONFIG_DRM_AMDGPU_GCN3E                # Enables GCN 3rd Generation (and newer) specific GPU features
-scripts/config --enable CONFIG_DRM_AMDGPU_FWS_UMC              # Enables firmware-based Universal Memory Controller support for GPUs
+# 2. Rust-Powered "Blue Screen" (DRM Panic)
+scripts/config --enable CONFIG_DRM_PANIC                       # Graphical panic core
+scripts/config --enable CONFIG_DRM_PANIC_SCREEN_USER           # Blue background
+scripts/config --enable CONFIG_DRM_PANIC_SCREEN_QR_CODE        # Rust-generated scannable QR code
 
-#  Lenovo Yoga 14c Specific Modules
-scripts/config --enable CONFIG_THINKPAD_ACPI                   # Provides advanced ACPI features (fan control, LEDs) for Lenovo laptops
-scripts/config --enable CONFIG_LENOVO_YMC                      # Yoga Mode Control: handles tablet/laptop mode switching
-scripts/config --enable CONFIG_SENSORS_LENOVO_EC               # Enables reading battery and thermal data from Lenovo's Embedded Controller
-scripts/config --enable CONFIG_LENOVO_WMI_CAMERA               # Enables specialized WMI-based camera privacy shutter controls
-scripts/config --enable CONFIG_LENOVO_WMI_HOTKEY_UTILITIES     # Supports Lenovo-specific keyboard hotkeys via WMI
-scripts/config --enable CONFIG_SENSORS_NCT6687                 # Driver for the Nuvoton sensor chip used for Yoga temperature monitoring
-scripts/config --enable CONFIG_DRM_AMD_AMDXDNA                 # Ryzen AI / NPU Support
+# 3. Build Tweaks & Strict Debug Stripping (From your original script)
+scripts/config --set-str CONFIG_LOCALVERSION "-$full_postfix"  # Kernel naming
+scripts/config --set-val CONFIG_LOCALVERSION_AUTO n            # Cleaner versioning
+scripts/config --undefine CONFIG_DEBUG_INFO                    # Strip primary debug symbols
+scripts/config --undefine CONFIG_DEBUG_INFO_BTF                # Disable BPF Type Format bloat
+scripts/config --set-val CONFIG_DEBUG_INFO_NONE y              # Explicitly select 'None'
+scripts/config --disable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT
+scripts/config --disable CONFIG_DEBUG_INFO_DWARF4
+scripts/config --disable CONFIG_DEBUG_INFO_DWARF5
+scripts/config --disable CONFIG_GDB_SCRIPTS                    # No Python helpers (saves space)
 
-#  Enable rust
-scripts/config --set-val CONFIG_RUST                  y        # Enables the Rust toolchain and infrastructure in the kernel
-scripts/config --set-val MODVERSIONS                  n        # Disables module versioning (required for compatibility in older Rust setups)
-scripts/config --set-val GENDWARFKSYMS                y        # Uses DWARF debug info to allow Rust modules to load safely
-scripts/config --set-val GCC_PLUGIN_RANDSTRUCT        n        # Disables GCC structure randomization to avoid Rust layout errors
-scripts/config --set-val RANDSTRUCT                   n        # Disables layout randomization to prevent C-to-Rust memory mismatches
-scripts/config --set-val DEBUG_INFO_BTF               n        # Disables BPF Type Format info to prevent Rust symbol length conflicts
-scripts/config --set-val CFI_CLANG                    n        # Disables Clang Control Flow Integrity (experimental for Rust)
+# --- END OF OPTIMIZED MODULE CONFIGURATION ---
 
-
-#  2026 Rust-Powered "Blue Screen of Death" (DRM Panic)
-scripts/config --enable CONFIG_DRM_PANIC                       # Core infrastructure for graphical panics
-scripts/config --enable CONFIG_DRM_PANIC_SCREEN_USER           # Enables the modern Blue Background
-scripts/config --enable CONFIG_DRM_PANIC_SCREEN_QR_CODE        # Uses Rust to generate the scannable QR code
-
-#  Build Tweaks
-scripts/config --set-str CONFIG_LOCALVERSION "-$postfix"       # Name for kernel
-scripts/config --set-val CONFIG_LOCALVERSION_AUTO n            # Appends name to kernel version
-scripts/config --set-val CONFIG_DEBUG_INFO_BTF n               # Speeds up build significantly
-
-# Comprehensive Debug Info Removal (Crucial for newer kernels)
-scripts/config --undefine CONFIG_DEBUG_INFO                          # Removes the primary trigger for generating debug symbol packages
-scripts/config --undefine CONFIG_DEBUG_INFO_BTF                      # Disables BPF Type Format info to prevent large embedded data bloat
-scripts/config --set-val CONFIG_DEBUG_INFO_NONE y                    # Explicitly selects the 'None' option in the debug info choice menu
-scripts/config --disable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT   # Prevents the compiler from adding its own default debug symbols
-scripts/config --disable CONFIG_DEBUG_INFO_DWARF4                    # Ensures DWARF v4 debug format is not used
-scripts/config --disable CONFIG_DEBUG_INFO_DWARF5                    # Ensures DWARF v5 debug format is not used
-scripts/config --disable CONFIG_GDB_SCRIPTS                          # Skips the generation of Python helper scripts for GDB debugging
 
 #To prevent question
 make olddefconfig
 
 
 #Compile kernel
-# Added KDEB_PKGVERSION to ensure the .deb filenames also include your custom tag
-make -j$(nproc) bindeb-pkg KDEB_PKGVERSION="$(make kernelversion)" KDEB_SOURCENAME=linux-upstream NO_VMLINUX_DEBUG=1
+# KDEB_PKGVERSION to ensure the .deb filenames also include custom tag
+make -j$(nproc) bindeb-pkg \
+    KDEB_PKGVERSION="$(make kernelversion)-$full_postfix" \
+    KDEB_SOURCENAME=linux-upstream \
+    DEBUG_INFO=n \
+    NO_VMLINUX_DEBUG=1
 
 
 #Clean up
