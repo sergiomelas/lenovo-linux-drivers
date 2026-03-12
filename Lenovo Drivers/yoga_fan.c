@@ -22,12 +22,14 @@
 
 #define DRVNAME "yogafan"
 
+
+
 static const char * const fan_paths[] = {
-	"\\_SB.PCI0.LPC0.EC0.FANS",
-	"\\_SB.PCI0.LPC0.EC0.FA2S",
-	"\\_SB.PCI0.LPC0.EC0.FAN0",
-	"\\_SB.PCI0.LPC.EC.FAN0",
-	"\\_SB.PCI0.LPC0.EC.FAN0",
+	"\\_SB.PCI0.LPC0.EC0.FANS",        // Yoga 14c ACN (Your machine), Yoga 7 Gen 6/7 (Ryzen)
+	"\\_SB.PCI0.LPC0.EC0.FA2S",        // Legion 5/7, Yoga Pro 7/9i (Dual-Fan models)
+	"\\_SB.PCI0.LPC0.EC0.FAN0",        // IdeaPad 5, Yoga Slim 7 (Intel), Standard ThinkBooks
+	"\\_SB.PCI0.LPC.EC.FAN0",          // Older Yogas (Pre-2020), Legacy EC naming
+	"\\_SB.PCI0.LPC0.EC.FAN0",         // Yoga Slim 7 Pro, Carbon/Nano-style motherboards
 };
 
 static const char *active_path = NULL;
