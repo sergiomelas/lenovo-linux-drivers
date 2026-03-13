@@ -102,7 +102,7 @@ To remove an old kernel or the newest one in case of problems
 
       bash
       sensors
-      # Look for 'yogafan-platform-0' and a valid 'System Fan' RPM value.
+      # Look for 'yogafan-isa-0000' and a valid 'System Fan' RPM value.
 
       If the sensor is missing in the KDE System Monitor, refresh the sensor daemon:
 
