@@ -183,3 +183,4 @@ V0.7: 2026-03-17 - Refactored "yogafan" driver to V3.0 Universal Platform Mode.
                    Added support for Legion and multiple fan paths.
                    Added full documentation for KDE 6 Sensor compatibility.
                    DSTS mod for S3 sleep integration.
+                   Corrected bug on debs naming
