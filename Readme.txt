@@ -12,15 +12,15 @@ Compile it and make Debian pakages then installs it (if configured so)
 
 
 WARNING & DISCLAIMER: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃                                                                                                   ┃
-┃                   NEVER USE NON OFFICIAL KERNELS,  THIS COULD DAMAGE YOUR SYSTEM                  ┃
-┃                               Run instead officially distributed kernels                           ┃
-┃                                                                                                   ┃
-┃ We assume no responsibility for errors or omissions in the software or documentation available.   ┃
-┃ In no event shall we be liable to you or any third parties for any special, punitive, incidental, ┃
-┃ Indirect or consequential damages of any kind, or any damages whatsoever, including,               ┃
-┃ without limitation, those resulting from loss of use, data or profits, and on any theory of       ┃
-┃ liability, arising out of or in  connection with the use of this software.                         ┃
+┃                                                                                                  ┃
+┃                   NEVER USE NON OFFICIAL KERNELS,  THIS COULD DAMAGE YOUR SYSTEM                 ┃
+┃                               Run instead officially distributed kernels                         ┃
+┃                                                                                                  ┃
+┃ We assume no responsibility for errors or omissions in the software or documentation available.  ┃
+┃ In no event shall we be liable to you or any third parties for any special, punitive, incidental,┃
+┃ Indirect or consequential damages of any kind, or any damages whatsoever, including,             ┃
+┃ without limitation, those resulting from loss of use, data or profits, and on any theory of      ┃
+┃ liability, arising out of or in  connection with the use of this software.                       ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 Installation Instructions:
