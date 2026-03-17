@@ -22,6 +22,7 @@ echo -e " #                                                                #"
 echo -e " ##################################################################"
 echo -e " ${NC}"
 
+
 # 1. Your manual personalization string
 postfix="yoga"
 
@@ -29,22 +30,20 @@ postfix="yoga"
 # Map hardware names (uname -m) to Debian architecture names
 ARCH_TYPE=$(uname -m)
 case "$ARCH_TYPE" in
-    x86_64)   ARCH_SUFFIX="amd64" ;;
-    aarch64)  ARCH_SUFFIX="arm64" ;;
-    armv7l)   ARCH_SUFFIX="armhf" ;;   # 32-bit ARM (e.g. Raspberry Pi 2/3/4 32bit OS)
-    armv6l)   ARCH_SUFFIX="armel" ;;   # Older ARM (e.g. Raspberry Pi Zero/1)
+    x86_64)    ARCH_SUFFIX="amd64" ;;
+    aarch64)   ARCH_SUFFIX="arm64" ;;
+    armv7l)    ARCH_SUFFIX="armhf" ;;   # 32-bit ARM (e.g. Raspberry Pi 2/3/4 32bit OS)
+    armv6l)    ARCH_SUFFIX="armel" ;;   # Older ARM (e.g. Raspberry Pi Zero/1)
     i386|i686) ARCH_SUFFIX="i386" ;;    # Legacy 32-bit x86
-    riscv64)  ARCH_SUFFIX="riscv64" ;; # RISC-V 64-bit
-    ppc64le)  ARCH_SUFFIX="ppc64el" ;; # PowerPC Little Endian
-    s390x)    ARCH_SUFFIX="s390x" ;;   # IBM System z
-    *)        ARCH_SUFFIX="$ARCH_TYPE" ;; # Fallback to raw hardware name
+    riscv64)   ARCH_SUFFIX="riscv64" ;; # RISC-V 64-bit
+    ppc64le)   ARCH_SUFFIX="ppc64el" ;; # PowerPC Little Endian
+    s390x)     ARCH_SUFFIX="s390x" ;;   # IBM System z
+    *)         ARCH_SUFFIX="$ARCH_TYPE" ;; # Fallback to raw hardware name
 esac
 
 # 3. Combine them for the final string
 # Result will be "yoga-amd64" or "yoga-arm64"
 full_postfix="${postfix}-${ARCH_SUFFIX}"
-
-
 
 #Admin login
 echo  "Login as administrator to install"
@@ -61,80 +60,85 @@ VAR=$0
 DIR="$(dirname "${VAR}")"
 cd  "${DIR}"
 
-rm -r ./linux-latest
+rm -rf ./linux-latest
 
 mkdir ./linux-latest
 
 cd ./linux-latest
 
-
-
 #download latest kernel from github
 wget https://github.com/torvalds/linux/archive/refs/heads/master.zip
 
-unzip './master.zip'
+unzip -q './master.zip'
 cd linux-master
-
 
 #Configure kernel
 cp -v /boot/config-$(uname -r) .config
-
 
 #To see option dependencies run
 # make menuconfig
 # Press / for search (use arrows to scroll)
 
-
 # --- START OF OPTIMIZED MODULE CONFIGURATION ---
 
-
 # 1. Enable Rust (2026 Toolchain)
-scripts/config --set-val CONFIG_RUST y                         # Enables Rust infrastructure
-scripts/config --set-val MODVERSIONS n                         # Required for Rust compatibility
-scripts/config --set-val GENDWARFKSYMS y                       # Safe Rust module loading
-scripts/config --set-val RANDSTRUCT n                          # Prevents C-to-Rust memory mismatches
-scripts/config --set-val DEBUG_INFO_BTF n                       # Prevents Rust symbol length conflicts
+scripts/config --set-val CONFIG_RUST y                                # Enables Rust infrastructure
+scripts/config --set-val MODVERSIONS n                                # Required for Rust compatibility
+scripts/config --set-val GENDWARFKSYMS y                              # Safe Rust module loading
+scripts/config --set-val RANDSTRUCT n                                 # Prevents C-to-Rust memory mismatches
+scripts/config --set-val DEBUG_INFO_BTF n                             # Prevents Rust symbol length conflicts
 
 # 2. Rust-Powered "Blue Screen" (DRM Panic)
-scripts/config --enable CONFIG_DRM_PANIC                       # Graphical panic core
-scripts/config --enable CONFIG_DRM_PANIC_SCREEN_USER           # Blue background
-scripts/config --enable CONFIG_DRM_PANIC_SCREEN_QR_CODE        # Rust-generated scannable QR code
+scripts/config --enable CONFIG_DRM_PANIC                              # Graphical panic core
+scripts/config --enable CONFIG_DRM_PANIC_SCREEN_USER                  # Blue background
+scripts/config --enable CONFIG_DRM_PANIC_SCREEN_QR_CODE               # Rust-generated scannable QR code
 
 # 3. Build Tweaks & Strict Debug Stripping (From your original script)
-scripts/config --set-str CONFIG_LOCALVERSION "-$full_postfix"  # Kernel naming
-scripts/config --set-val CONFIG_LOCALVERSION_AUTO n            # Cleaner versioning
-scripts/config --undefine CONFIG_DEBUG_INFO                    # Strip primary debug symbols
-scripts/config --undefine CONFIG_DEBUG_INFO_BTF                # Disable BPF Type Format bloat
-scripts/config --set-val CONFIG_DEBUG_INFO_NONE y              # Explicitly select 'None'
-scripts/config --disable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT
-scripts/config --disable CONFIG_DEBUG_INFO_DWARF4
-scripts/config --disable CONFIG_DEBUG_INFO_DWARF5
-scripts/config --disable CONFIG_GDB_SCRIPTS                    # No Python helpers (saves space)
+scripts/config --set-str CONFIG_LOCALVERSION "-$full_postfix"         # Appends "-yoga-amd64" to kernel name string
+scripts/config --set-val CONFIG_LOCALVERSION_AUTO n                   # Cleaner versioning
+scripts/config --undefine CONFIG_DEBUG_INFO                           # Strip primary debug symbols
+scripts/config --undefine CONFIG_DEBUG_INFO_BTF                       # Disable BPF Type Format bloat
+scripts/config --set-val CONFIG_DEBUG_INFO_NONE y                     # Explicitly select 'None'
+scripts/config --disable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT    # Kills the compiler's default bloated symbols
+scripts/config --disable CONFIG_DEBUG_INFO_DWARF4                     # Disables the old DWARF v4 debug standard
+scripts/config --disable CONFIG_DEBUG_INFO_DWARF5                     # Disables the heavy DWARF v5 debug standard
+scripts/config --disable CONFIG_GDB_SCRIPTS                           # No Python helpers (saves space)
 
 # --- END OF OPTIMIZED MODULE CONFIGURATION ---
-
 
 #To prevent question
 make olddefconfig
 
+# --- Capture version info for Post-Processing ---
+VERSION_BASE=$(make kernelversion)
+FULL_VER="${VERSION_BASE}-${full_postfix}"
 
 #Compile kernel
 # KDEB_PKGVERSION to ensure the .deb filenames also include custom tag
 make -j$(nproc) bindeb-pkg \
-    KDEB_PKGVERSION="$(make kernelversion)-$full_postfix" \
+    KDEB_PKGVERSION="${FULL_VER}" \
     KDEB_SOURCENAME=linux-upstream \
     DEBUG_INFO=n \
     NO_VMLINUX_DEBUG=1
 
-
-#Clean up
+# --- POST-PROCESSING ---
 cd ../
-rm -r ./linux-master
-#rm ./master.zip
-rm *.buildinfo
-rm *.changes
+echo -e "${BLUE}Post-Processing: Cleaning up filenames...${NC}"
 
-#To install automatically uncomment next line
-sudo dpkg -i linux-*.deb
+# Exact renaming to achieve: name-version.deb
+mv "linux-image-${FULL_VER}_${FULL_VER}_${ARCH_SUFFIX}.deb" "linux-image-${FULL_VER}.deb" 2>/dev/null
+mv "linux-headers-${FULL_VER}_${FULL_VER}_${ARCH_SUFFIX}.deb" "linux-headers-${FULL_VER}.deb" 2>/dev/null
+mv "linux-libc-dev_${FULL_VER}_${ARCH_SUFFIX}.deb" "linux-libc-dev_${FULL_VER}.deb" 2>/dev/null
 
+rm -f *.buildinfo
+rm -f *.changes
+
+#Install automatically with clean names
+sudo apt-mark unhold linux-libc-dev
+sudo dpkg -i "linux-image-${FULL_VER}.deb" \
+             "linux-headers-${FULL_VER}.deb" \
+             "linux-libc-dev_${FULL_VER}.deb"
+sudo apt-mark hold linux-libc-dev
+
+echo -e "${CYAN}Success! Latest kernel ${FULL_VER} installed.${NC}"
 

@@ -11,11 +11,11 @@ NC='\033[0m'
 echo -e "${GOLD} "
 echo -e " ##################################################################"
 echo -e " #                                                                #"
-echo -e " # ${CYAN}                    Kernel Compile Script               ${GOLD}       #"
-echo -e " # ${CYAN}           Developed by Sergio Melas 2021-26             ${GOLD}      #"
+echo -e " # ${CYAN}                    Kernel Compile Script                ${GOLD}      #"
+echo -e " # ${CYAN}            Developed by Sergio Melas 2021-26            ${GOLD}      #"
 echo -e " #                                                                #"
-echo -e " # ${BLUE}                Email: ${GREEN}sergiomelas@gmail.com ${GOLD}                  #"
-echo -e " # ${BLUE}                    Released under GPL V2.0             ${GOLD}       #"
+echo -e " # ${BLUE}                 Email: ${GREEN}sergiomelas@gmail.com ${GOLD}                 #"
+echo -e " # ${BLUE}                     Released under GPL V2.0             ${GOLD}      #"
 echo -e " #                                                                #"
 echo -e " ##################################################################"
 echo -e " ${NC}"
@@ -33,7 +33,7 @@ case "$ARCH_TYPE" in
     *)         ARCH_SUFFIX="$ARCH_TYPE" ;;
 esac
 
-# 3. COMBINE: This restores the "yoga-amd64" look in filenames and versions
+# 3. Combine for the final string
 full_postfix="${postfix}-${ARCH_SUFFIX}"
 
 # Change to local directory
@@ -55,8 +55,8 @@ else
     cp -v /boot/config-$(uname -r) .config
 fi
 
-# --- DRIVER INJECTION (Yoga Fan) ---
-echo -e "${BLUE}Injecting Yoga Fan Driver...${NC}"
+# --- DRIVER INJECTION (Yoga Fan v4.3) ---
+echo -e "${BLUE}Injecting Yoga Fan Driver v4.3...${NC}"
 SOURCE_CODE="../../Lenovo Drivers/yoga_fan.c"
 TARGET_FILE="./drivers/hwmon/yoga_fan.c"
 
@@ -81,12 +81,12 @@ config SENSORS_YOGA_FAN
 EOF
 fi
 
-# --- OPTIMIZED MODULE CONFIGURATION (YOGA 14c ACN) ---
+# --- START OF OPTIMIZED MODULE CONFIGURATION (YOGA 14c ACN) ---
 
 # 1. AMD Zen 3 & Power (For Ryzen 5800U)
 scripts/config --set-val CONFIG_MZEN3 y                               # Zen 3 microarchitecture optimization
 scripts/config --enable  CONFIG_X86_AMD_PSTATE                        # Modern AMD P-State driver
-scripts/config --set-val CONFIG_X86_AMD_PSTATE_DEFAULT_MODE           # "Active" mode for performance/watt balance
+scripts/config --set-val CONFIG_X86_AMD_PSTATE_DEFAULT_MODE 3         # "Active" mode for performance/watt balance
 scripts/config --enable  CONFIG_AMD_PMC                               # Vital for s2idle (Modern Standby) sleep support
 scripts/config --enable  CONFIG_SENSORS_K10TEMP                       # Accurate CPU temperature monitoring
 scripts/config --enable  CONFIG_PINCTRL_AMD                           # Crucial for Touchpad/GPIO interrupts
@@ -116,15 +116,15 @@ scripts/config --set-val CONFIG_RUST y                                # Enables 
 scripts/config --set-val MODVERSIONS n                                # Required for Rust compatibility
 scripts/config --set-val GENDWARFKSYMS y                              # Safe Rust module loading
 scripts/config --set-val RANDSTRUCT n                                 # Prevents C-to-Rust memory mismatches
-scripts/config --set-val DEBUG_INFO_BTF n                             # Prevents Rust symbol conflicts
+scripts/config --set-val DEBUG_INFO_BTF n                             # Prevents Rust symbol length conflicts
 
 # 5. Rust-Powered "Blue Screen" (DRM Panic)
 scripts/config --enable CONFIG_DRM_PANIC                              # Graphical panic core
 scripts/config --enable CONFIG_DRM_PANIC_SCREEN_USER                  # Blue background
 scripts/config --enable CONFIG_DRM_PANIC_SCREEN_QR_CODE               # Rust-generated scannable QR code
 
-# 6. Build Tweaks & Identity (FIXED: No Duplicates)
-scripts/config --set-str CONFIG_LOCALVERSION "-${full_postfix}"       # Identifies as -yoga-amd64
+# 6. Build Tweaks & Strict Debug Stripping
+scripts/config --set-str CONFIG_LOCALVERSION "-$full_postfix"         # Identifies as -yoga-amd64
 scripts/config --set-val CONFIG_LOCALVERSION_AUTO n                   # Cleaner versioning
 scripts/config --undefine CONFIG_DEBUG_INFO                           # Strip primary debug symbols
 scripts/config --undefine CONFIG_DEBUG_INFO_BTF                       # Disable BPF Type Format bloat
@@ -132,31 +132,45 @@ scripts/config --set-val CONFIG_DEBUG_INFO_NONE y                     # Explicit
 scripts/config --disable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT    # Kills bloated symbols
 scripts/config --disable CONFIG_DEBUG_INFO_DWARF4                     # Disables old DWARF v4
 scripts/config --disable CONFIG_DEBUG_INFO_DWARF5                     # Disables heavy DWARF v5
-scripts/config --disable CONFIG_GDB_SCRIPTS                           # No Python helpers (saves space)
+scripts/config --disable CONFIG_GDB_SCRIPTS                           # No Python helpers
 
 # --- END OF OPTIMIZED MODULE CONFIGURATION ---
 
 make olddefconfig
 
-# Get kernel version (e.g., 7.0.0-rc3)
+# Get kernel version (e.g., 7.0.0-rc4)
 VERSION_BASE=$(make kernelversion)
+FULL_VER="${VERSION_BASE}-${full_postfix}"
+PKG_VER="${VERSION_BASE}-${full_postfix}"
 
-echo -e "${BLUE}Starting Kernel Build (uname -r: ${VERSION_BASE}-${full_postfix})${NC}"
+echo -e "${BLUE}Starting Kernel Build (uname -r: ${FULL_VER})${NC}"
 
-# RESTORED: Versioning logic that matches your 6.19.5 build perfectly
+# Compile using your naming logic
 make -j$(nproc) bindeb-pkg \
-    KDEB_PKGVERSION="${VERSION_BASE}-${full_postfix}" \
+    KDEB_PKGVERSION="${PKG_VER}" \
     KDEB_SOURCENAME=linux-upstream \
     DEBUG_INFO=n \
     NO_VMLINUX_DEBUG=1
 
-# Clean up
+# Change to parent directory
 cd ../
+
+echo -e "${BLUE}Post-Processing: Cleaning up filenames...${NC}"
+
+# Perform the exact renaming to remove the redundant version_arch string
+# e.g., linux-image-VER_VER_amd64.deb -> linux-image-VER.deb
+mv "linux-image-${FULL_VER}_${PKG_VER}_${ARCH_SUFFIX}.deb" "linux-image-${FULL_VER}.deb"
+mv "linux-headers-${FULL_VER}_${PKG_VER}_${ARCH_SUFFIX}.deb" "linux-headers-${FULL_VER}.deb"
+mv "linux-libc-dev_${PKG_VER}_${ARCH_SUFFIX}.deb" "linux-libc-dev_${FULL_VER}.deb"
+
+# Clean up
 rm -f *.buildinfo *.changes
 
-# Install new kernel
+# Install the cleaned packages
 sudo apt-mark unhold linux-libc-dev
-sudo dpkg -i linux-image-*${full_postfix}*.deb linux-headers-*${full_postfix}*.deb
+sudo dpkg -i "linux-image-${FULL_VER}.deb" \
+             "linux-headers-${FULL_VER}.deb" \
+             "linux-libc-dev_${FULL_VER}.deb"
 sudo apt-mark hold linux-libc-dev
 
-echo -e "${CYAN}Success! Identical style to 6.19.5 restored.${NC}"
+echo -e "${CYAN}Success! kernel ${FULL_VER} installed.${NC}"
