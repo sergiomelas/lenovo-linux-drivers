@@ -1,17 +1,21 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /**
- * yoga_fan.c - Lenovo Yoga Fan Hardware Monitoring Driver
- * * Copyright (C) 2021-2026 Sergio Melas <sergiomelas@gmail.com>
- * * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
+ * yoga_fan.c - Lenovo Yoga/Legion Fan Hardware Monitoring Driver
  *
- * DESCRIPTION:
- * This driver provides fan speed monitoring for modern Lenovo Yoga laptops
- * (specifically Yoga 14c / Yoga 7 series) by interfacing with the
- * Embedded Controller (EC) via ACPI.
+ * Copyright (C) 2026 Sergio Melas <sergiomelas@gmail.com>
  *
- * VERSION: 3.0 - Full Platform Bus Integration for KDE 6 compatibility.
+ * This driver provides fan speed monitoring for modern Lenovo Yoga, Legion,
+ * and IdeaPad laptops by interfacing with the Embedded Controller (EC)
+ * via ACPI. It registers a platform device to ensure compatibility with
+ * modern HWMON consumers like KDE Plasma 6.
+ *
+ * Supported Models:
+ * - Lenovo Yoga 7 / 14c series (Ryzen/Intel)
+ * - Lenovo Legion 5 / 7 / Pro series (Dual-fan support)
+ * - Lenovo Yoga Slim 7 / Pro / Carbon / Nano
+ * - Lenovo IdeaPad 5 / ThinkBook series
+ *
+ * Context: v4.3 - Fixed static HWMON channel definition for kernel 7.0 compatibility.
  */
 
 #include <linux/module.h>
@@ -19,69 +23,66 @@
 #include <linux/hwmon.h>
 #include <linux/acpi.h>
 #include <linux/platform_device.h>
+#include <linux/dmi.h>
 
 #define DRVNAME "yogafan"
-
-
+#define MAX_FANS 2
 
 static const char * const fan_paths[] = {
-	"\\_SB.PCI0.LPC0.EC0.FANS",        // Yoga 14c ACN (Your machine), Yoga 7 Gen 6/7 (Ryzen)
-	"\\_SB.PCI0.LPC0.EC0.FA2S",        // Legion 5/7, Yoga Pro 7/9i (Dual-Fan models)
-	"\\_SB.PCI0.LPC0.EC0.FAN0",        // IdeaPad 5, Yoga Slim 7 (Intel), Standard ThinkBooks
-	"\\_SB.PCI0.LPC.EC.FAN0",          // Older Yogas (Pre-2020), Legacy EC naming
-	"\\_SB.PCI0.LPC0.EC.FAN0",         // Yoga Slim 7 Pro, Carbon/Nano-style motherboards
+	"\\_SB.PCI0.LPC0.EC0.FANS",  // Primary Fan (Yoga 14c)
+	"\\_SB.PCI0.LPC0.EC0.FA2S",  // Secondary Fan (Legion)
+	"\\_SB.PCI0.LPC0.EC0.FAN0",  // IdeaPad / Slim
+	"\\_SB.PCI0.LPC.EC.FAN0",    // Legacy
+	"\\_SB.PCI0.LPC0.EC.FAN0",   // Alternate
 };
 
-static const char *active_path = NULL;
-static struct platform_device *yoga_pdev;
-static struct device *hwmon_dev;
+struct yoga_fan_data {
+	const char *active_paths[MAX_FANS];
+	int fan_count;
+};
 
-static int yoga_fan_read_rpm(void)
+/* --- HWMON Logic --- */
+
+static int yoga_fan_read(struct device *dev, enum hwmon_sensor_types type,
+			 u32 attr, int channel, long *val)
 {
-	unsigned long long val;
-	if (!active_path || ACPI_FAILURE(acpi_evaluate_integer(NULL, (char *)active_path, NULL, &val)))
+	struct yoga_fan_data *data = dev_get_drvdata(dev);
+	unsigned long long raw_val;
+	acpi_status status;
+
+	if (type != hwmon_fan || attr != hwmon_fan_input)
+		return -EOPNOTSUPP;
+
+	if (channel >= data->fan_count)
+		return -EINVAL;
+
+	status = acpi_evaluate_integer(NULL, (char *)data->active_paths[channel], NULL, &raw_val);
+	if (ACPI_FAILURE(status))
 		return -EIO;
 
-	/* Convert EC 0-255 scale or raw RPM */
-	return (val > 0 && val <= 255) ? (int)(val * 100) : (int)val;
+	/* Scaling: 0-255 scale (x100) or Raw RPM */
+	*val = (raw_val > 0 && raw_val <= 255) ? (raw_val * 100) : raw_val;
+	return 0;
 }
 
-static umode_t yoga_fan_is_visible(const void *data, enum hwmon_sensor_types type, u32 attr, int channel)
+static umode_t yoga_fan_is_visible(const void *data, enum hwmon_sensor_types type,
+				   u32 attr, int channel)
 {
-	if (type == hwmon_fan && (attr == hwmon_fan_input || attr == hwmon_fan_label))
+	const struct yoga_fan_data *fan_data = data;
+	if (type == hwmon_fan && channel < fan_data->fan_count)
 		return 0444;
 	return 0;
 }
 
-static int yoga_fan_read(struct device *dev, enum hwmon_sensor_types type, u32 attr, int channel, long *val)
-{
-	if (type == hwmon_fan && attr == hwmon_fan_input) {
-		int rpm = yoga_fan_read_rpm();
-		if (rpm < 0) return rpm;
-		*val = rpm;
-		return 0;
-	}
-	return -EOPNOTSUPP;
-}
-
-static int yoga_fan_read_string(struct device *dev, enum hwmon_sensor_types type, u32 attr, int channel, const char **str)
-{
-	if (type == hwmon_fan && attr == hwmon_fan_label) {
-		*str = "System Fan";
-		return 0;
-	}
-	return -EOPNOTSUPP;
-}
-
-static const struct hwmon_channel_info *yoga_fan_info[] = {
-	HWMON_CHANNEL_INFO(fan, HWMON_F_INPUT | HWMON_F_LABEL),
-	NULL
-};
-
 static const struct hwmon_ops yoga_fan_hwmon_ops = {
 	.is_visible = yoga_fan_is_visible,
 	.read = yoga_fan_read,
-	.read_string = yoga_fan_read_string,
+};
+
+/* Static configuration for up to 2 fans (Standard for Yoga/Legion) */
+static const struct hwmon_channel_info *yoga_fan_info[] = {
+	HWMON_CHANNEL_INFO(fan, HWMON_F_INPUT, HWMON_F_INPUT),
+	NULL
 };
 
 static const struct hwmon_chip_info yoga_fan_chip_info = {
@@ -89,57 +90,75 @@ static const struct hwmon_chip_info yoga_fan_chip_info = {
 	.info = yoga_fan_info,
 };
 
-static int __init yoga_fan_init(void)
-{
-	unsigned long long val;
-	int i, ret;
+/* --- Platform Driver Core --- */
 
-	/* 1. ACPI Discovery */
+static int yoga_fan_probe(struct platform_device *pdev)
+{
+	struct yoga_fan_data *data;
+	struct device *hwmon_dev;
+	acpi_handle handle;
+	int i;
+
+	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
+	if (!data)
+		return -ENOMEM;
+
+	/* ACPI Discovery via Handle Existence */
 	for (i = 0; i < ARRAY_SIZE(fan_paths); i++) {
-		if (ACPI_SUCCESS(acpi_evaluate_integer(NULL, (char *)fan_paths[i], NULL, &val))) {
-			active_path = fan_paths[i];
-			break;
+		if (ACPI_SUCCESS(acpi_get_handle(NULL, (char *)fan_paths[i], &handle))) {
+			data->active_paths[data->fan_count++] = fan_paths[i];
+			pr_info("yogafan: Registered fan hardware at %s\n", fan_paths[i]);
+
+			if (data->fan_count >= MAX_FANS)
+				break;
 		}
 	}
 
-	if (!active_path)
+	if (data->fan_count == 0)
 		return -ENODEV;
 
-	/* 2. Platform Device Allocation (Forces /sys/devices/platform/ for KDE 6) */
-	yoga_pdev = platform_device_alloc(DRVNAME, 0);
-	if (!yoga_pdev)
-		return -ENOMEM;
+	/* Register with the static chip_info */
+	hwmon_dev = devm_hwmon_device_register_with_info(&pdev->dev, DRVNAME,
+							 data, &yoga_fan_chip_info, NULL);
 
-	ret = platform_device_add(yoga_pdev);
-	if (ret) {
-		platform_device_put(yoga_pdev);
-		return ret;
+	return PTR_ERR_OR_ZERO(hwmon_dev);
+}
+
+static struct platform_driver yoga_fan_driver = {
+	.driver = { .name = DRVNAME },
+	.probe = yoga_fan_probe,
+};
+
+static struct platform_device *yoga_fan_device;
+
+static const struct dmi_system_id yoga_dmi_table[] __initconst = {
+	{ .ident = "Lenovo", .matches = { DMI_MATCH(DMI_SYS_VENDOR, "LENOVO") } },
+	{ }
+};
+MODULE_DEVICE_TABLE(dmi, yoga_dmi_table);
+
+static int __init yoga_fan_init(void)
+{
+	if (!dmi_check_system(yoga_dmi_table)) return -ENODEV;
+	if (platform_driver_register(&yoga_fan_driver)) return -ENOSYS;
+
+	yoga_fan_device = platform_device_register_simple(DRVNAME, 0, NULL, 0);
+	if (IS_ERR(yoga_fan_device)) {
+		platform_driver_unregister(&yoga_fan_driver);
+		return PTR_ERR(yoga_fan_device);
 	}
-
-	/* 3. HWMON Registration */
-	hwmon_dev = hwmon_device_register_with_info(&yoga_pdev->dev, DRVNAME, NULL, &yoga_fan_chip_info, NULL);
-
-	if (IS_ERR(hwmon_dev)) {
-		platform_device_unregister(yoga_pdev);
-		return PTR_ERR(hwmon_dev);
-	}
-
-	pr_info("yogafan: Sergio Melas driver (Platform Mode) loaded. Path: %s\n", active_path);
 	return 0;
 }
 
 static void __exit yoga_fan_exit(void)
 {
-	if (hwmon_dev)
-		hwmon_device_unregister(hwmon_dev);
-	if (yoga_pdev)
-		platform_device_unregister(yoga_pdev);
-	pr_info("yogafan: Sergio Melas driver unloaded.\n");
+	platform_device_unregister(yoga_fan_device);
+	platform_driver_unregister(&yoga_fan_driver);
 }
 
 module_init(yoga_fan_init);
 module_exit(yoga_fan_exit);
 
 MODULE_AUTHOR("Sergio Melas <sergiomelas@gmail.com>");
-MODULE_DESCRIPTION("Lenovo Yoga Platform-based Fan Driver");
+MODULE_DESCRIPTION("Universal Lenovo Fan Driver v4.3");
 MODULE_LICENSE("GPL v2");
