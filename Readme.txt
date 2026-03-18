@@ -107,7 +107,7 @@ To remove an old kernel or the newest one in case of problems
 
       ```bash
       sensors
-      # Look for 'yogafan-platform-0' and a valid 'System Fan' RPM value.
+      # Look for 'yogafan-isa-0000' and a valid 'fan1:' RPM value.
       ```
 
       If the sensor is missing in the KDE System Monitor, refresh the sensor daemon:
@@ -179,8 +179,12 @@ V0.5: 2026-02-08 - Added personalization of kernel name and BSOD, added full opt
                    personalization of kernel name and local version,
                    compilation optimization avoiding debug symbols and deb creation.
 V0.6: 2026-03-14 - Created kernel driver module for yoga fan
-V0.7: 2026-03-17 - Refactored "yogafan" driver to V3.0 Universal Platform Mode.
-                   Added support for Legion and multiple fan paths.
-                   Added full documentation for KDE 6 Sensor compatibility.
-                   DSTS mod for S3 sleep integration.
-                   Corrected bug on debs naming
+V0.7: 2026-03-18 - Refactored "yogafan" driver to V3.0 Universal Platform Mode:
+                 - Universal Platform Mode: V3.0 refactor for enhanced stability across Yoga and Legion series.
+                 - Multi-Fan Logic: Added scanning for dual ACPI fan paths (FANS, FA2S, FAN0) for Legion support.
+                 - KDE 6 Compatibility: Full sensor documentation and formatting for modern Plasma dashboards.
+                 - S3 Sleep Integration: DSTS (Device Status) ACPI modifications for robust resume from sleep.
+                 - RLLag Filter: 100ms heartbeat engine with pure integer fixed-point math for smoothing.Inertia
+                   Simulation: Clamps RPM change-per-second to prevent jitter and "teleporting" values.
+                 - Build Fixes: Corrected Debian package naming logic (.deb) in the automated compile script.
+.

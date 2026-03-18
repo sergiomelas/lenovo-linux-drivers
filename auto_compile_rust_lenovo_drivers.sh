@@ -1,6 +1,26 @@
 #!/bin/bash
 # auto_compile_rust_lenovo_drivers.sh
 
+##################################################################"
+#                                                                #"
+#                     Kernel Compile Script                      #"
+#             Developed by Sergio Melas 2021-26                  #"
+#                                                                #"
+#                  Email: sergiomelas@gmail.com                  #"
+#                      Released under GPL V2.0                   #"
+#                                                                #"
+##################################################################"
+
+
+
+# Fix for dpkg-source email warning
+export DEBFULLNAME="Sergio Melas"
+export DEBEMAIL="sergiomelas@gmail.com"
+
+
+# Your kernel personalization string
+postfix="yoga"
+
 # ANSI Color Codes
 CYAN='\033[0;36m'
 GOLD='\033[1;33m'
@@ -20,8 +40,12 @@ echo -e " #                                                                #"
 echo -e " ##################################################################"
 echo -e " ${NC}"
 
-# 1. Your manual personalization string
-postfix="yoga"
+
+
+# 1. Change to local directory
+VAR=$0
+DIR="$(dirname "${VAR}")"
+cd  "${DIR}"
 
 # 2. Automated Architecture Detection
 ARCH_TYPE=$(uname -m)
@@ -36,10 +60,6 @@ esac
 # 3. Combine for the final string
 full_postfix="${postfix}-${ARCH_SUFFIX}"
 
-# Change to local directory
-VAR=$0
-DIR="$(dirname "${VAR}")"
-cd  "${DIR}"
 
 # Admin login
 sudo ls >/dev/null
