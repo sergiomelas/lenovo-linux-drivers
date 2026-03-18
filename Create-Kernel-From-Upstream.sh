@@ -1,7 +1,19 @@
-
 #!/bin/bash
 #This script will compile a kernel and create the deb packages
 #the file has to be at the same level of .\Kernel acpi . Run this file in a sh terminal
+
+
+##################################################################"
+#                                                                #"
+#                     Kernel Compile Script                      #"
+#             Developed by Sergio Melas 2021-26                  #"
+#                                                                #"
+#                  Email: sergiomelas@gmail.com                  #"
+#                      Released under GPL V2.0                   #"
+#                                                                #"
+##################################################################"
+
+
 
 # ANSI Color Codes
 CYAN='\033[0;36m'
