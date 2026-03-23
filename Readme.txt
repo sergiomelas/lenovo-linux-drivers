@@ -32,7 +32,7 @@ Installation Instructions:
         - Auto_Compile.sh                     : To compile a kernel (Simplest kernel)
         - Auto_Compile_Rust.sh                : To compile a kernel (Rust support)
         - auto_compile_rust_lenovo_drivers.sh : To compile a kernel (Rust support and all Lenovo AMD Optimization + Universal Driver for Fan)
-     This last 2 files need to be placed in the root directory of the dowloaded and extracted kernel source.
+     This last file need to be placed in the root directory of the dowloaded and extracted kernel source.
      (Just drag and drop file the rest is automatic), give root acess whes the sudo prompt appear
  4)- a directory is created and after kernel compilation will contain the latest and greates deb packages of the linux Kernel:
         linux-headers-xxxxxxxxxxx_amd64.deb
@@ -83,89 +83,82 @@ To remove an old kernel or the newest one in case of problems
         sudo apt-get install linux-image-amd64   linux-headers-amd64   linux-libc-dev
 
 
- e)- Lenovo only: With the current configuration after installation of the new kernel do the following:
+================================================================================
+LENOVO-SPECIFIC POST-INSTALLATION GUIDE (Updated 2026)
+================================================================================
 
-      1. Universal Fan & Sensor Support (NEW for 2026)
-      This build includes the new generalized "yogafan" driver for hardware monitoring.
-      It has been refactored into "Platform Mode" to bypass kernel namespace locks
-      and ensure native compatibility with modern desktops like KDE 6.
+With this custom kernel installed, that you created by auto_compile_rust_lenovo_drivers.sh
+your Lenovo hardware gains native features usually locked by the manufacturer.
+Follow these steps to activate the suite:
 
-      Supported Models:
-      - Lenovo Yoga 7 / 14c series (Ryzen/Intel)
-      - Lenovo Legion 5 / 7 / Pro series (Dual-fan support)
-      - Lenovo Yoga Slim 7 / Pro / Carbon / Nano
-      - Lenovo IdeaPad 5 / ThinkBook series
+1. UNIVERSAL FAN & SENSOR SUPPORT (yogafan v6.0)
+-----------------------------------------------
+This build injects the Sergio Melas "yogafan" driver. Unlike older tools,
+this driver uses a passive RLLag (Rate-Limited Lag) filter to model the
+physical inertia of the fan blades, providing smooth RPM readings.
 
-      To ensure the sensor is active after every restart, you must register the
-      module to load at boot:
+Supported Models:
+ * Yoga: 7 / 9 / 14c series (AMD & Intel)
+ * Legion: 5 / 7 / Pro / Slim (Dual-Fan scanning supported)
+ * IdeaPad / ThinkBook: Slim 5 / 7 and Pro series
 
-      ```bash
-      echo "yoga_fan" | sudo tee /etc/modules-load.d/yoga_fan.conf
-      ```
+Activation (Module Load):
+To ensure the driver loads automatically after every restart, you must
+register the module:
+$ echo "yogafan" | sudo tee /etc/modules-load.d/yogafan.conf
+$ sudo modprobe yogafan
 
-      To verify detection after reboot, run:
+Verification:
+After rebooting, run:
+$ sensors
+# Look for 'yogafan-isa-0000'. You should see 'fan1' RPM values.
 
-      ```bash
-      sensors
-      # Look for 'yogafan-isa-0000' and a valid 'fan1:' RPM value.
-      ```
-
-      If the sensor is missing in the KDE System Monitor, refresh the sensor daemon:
-
-      ```bash
-      killall ksystemstats
-      ```
-
-      This driver ensures your custom kernel can monitor cooling performance natively
-      without needing third-party tools like 'isw' or 'thinkfan', and is fully
-      visible in the Plasma 6 "Sensors" dashboard.
-
-      To compile this kernel use the script:
-      auto_compile_rust_lenovo_drivers.sh
-
-      This will inject the Sergio Melas driver into the kernel tree before compilation.
-
-      NOTE: Ensure your GRUB configuration allows ACPI resource overrides.
-      If sensors show 0 RPM, add "acpi_enforce_resources=lax" to your
-      GRUB_CMDLINE_LINUX_DEFAULT in /etc/default/grub and run sudo update-grub.
-
-      2. Install & Enable the Power Daemon
-      First, ensure you have the service that communicates between the UI and your new kernel driver.
-      ```bash
-      sudo apt update
-      sudo apt install power-profiles-daemon
-      sudo systemctl enable --now power-profiles-daemon
-      ```
-
-      3. Configure Automatic Switching in KDE
-      KDE Plasma allows you to set specific behaviors for On AC Power versus On Battery.
-      Open System Settings → Power Management → Energy Saving.
-      On AC Power Tab: Look for the dropdown labeled "Switch to power profile" and set it to Performance.
-      On Battery Tab: Set the same dropdown to Power Save or Balanced.
-      Click Apply.
-
-      4. Verify it works with your Custom Kernel
-      Once you boot into your custom kernel, you can verify that the Active P-State driver is correctly passing these hints to your hardware. Open a terminal and run:
-      ```bash
-      # Check if the correct driver is active
-      cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
-      # Result should be: amd-pstate-epp
-
-      # Check the current Energy Performance Preference (EPP) hint
-      cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference
-      ```
-
-      When you toggle the KDE power slider (or it switches automatically when you unplug), the value in that file should change from performance (AC) to power or balance_power (Battery).
-
-      Why this is the "best" way for 2026:
-      - Seamless Integration: You get a native battery icon slider in your Plasma tray.
-      - Driver Support: Natively supports the amd_pstate driver enabled in the script.
-      - Hardware Safety: Uses standard ACPI interfaces for your Lenovo Yoga.
-
-      5. DSTS modification to activate s3 sleep mode
+Note: If values are missing in KDE System Monitor, refresh the stats engine:
+$ killall ksystemstats
 
 
-!!Inportant never remove current kernel (use "uname -r" to find it) otherwise you could brick your system
+2. POWER PROFILE INTEGRATION (AMD P-STATE EPP)
+----------------------------------------------
+The script enables the modern AMD P-State driver in "Active" mode, allowing
+instant CPU Energy Performance Preference (EPP) adjustments via Plasma 6.
+
+Enable the Communication Daemon:
+$ sudo apt update && sudo apt install power-profiles-daemon
+$ sudo systemctl enable --now power-profiles-daemon
+
+Configure KDE Plasma 6:
+1. Open System Settings -> Power Management -> Energy Saving.
+2. On AC Power: Set "Switch to power profile" to Performance.
+3. On Battery: Set "Switch to power profile" to Power Save or Balanced.
+
+
+3. TECHNICAL VERIFICATION
+-------------------------
+Verify the hardware is following the kernel's hints:
+
+# Check active driver (Should return: amd-pstate-epp)
+$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
+
+# Check EPP hint (Should change when switching KDE power profiles)
+$ cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference
+
+
+4. ADVANCED FIXES (SLEEP & ACPI RESOURCES)
+------------------------------------------
+* S3 Sleep (DSTS Scab): This build includes ACPI modifications to ensure
+  robust resume-from-sleep and enable S3 states where disabled by default.
+
+* 0 RPM / Resource Conflict (LAX Mode):
+  If sensors show 0 RPM while the fan is spinning, the BIOS is locking the
+  ACPI resources. You MUST enable 'lax' mode in GRUB:
+
+  1. Edit /etc/default/grub
+  2. Add "acpi_enforce_resources=lax" to GRUB_CMDLINE_LINUX_DEFAULT
+  3. Result should look like: "quiet splash acpi_enforce_resources=lax"
+  4. Run: sudo update-grub
+
+================================================================================
+
 
 ##################################################################################################################
 Change log:

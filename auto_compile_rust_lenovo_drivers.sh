@@ -77,8 +77,8 @@ fi
 
 # --- DRIVER INJECTION (Yoga Fan v4.3) ---
 echo -e "${BLUE}Injecting Yoga Fan Driver v4.3...${NC}"
-SOURCE_CODE="../../Lenovo Drivers/yoga_fan.c"
-TARGET_FILE="./drivers/hwmon/yoga_fan.c"
+SOURCE_CODE="../../Lenovo Drivers/yogafan.c"
+TARGET_FILE="./drivers/hwmon/yogafan.c"
 
 if [ -f "$SOURCE_CODE" ]; then
     cp "$SOURCE_CODE" "$TARGET_FILE"
@@ -87,13 +87,13 @@ else
     exit 1
 fi
 
-if ! grep -q "yoga_fan.o" ./drivers/hwmon/Makefile; then
-    echo "obj-\$(CONFIG_SENSORS_YOGA_FAN) += yoga_fan.o" >> ./drivers/hwmon/Makefile
+if ! grep -q "yogafan.o" ./drivers/hwmon/Makefile; then
+    echo "obj-\$(CONFIG_SENSORS_YOGAFAN) += yogafan.o" >> ./drivers/hwmon/Makefile
 fi
 
-if ! grep -q "config SENSORS_YOGA_FAN" ./drivers/hwmon/Kconfig; then
+if ! grep -q "config SENSORS_YOGAFAN" ./drivers/hwmon/Kconfig; then
     cat <<EOF >> ./drivers/hwmon/Kconfig
-config SENSORS_YOGA_FAN
+config SENSORS_YOGAFAN
 	tristate "Lenovo Yoga Fan Hardware Monitoring"
 	depends on ACPI && HWMON
 	help
@@ -121,7 +121,7 @@ scripts/config --enable CONFIG_DRM_DISPLAY_DP_HELPER                  # Essentia
 scripts/config --set-val CONFIG_HWMON y                               # REQUIRED: Base framework for all sensors
 scripts/config --set-val CONFIG_ACPI_WMI y                            # REQUIRED: Bridge for Lenovo BIOS
 scripts/config --enable  CONFIG_WMI_BMOF                              # REQUIRED: Interpret ACPI binary data
-scripts/config --set-val CONFIG_SENSORS_YOGA_FAN m                    # Compiles Yoga Fan driver as module
+scripts/config --set-val CONFIG_SENSORS_YOGAFAN m                    # Compiles Yoga Fan driver as module
 scripts/config --enable  CONFIG_LEDS_CLASS                            # Needed for status LEDs
 scripts/config --enable  CONFIG_LEDS_TRIGGERS                         # Allows hardware events to trigger LEDs
 scripts/config --set-val CONFIG_IDEAPAD_LAPTOP y                      # Main driver for Yoga Fn keys
