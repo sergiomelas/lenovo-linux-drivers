@@ -24,12 +24,13 @@
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/slab.h>
+#include <linux/math64.h>
 /* Driver Configuration Constants */
 #define DRVNAME "yogafan"
 #define MAX_FANS 8
 /* Filter Configuration Constants */
-#define TAU_MS          3000    /* Time constant for the first-order lag (ms) */
-#define MAX_SLEW_RPM_S  100     /* Maximum allowed change in RPM per second */
+#define TAU_MS          1000    /* Time constant for the first-order lag (ms) */
+#define MAX_SLEW_RPM_S  1500     /* Maximum allowed change in RPM per second */
 #define MAX_SAMPLING    5000    /* Maximum allowed Ts for reset (ms) */
 /* RPM Heuristic and Sanitation Constants */
 #define RPM_UNIT_THRESHOLD 500  /* Values below this treated as units of 100 */
@@ -39,7 +40,7 @@
 struct yoga_fan_data {
 	const char *active_paths[MAX_FANS];
 	long filtered_val[MAX_FANS];
-	ktime_t last_update[MAX_FANS];
+	ktime_t last_sample[MAX_FANS]; /* Renamed from last_update for consistency */
 	int fan_count;
 };
 /**
@@ -51,41 +52,45 @@ struct yoga_fan_data {
 static void apply_rllag_filter(struct yoga_fan_data *data, int idx, long raw_rpm)
 {
 	ktime_t now = ktime_get();
-	s64 dt_ms;
+	s64 dt_ms = ktime_to_ms(ktime_sub(now, data->last_sample[idx]));
 	long delta, step, limit, alpha;
 	s64 temp_num;
 
-	if (data->last_update[idx] == 0) {
-		data->filtered_val[idx] = raw_rpm;
-		data->last_update[idx] = now;
+	if (raw_rpm < RPM_FLOOR_LIMIT) {
+		data->filtered_val[idx] = 0;
+		data->last_sample[idx] = now;
 		return;
 	}
-	dt_ms = ktime_to_ms(ktime_sub(now, data->last_update[idx]));
-	if (dt_ms > MAX_SAMPLING) {
+	/* Initialize on first run or after long sleep/stall */
+	if (data->last_sample[idx] == 0 || dt_ms > MAX_SAMPLING) {
 		data->filtered_val[idx] = raw_rpm;
-		data->last_update[idx] = now;
+		data->last_sample[idx] = now;
 		return;
 	}
-	if (dt_ms < 1)
-		return;
+	if (dt_ms <= 0) return;
+
 	delta = raw_rpm - data->filtered_val[idx];
-	/* Use div64_s64 for 32-bit compatibility (Alpha = dt / (Tau + dt)) */
-	temp_num = dt_ms << 10;
+	if (delta == 0) {
+		data->last_sample[idx] = now;
+		return;
+	}
+	/* Alpha with 12-bit precision to prevent alpha=0 on fast polls */
+	temp_num = dt_ms << 12;
 	alpha = (long)div64_s64(temp_num, (s64)(TAU_MS + dt_ms));
-	step = (delta * alpha) >> 10;
-	/* Fix the stall: Ensure limit is at least 1 if delta exists */
+	step = (delta * alpha) >> 12;
+	/* FIX THE STALL: Force a move of 1 RPM if alpha*delta rounds to zero */
+	if (step == 0 && delta != 0)
+		step = (delta > 0) ? 1 : -1;
+	/* SLEW RATE LIMITING: Scaled by time delta */
 	limit = (MAX_SLEW_RPM_S * (long)dt_ms) / 1000;
-	if (limit == 0 && delta != 0)
-		limit = 1;
+	if (limit < 1) limit = 1;
+	/* Clamp step to physical slew rate */
 	if (step > limit)
 		step = limit;
 	else if (step < -limit)
 		step = -limit;
 	data->filtered_val[idx] += step;
-	/* Sanitation: Floor logic triggered only when hardware reports 0 */
-	if (data->filtered_val[idx] < RPM_FLOOR_LIMIT && raw_rpm == 0)
-		data->filtered_val[idx] = 0;
-	data->last_update[idx] = now;
+	data->last_sample[idx] = now;
 }
 
 static int yoga_fan_read(struct device *dev, enum hwmon_sensor_types type,

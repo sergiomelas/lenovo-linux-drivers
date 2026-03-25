@@ -75,8 +75,8 @@ else
     cp -v /boot/config-$(uname -r) .config
 fi
 
-# --- DRIVER INJECTION (Yoga Fan v4.3) ---
-echo -e "${BLUE}Injecting Yoga Fan Driver v4.3...${NC}"
+# --- DRIVER INJECTION (Yoga Fan) ---
+echo -e "${BLUE}Injecting Yoga Fan Driver ...${NC}"
 SOURCE_CODE="../../Lenovo Drivers/yogafan.c"
 TARGET_FILE="./drivers/hwmon/yogafan.c"
 
