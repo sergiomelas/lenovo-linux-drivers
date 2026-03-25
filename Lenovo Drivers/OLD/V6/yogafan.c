@@ -29,7 +29,7 @@
 #define DRVNAME "yogafan"
 #define MAX_FANS 8
 /* Filter Configuration Constants */
-#define TAU_MS          1000    /* Time constant for the first-order lag (ms) */
+#define TAU_MS          3000    /* Time constant for the first-order lag (ms) */
 #define MAX_SLEW_RPM_S  1500     /* Maximum allowed change in RPM per second */
 #define MAX_SAMPLING    5000    /* Maximum allowed Ts for reset (ms) */
 /* RPM Heuristic and Sanitation Constants */
@@ -56,11 +56,6 @@ static void apply_rllag_filter(struct yoga_fan_data *data, int idx, long raw_rpm
 	long delta, step, limit, alpha;
 	s64 temp_num;
 
-	if (raw_rpm < RPM_FLOOR_LIMIT) {
-		data->filtered_val[idx] = 0;
-		data->last_sample[idx] = now;
-		return;
-	}
 	/* Initialize on first run or after long sleep/stall */
 	if (data->last_sample[idx] == 0 || dt_ms > MAX_SAMPLING) {
 		data->filtered_val[idx] = raw_rpm;

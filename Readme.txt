@@ -172,7 +172,7 @@ V0.5: 2026-02-08 - Added personalization of kernel name and BSOD, added full opt
                    personalization of kernel name and local version,
                    compilation optimization avoiding debug symbols and deb creation.
 V0.6: 2026-03-14 - Created kernel driver module for yoga fan
-V0.7: 2026-03-19 - Refactored "yogafan" driver to V3.0 Universal Platform Mode:
+V0.7: 2026-03-25 - Refactored "yogafan" driver to V3.0 Universal Platform Mode:
                  - Universal Platform Mode: V3.0 refactor for enhanced stability across Yoga and Legion series.
                  - Multi-Fan Logic: Added scanning for dual ACPI fan paths (FANS, FA2S, FAN0) for Legion support.
                  - KDE 6 Compatibility: Full sensor documentation and formatting for modern Plasma dashboards.
