@@ -25,24 +25,35 @@
 #include <linux/platform_device.h>
 #include <linux/slab.h>
 #include <linux/math64.h>
+
 /* Driver Configuration Constants */
 #define DRVNAME "yogafan"
 #define MAX_FANS 8
+
 /* Filter Configuration Constants */
 #define TAU_MS          1000    /* Time constant for the first-order lag (ms) */
 #define MAX_SLEW_RPM_S  1500     /* Maximum allowed change in RPM per second */
 #define MAX_SAMPLING    5000    /* Maximum allowed Ts for reset (ms) */
-/* RPM Heuristic and Sanitation Constants */
-#define RPM_UNIT_THRESHOLD 500  /* Values below this treated as units of 100 */
-#define RPM_UNIT_MULT      100  /* Multiplier for low-res EC readings */
+
+/* RPM Sanitation Constants */
 #define RPM_FLOOR_LIMIT    50   /* Snap filtered value to 0 if raw is 0 */
+
+struct yogafan_config {
+	int multiplier;
+};
 
 struct yoga_fan_data {
 	const char *active_paths[MAX_FANS];
 	long filtered_val[MAX_FANS];
-	ktime_t last_sample[MAX_FANS]; /* Renamed from last_update for consistency */
+	ktime_t last_sample[MAX_FANS];
+	int multiplier;
 	int fan_count;
 };
+
+/* Known hardware configurations based on EC register bit-width */
+static const struct yogafan_config yoga_8bit_cfg = { .multiplier = 100 };
+static const struct yogafan_config legion_16bit_cfg = { .multiplier = 1 };
+
 /**
  * apply_rllag_filter - Discrete-time filter update (Passive Multirate)
  * @data: pointer to driver data
@@ -51,7 +62,7 @@ struct yoga_fan_data {
  */
 static void apply_rllag_filter(struct yoga_fan_data *data, int idx, long raw_rpm)
 {
-	ktime_t now = ktime_get();
+	ktime_t now = ktime_get_boottime(); /* Fixed for Suspend/Resume safety */
 	s64 dt_ms = ktime_to_ms(ktime_sub(now, data->last_sample[idx]));
 	long delta, step, limit, alpha;
 	s64 temp_num;
@@ -61,6 +72,7 @@ static void apply_rllag_filter(struct yoga_fan_data *data, int idx, long raw_rpm
 		data->last_sample[idx] = now;
 		return;
 	}
+
 	/* Initialize on first run or after long sleep/stall */
 	if (data->last_sample[idx] == 0 || dt_ms > MAX_SAMPLING) {
 		data->filtered_val[idx] = raw_rpm;
@@ -68,7 +80,6 @@ static void apply_rllag_filter(struct yoga_fan_data *data, int idx, long raw_rpm
 		return;
 	}
 	if (dt_ms <= 0) return;
-
 	delta = raw_rpm - data->filtered_val[idx];
 	if (delta == 0) {
 		data->last_sample[idx] = now;
@@ -99,22 +110,14 @@ static int yoga_fan_read(struct device *dev, enum hwmon_sensor_types type,
 	struct yoga_fan_data *data = dev_get_drvdata(dev);
 	unsigned long long raw_acpi;
 	acpi_status status;
-	long rpm;
-
 	if (type != hwmon_fan || attr != hwmon_fan_input)
 		return -EOPNOTSUPP;
 	status = acpi_evaluate_integer(NULL, (acpi_string)data->active_paths[channel],
 					NULL, &raw_acpi);
 	if (ACPI_FAILURE(status))
 		return -EIO;
-	/* * Heuristic: Convert units-of-100 to raw RPM.
-	 * Most Yoga/Legion ECs return a single byte (0-255).
-	 * We use 500 as a safety threshold to distinguish from raw 16-bit RPM.
-	 */
-	rpm = (long)raw_acpi;
-	if (rpm > 0 && rpm < RPM_UNIT_THRESHOLD)
-		rpm *= RPM_UNIT_MULT;
-	apply_rllag_filter(data, channel, rpm);
+	/* Deterministic calculation based on DMI-detected multiplier */
+	apply_rllag_filter(data, channel, (long)raw_acpi * data->multiplier);
 	*val = data->filtered_val[channel];
 	return 0;
 }
@@ -123,7 +126,6 @@ static umode_t yoga_fan_is_visible(const void *data, enum hwmon_sensor_types typ
 				   u32 attr, int channel)
 {
 	const struct yoga_fan_data *fan_data = data;
-
 	if (type == hwmon_fan && channel < fan_data->fan_count)
 		return 0444;
 	return 0;
@@ -146,22 +148,83 @@ static const struct hwmon_chip_info yoga_fan_chip_info = {
 	.info = yoga_fan_info,
 };
 
+/* Quirk table to map families to multipliers deterministically */
+static const struct dmi_system_id yogafan_quirks[] = {
+	{
+		.ident = "Lenovo Yoga",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+			DMI_MATCH(DMI_PRODUCT_FAMILY, "Yoga"),
+		},
+		.driver_data = (void *)&yoga_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo IdeaPad",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+			DMI_MATCH(DMI_PRODUCT_FAMILY, "IdeaPad"),
+		},
+		.driver_data = (void *)&yoga_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo Slim",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+			DMI_MATCH(DMI_PRODUCT_FAMILY, "Slim"),
+		},
+		.driver_data = (void *)&yoga_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo Flex",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+			DMI_MATCH(DMI_PRODUCT_FAMILY, "Flex"),
+		},
+		.driver_data = (void *)&yoga_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo Legion",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+			DMI_MATCH(DMI_PRODUCT_FAMILY, "Legion"),
+		},
+		.driver_data = (void *)&legion_16bit_cfg,
+	},
+	{
+		.ident = "Lenovo LOQ",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+			DMI_MATCH(DMI_PRODUCT_FAMILY, "LOQ"),
+		},
+		.driver_data = (void *)&legion_16bit_cfg,
+	},
+	{ }
+};
+
 static int yoga_fan_probe(struct platform_device *pdev)
 {
+	const struct dmi_system_id *dmi_id;
+	const struct yogafan_config *cfg;
 	struct yoga_fan_data *data;
 	struct device *hwmon_dev;
 	acpi_handle handle;
 	int i;
 	static const char * const fan_paths[] = {
-		"\\_SB.PCI0.LPC0.EC0.FANS",  /* Primary Fan (Yoga 14c) */
-		"\\_SB.PCI0.LPC0.EC0.FA2S",  /* Secondary Fan (Legion) */
-		"\\_SB.PCI0.LPC0.EC0.FAN0",  /* IdeaPad / Slim */
-		"\\_SB.PCI0.LPC.EC.FAN0",    /* Legacy */
-		"\\_SB.PCI0.LPC0.EC.FAN0",   /* Alternate */
+		"\\_SB.PCI0.LPC0.EC0.FANS",  /* Primary Fan (Yoga) */
+		"\\_SB.PCI0.LPC0.EC0.FA2S",  /* Secondary Fan (Legion / LOQ) */
+		"\\_SB.PCI0.LPC0.EC0.FAN0",  /* IdeaPad / Slim / Flex */
+		"\\_SB.PCI0.LPC.EC.FAN0",    /* Legacy (pre-2020 models) */
+		"\\_SB.PCI0.LPC0.EC.FAN0",   /* Alternate (Certain Slim/Flex) */
 	};
+
+	dmi_id = dmi_first_match(yogafan_quirks);
+	if (!dmi_id)
+		return -ENODEV;
+	cfg = dmi_id->driver_data;
 	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
 	if (!data)
 		return -ENOMEM;
+	data->multiplier = cfg->multiplier;
 	data->fan_count = 0;
 	for (i = 0; i < ARRAY_SIZE(fan_paths); i++) {
 		if (ACPI_SUCCESS(acpi_get_handle(NULL, (char *)fan_paths[i], &handle))) {
@@ -189,23 +252,13 @@ static struct platform_driver yoga_fan_driver = {
 
 static struct platform_device *yoga_fan_device;
 
-static const struct dmi_system_id yoga_dmi_table[] __initconst = {
-	{
-		.ident = "Lenovo",
-		.matches = {
-			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
-		},
-	},
-	{ }
-};
-MODULE_DEVICE_TABLE(dmi, yoga_dmi_table);
-
 static int __init yoga_fan_init(void)
 {
 	int ret;
 
-	if (!dmi_check_system(yoga_dmi_table))
+	if (!dmi_check_system(yogafan_quirks))
 		return -ENODEV;
+
 	ret = platform_driver_register(&yoga_fan_driver);
 	if (ret)
 		return ret;
@@ -225,6 +278,7 @@ static void __exit yoga_fan_exit(void)
 
 module_init(yoga_fan_init);
 module_exit(yoga_fan_exit);
+
 MODULE_AUTHOR("Sergio Melas <sergiomelas@gmail.com>");
 MODULE_DESCRIPTION("Lenovo Yoga/Legion Fan Monitor Driver");
 MODULE_LICENSE("GPL");

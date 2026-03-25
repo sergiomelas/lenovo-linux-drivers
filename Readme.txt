@@ -7,13 +7,11 @@
                     ##################################################################
 
 This Script install dependencies to create debian packages for the latest kernel using debian Configuration.
-Add desired kernel options
-Compile it and make Debian pakages then installs it (if configured so)
-
+Add desired kernel options, compile it and make Debian packages then installs it (if configured so).
 
 WARNING & DISCLAIMER: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃                                                                                                  ┃
-┃                   NEVER USE NON OFFICIAL KERNELS,  THIS COULD DAMAGE YOUR SYSTEM                 ┃
+┃                    NEVER USE NON OFFICIAL KERNELS,  THIS COULD DAMAGE YOUR SYSTEM                ┃
 ┃                               Run instead officially distributed kernels                         ┃
 ┃                                                                                                  ┃
 ┃ We assume no responsibility for errors or omissions in the software or documentation available.  ┃
@@ -24,140 +22,100 @@ WARNING & DISCLAIMER: ━━━━━━━━━━━━━━━━━━━�
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 Installation Instructions:
- 0)- Make the scrits executable and copy to a directory where you will store the created debs
+ 0)- Make the scripts executable and copy to a directory where you will store the created debs
+     or in a specific kernel root (see 3)
  1)- Edit the scripts to change some options (autoinstall, kustom modules)
  2)- Open terminal
- 3)- Run the scripts following your need
-        - Create-Kernel-From-Upstream.sh      : To download and install the latest and greatest kernel, run this file from a empty directory
+ 3)- Run the scripts following your need:
+        - Create-Kernel-From-Upstream.sh      : To download and install the latest kernel
         - Auto_Compile.sh                     : To compile a kernel (Simplest kernel)
         - Auto_Compile_Rust.sh                : To compile a kernel (Rust support)
-        - auto_compile_rust_lenovo_drivers.sh : To compile a kernel (Rust support and all Lenovo AMD Optimization + Universal Driver for Fan)
-     This last file need to be placed in the root directory of the dowloaded and extracted kernel source.
-     (Just drag and drop file the rest is automatic), give root acess whes the sudo prompt appear
- 4)- a directory is created and after kernel compilation will contain the latest and greates deb packages of the linux Kernel:
+        - auto_compile_rust_lenovo_drivers.sh : Rust + AMD Optimization + Universal Yogafan V8.0
+     This one last 3 files needs to be placed in the root directory of the downloaded kernel source.
+ 4)- A directory is created containing the latest deb packages:
         linux-headers-xxxxxxxxxxx_amd64.deb
         linux-image-xxxxxxxxxxx_amd64.deb
         linux-libc-xxxxxxxxxxx_amd64.deb
- 5)- rename the directory linux-latest with the creted version number linux-xxxxxxxxxxx (for future use see b1)
- 6)- Install the 3 pakages
-         sudo apt-get install linux-headers-xxxxxxxxxxx_amd64.deb linux-image-xxxxxxxxxxx_amd64.deb  linux-libc-xxxxxxxxxxx_amd64.deb
-      or the packages are auto installed if you activated the option in the script
- 7)- Reboot and enjoy the new kernel
+ 5)- Rename the directory linux-latest with the created version number (e.g., linux-6.x.x)
+ 6)- Install the 3 packages:
+        sudo apt-get install ./linux-headers-*.deb ./linux-image-*.deb ./linux-libc-*.deb
+ 7)- Reboot and enjoy the new kernel.
 
 Removal instructions:
-
-
-To remove an old kernel or the newest one in case of problems
- a)- Boot in a different version and list all installed Linux kernel images typeing the following dpkg command:
-
-   dpkg --list | egrep -i --color 'linux-image|linux-headers|linux-libc'
-
- b) – Delete unwanted and unused kernel images and header
-   b1)- If you are downgrading do the following or go directily to b2)
-        We need to restore the old  linux-libc-dev to the kernel will became the newest one
-        for example from kernel 6.9.0 => 6.8.9 then
-
-         sudo apt-get install linux-libc-dev_6.8.9-1_amd64.deb
-         (take it from old compiled debs, so conserve them!!)
-
-   b2)- Remove the unwanted kernels:
-
-         sudo apt-get --purge remove linux-image-xxxxx linux-headers-xxxxx linux-image-yyyyy linux-headers-yyyyy
-
-      Remove Modules folders of the old kernels
-
-         modulestr=$(dpkg -S /lib/modules/* 2>&1 | grep "no path found matching pattern" | awk '{ print $NF }' | tr "\n" " ")
-         sudo rm -r   $modulestr
-
-      Or is done automatically if the script is configured so
-
+ a)- Boot in a different version and list all installed Linux kernel images:
+     dpkg --list | egrep -i --color 'linux-image|linux-headers|linux-libc'
+ b)- Delete unwanted and unused kernel images and headers:
+   b1)- If you are downgrading: Restore the old linux-libc-dev (e.g. from 6.9.0 => 6.8.9).
+        sudo apt-get install ./linux-libc-dev_6.8.9-1_amd64.deb
+        (Take it from old compiled debs, so conserve them!!)
+   b2)- Remove kernels:
+        sudo apt-get --purge remove linux-image-xxxxx linux-headers-xxxxx
+        Remove Modules folders of the old kernels:
+        modulestr=$(dpkg -S /lib/modules/* 2>&1 | grep "no path found matching pattern" | awk '{ print $NF }' | tr "\n" " ")
+        sudo rm -r $modulestr
    b3)- Update Grub:
-
-         sudo update-grub
-
- c)- Check if old  kernel modules in /lib/modules of the unused kernels has been removed
-
- d)- To fully control the kernel remove autoupdate virtual Packages:
-        sudo apt-get --purge remove linux-image-amd64   linux-headers-amd64
-      to restore autoupdate reinstall
-        sudo apt-get install linux-image-amd64   linux-headers-amd64   linux-libc-dev
-
+        sudo update-grub
+ c)- Remove old  kernel modules in /lib/modules of the unused kernels removed.
+ d)- To fully control the kernel, remove autoupdate virtual Packages:
+        sudo apt-get --purge remove linux-image-amd64 linux-headers-amd64
+     To restore autoupdate reinstall:
+        sudo apt-get install linux-image-amd64 linux-headers-amd64 linux-libc-dev
 
 ================================================================================
 LENOVO-SPECIFIC POST-INSTALLATION GUIDE (Updated 2026)
+auto_compile_rust_lenovo_drivers.sh
 ================================================================================
 
-With this custom kernel installed, that you created by auto_compile_rust_lenovo_drivers.sh
-your Lenovo hardware gains native features usually locked by the manufacturer.
-Follow these steps to activate the suite:
-
-1. UNIVERSAL FAN & SENSOR SUPPORT (yogafan v6.0)
+1. UNIVERSAL FAN & SENSOR SUPPORT (yogafan v8.0)
 -----------------------------------------------
-This build injects the Sergio Melas "yogafan" driver. Unlike older tools,
-this driver uses a passive RLLag (Rate-Limited Lag) filter to model the
-physical inertia of the fan blades, providing smooth RPM readings.
+This build injects the Sergio Melas "yogafan" driver V8. It uses a passive RLLag
+(Rate-Limited Lag) filter for smooth RPM readings.
 
-Supported Models:
- * Yoga: 7 / 9 / 14c series (AMD & Intel)
- * Legion: 5 / 7 / Pro / Slim (Dual-Fan scanning supported)
- * IdeaPad / ThinkBook: Slim 5 / 7 and Pro series
+Hardware Identification (DMI Quirk Table):
+- 8-bit EC (Multiplier 100): Yoga, IdeaPad, Slim, Flex.
+- 16-bit EC (Multiplier 1): Legion, LOQ.
+
+Filter Details:
+- Slew-Rate Limiting: Capped at 1500 RPM/s to match motor inertia.
+- Suspend Safety: Uses boottime clock (ktime_get_boottime) for resume consistency.
+- Precision: 12-bit fixed-point math for 1-RPM step resolution.
 
 Activation (Module Load):
-To ensure the driver loads automatically after every restart, you must
-register the module:
 $ echo "yogafan" | sudo tee /etc/modules-load.d/yogafan.conf
 $ sudo modprobe yogafan
 
 Verification:
-After rebooting, run:
 $ sensors
-# Look for 'yogafan-isa-0000'. You should see 'fan1' RPM values.
-
-Note: If values are missing in KDE System Monitor, refresh the stats engine:
-$ killall ksystemstats
-
+# Look for 'yogafan-isa-0000'. If values are missing in KDE, run: killall ksystemstats
 
 2. POWER PROFILE INTEGRATION (AMD P-STATE EPP)
 ----------------------------------------------
-The script enables the modern AMD P-State driver in "Active" mode, allowing
-instant CPU Energy Performance Preference (EPP) adjustments via Plasma 6.
-
-Enable the Communication Daemon:
+Enables AMD P-State "Active" mode for Energy Performance Preference (EPP).
 $ sudo apt update && sudo apt install power-profiles-daemon
 $ sudo systemctl enable --now power-profiles-daemon
 
-Configure KDE Plasma 6:
-1. Open System Settings -> Power Management -> Energy Saving.
-2. On AC Power: Set "Switch to power profile" to Performance.
-3. On Battery: Set "Switch to power profile" to Power Save or Balanced.
+KDE Plasma 6 Configuration:
+1. System Settings -> Power Management -> Energy Saving.
+2. Set "Switch to power profile" to Performance (AC) or Power Save (Battery).
 
+Technical Verification:
+$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver # Should be: amd-pstate-epp
+$ cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference # EPP Hint
 
-3. TECHNICAL VERIFICATION
--------------------------
-Verify the hardware is following the kernel's hints:
-
-# Check active driver (Should return: amd-pstate-epp)
-$ cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
-
-# Check EPP hint (Should change when switching KDE power profiles)
-$ cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference
-
-
-4. ADVANCED FIXES (SLEEP & ACPI RESOURCES)
+3. ADVANCED FIXES (SLEEP & ACPI RESOURCES)
 ------------------------------------------
-* S3 Sleep (DSTS Scab): This build includes ACPI modifications to ensure
-  robust resume-from-sleep and enable S3 states where disabled by default.
-
-* 0 RPM / Resource Conflict (LAX Mode):
-  If sensors show 0 RPM while the fan is spinning, the BIOS is locking the
-  ACPI resources. You MUST enable 'lax' mode in GRUB:
-
+* S3 Sleep (DSTS Scab): Includes ACPI modifications for robust resume from sleep.
+* 0 RPM / Resource Conflict (LAX Mode): If sensors show 0 RPM while fan spins:
   1. Edit /etc/default/grub
-  2. Add "acpi_enforce_resources=lax" to GRUB_CMDLINE_LINUX_DEFAULT
-  3. Result should look like: "quiet splash acpi_enforce_resources=lax"
-  4. Run: sudo update-grub
+  2. Add "acpi_enforce_resources=lax" to GRUB_CMDLINE_LINUX_DEFAULT.
+  3. Run: sudo update-grub
 
-================================================================================
+References
+----------
+1. ACPI Spec (Field Objects): https://uefi.org/specs/ACPI/6.5/05_ACPI_Software_Programming_Model.html#field-objects
+2. LegionFanControl & NBFC: Reverse engineering of 16-bit raw registers.
+3. Linux Kernel Timekeeping: Handling deltas across suspend states.
+4. IdeaPad Laptop Driver: DMI-based hardware feature gating reference.
 
 
 ##################################################################################################################
@@ -180,5 +138,9 @@ V0.7: 2026-03-25 - Refactored "yogafan" driver to V3.0 Universal Platform Mode:
                  - RLLag Filter: 100ms heartbeat engine with pure integer fixed-point math for smoothing.Inertia
                    Simulation: Clamps RPM change-per-second to prevent jitter and "teleporting" values.
                  - Build Fixes: Corrected Debian package naming logic (.deb) in the automated compile script.
-                 - Lenovo fan dryver submitted upstream
+                 - Refactored yogafan V8.0:
+                     - Universal Platform Mode: V8.0 refactor for enhanced stability.
+                     - Multi-Fan Logic: Support for FA2S/FAN0 paths (Legion/LOQ).
+                     - FOPTD Verification: Clamps RPM change to prevent jitter (Inertia Simulation).
+                     - Upstream Submission: Lenovo fan driver submitted upstream.
 .

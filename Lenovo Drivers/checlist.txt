@@ -1,19 +1,19 @@
-[xxx]  MAINTAINERS
+[x]  MAINTAINERS
 (Contains your contact info and the list of files you are responsible for).
 
-[xxx]  Documentation/hwmon/index.rst
+[x]  Documentation/hwmon/index.rst
 (The master list of documentation where you must add the name yogafan).
 
-[xxx] Documentation/hwmon/yogafan.rst
+[x] Documentation/hwmon/yogafan.rst
 (The specific description of your driver and the RLLag filter).
 
-[xxx] drivers/hwmon/Kconfig
+[x] drivers/hwmon/Kconfig
 (The menu entry that allows users to select your driver during a kernel build).
 
-[xxx] drivers/hwmon/Makefile
+[x] drivers/hwmon/Makefile
 (The instruction that tells the compiler to build yogafan.o).
 
-[xxx] drivers/hwmon/yogafan.c
+[x] drivers/hwmon/yogafan.c
 (The actual C source code for the driver).
 
 
