@@ -121,7 +121,7 @@ scripts/config --enable CONFIG_DRM_DISPLAY_DP_HELPER                  # Essentia
 scripts/config --set-val CONFIG_HWMON y                               # REQUIRED: Base framework for all sensors
 scripts/config --set-val CONFIG_ACPI_WMI y                            # REQUIRED: Bridge for Lenovo BIOS
 scripts/config --enable  CONFIG_WMI_BMOF                              # REQUIRED: Interpret ACPI binary data
-scripts/config --set-val CONFIG_SENSORS_YOGAFAN m                    # Compiles Yoga Fan driver as module
+scripts/config --set-val CONFIG_SENSORS_YOGAFAN m                     # Compiles Yoga Fan driver as module
 scripts/config --enable  CONFIG_LEDS_CLASS                            # Needed for status LEDs
 scripts/config --enable  CONFIG_LEDS_TRIGGERS                         # Allows hardware events to trigger LEDs
 scripts/config --set-val CONFIG_IDEAPAD_LAPTOP y                      # Main driver for Yoga Fn keys
