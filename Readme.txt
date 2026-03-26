@@ -118,9 +118,8 @@ References
    fields are accessed in OperationRegions.
    https://uefi.org/specs/ACPI/6.5/05_ACPI_Software_Programming_Model.html#field-objects
 
-2. **LegionFanControl & NBFC Projects:** Community-driven reverse engineering
+2.  BFC Projects:** Community-driven reverse engineering
    of Lenovo Legion/LOQ EC memory maps (16-bit raw registers).
-   https://www.legionfancontrol.com/
    https://github.com/hirschmann/nbfc/tree/master/Configs
 
 3. **Linux Kernel Timekeeping API:** Documentation for ktime_get_boottime() and
