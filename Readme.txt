@@ -112,10 +112,24 @@ $ cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference # EPP H
 
 References
 ----------
-1. ACPI Spec (Field Objects): https://uefi.org/specs/ACPI/6.5/05_ACPI_Software_Programming_Model.html#field-objects
-2. LegionFanControl & NBFC: Reverse engineering of 16-bit raw registers.
-3. Linux Kernel Timekeeping: Handling deltas across suspend states.
-4. IdeaPad Laptop Driver: DMI-based hardware feature gating reference.
+
+
+1. **ACPI Specification (Field Objects):** Documentation on how 8-bit vs 16-bit
+   fields are accessed in OperationRegions.
+   https://uefi.org/specs/ACPI/6.5/05_ACPI_Software_Programming_Model.html#field-objects
+
+2. **LegionFanControl & NBFC Projects:** Community-driven reverse engineering
+   of Lenovo Legion/LOQ EC memory maps (16-bit raw registers).
+   https://www.legionfancontrol.com/
+   https://github.com/hirschmann/nbfc/tree/master/Configs
+
+3. **Linux Kernel Timekeeping API:** Documentation for ktime_get_boottime() and
+   handling deltas across suspend states.
+   https://www.kernel.org/doc/html/latest/core-api/timekeeping.html
+
+4. **Lenovo IdeaPad Laptop Driver:** Reference for DMI-based hardware
+   feature gating in Lenovo laptops.
+   https://github.com/torvalds/linux/blob/master/drivers/platform/x86/ideapad-laptop.c
 
 
 ##################################################################################################################
