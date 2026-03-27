@@ -80,7 +80,7 @@ Filter Details:
 - Suspend Safety: Uses boottime clock (ktime_get_boottime) for resume consistency.
 - Precision: 12-bit fixed-point math for 1-RPM step resolution.
 
-Activation (Module Load):
+Activation (Module Load):  <<<<To remove
 $ echo "yogafan" | sudo tee /etc/modules-load.d/yogafan.conf
 $ sudo modprobe yogafan
 
@@ -118,8 +118,9 @@ References
    fields are accessed in OperationRegions.
    https://uefi.org/specs/ACPI/6.5/05_ACPI_Software_Programming_Model.html#field-objects
 
-2.  BFC Projects:** Community-driven reverse engineering
+2. **LegionFanControl & NBFC Projects:** Community-driven reverse engineering
    of Lenovo Legion/LOQ EC memory maps (16-bit raw registers).
+   https://www.legionfancontrol.com/
    https://github.com/hirschmann/nbfc/tree/master/Configs
 
 3. **Linux Kernel Timekeeping API:** Documentation for ktime_get_boottime() and
@@ -148,9 +149,15 @@ V0.7: 2026-03-25 - KDE 6 Compatibility: Full sensor documentation and formatting
                  - RLLag Filter: 100ms heartbeat engine with pure integer fixed-point math for smoothing.Inertia
                    Simulation: Clamps RPM change-per-second to prevent jitter and "teleporting" values.
                  - Build Fixes: Corrected Debian package naming logic (.deb) in the automated compile script.
-                 - Refactored yogafan V8.0:
-                     - Universal Platform Mode: V8.0 refactor for enhanced stability.
-                     - Multi-Fan Logic: Support for FA2S/FAN0 paths (Legion/LOQ).
-                     - FOPTD Verification: Clamps RPM change to prevent jitter (Inertia Simulation).
-                     - Upstream Submission: Lenovo fan driver submitted upstream.
+                 - Refactored yogafan V7,8,9:
+                    - Universal Platform Mode: V8.0 refactor for enhanced stability.
+                    - Multi-Fan Logic: Support for FA2S/FAN0 paths (Legion/LOQ).
+                    - FOPTD Verification: Clamps RPM change to prevent jitter (Inertia Simulation).
+                    - Upstream Submission: Lenovo fan driver submitted upstream.
+V0.9: 2026-03-25 - Refactored yogafan V10,11:
+                    - Mapped ACPI paths directly via DMI quirks.
+                    - Fixed Documentation formatting (0-day robot warnings).
+                    - Implemented 100ms MIN_SAMPLING to address rapid polling concerns.
+                    - Removed redundant platform_set_drvdata() in probe.
+                    - Explicitly defined platform device ID as -1 for cleaner sysfs naming.
 .
