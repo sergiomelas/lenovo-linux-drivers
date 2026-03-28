@@ -135,15 +135,14 @@ References
 ##################################################################################################################
 Change log:
 
-V0.1: 2023-12-28 - Initial version for personal use
-V0.2: 2024-07-21 - First release: Adding many functionality
-V0.3: 2025-07-27 - Added Rust support
-V0.4: 2025-05-01 - Added support for Rust
-V0.5: 2026-02-08 - Added personalization of kernel name and BSOD, added full optimization for lenovo 14cACN,
-                   added retriving config from latest official debian kernel with fallback,
-                   personalization of kernel name and local version,
-                   compilation optimization avoiding debug symbols and deb creation.
-V0.6: 2026-03-14 - Created kernel driver module for yoga fan
+V0.8: 2026-03-28 - Refactored yogafan V10,11:
+                 - MAJOR MILESTONE: 'yogafan' driver accepted UPSTREAM.
+                    - Mapped ACPI paths directly via DMI quirks.
+                    - Fixed Documentation formatting (0-day robot warnings).
+                    - Implemented 100ms MIN_SAMPLING to address rapid polling concerns.
+                    - Removed redundant platform_set_drvdata() in probe.
+                    - Explicitly defined platform device ID as -1 for cleaner sysfs naming.
+
 V0.7: 2026-03-25 - KDE 6 Compatibility: Full sensor documentation and formatting for modern Plasma dashboards.
                  - S3 Sleep Integration: DSTS (Device Status) ACPI modifications for robust resume from sleep.
                  - RLLag Filter: 100ms heartbeat engine with pure integer fixed-point math for smoothing.Inertia
@@ -154,11 +153,23 @@ V0.7: 2026-03-25 - KDE 6 Compatibility: Full sensor documentation and formatting
                     - Multi-Fan Logic: Support for FA2S/FAN0 paths (Legion/LOQ).
                     - FOPTD Verification: Clamps RPM change to prevent jitter (Inertia Simulation).
                     - Upstream Submission: Lenovo fan driver submitted upstream.
-V0.8: 2026-03-25 - Refactored yogafan V10,11:
-                 - MAJOR MILESTONE: 'yogafan' driver accepted UPSTREAM.
-                    - Mapped ACPI paths directly via DMI quirks.
-                    - Fixed Documentation formatting (0-day robot warnings).
-                    - Implemented 100ms MIN_SAMPLING to address rapid polling concerns.
-                    - Removed redundant platform_set_drvdata() in probe.
-                    - Explicitly defined platform device ID as -1 for cleaner sysfs naming.
-.
+
+V0.6: 2026-03-14 - Created kernel driver module for yoga fan
+
+V0.5: 2026-02-08 - Added personalization of kernel name and BSOD, added full optimization for lenovo 14cACN,
+                   added retriving config from latest official debian kernel with fallback,
+                   personalization of kernel name and local version,
+                   compilation optimization avoiding debug symbols and deb creation.
+
+V0.4: 2025-05-01 - Bugfixes
+
+V0.3: 2025-04-27 - Integrated Rust-for-Linux abstraction layers and LLVM toolchain bindgen.
+
+V0.2: 2024-07-21 - First release: Adding many functionality
+
+V0.1: 2023-12-28 - Initial version for personal use
+
+
+
+
+
