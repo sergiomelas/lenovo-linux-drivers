@@ -66,7 +66,7 @@ LENOVO-SPECIFIC POST-INSTALLATION GUIDE (Updated 2026)
 auto_compile_rust_lenovo_drivers.sh
 ================================================================================
 
-1. UNIVERSAL FAN & SENSOR SUPPORT (yogafan v8.0)
+1. UNIVERSAL FAN & SENSOR SUPPORT (yogafan v11.0)
 -----------------------------------------------
 This build injects the Sergio Melas "yogafan" driver V8. It uses a passive RLLag
 (Rate-Limited Lag) filter for smooth RPM readings.
@@ -136,7 +136,7 @@ References
 Change log:
 
 V0.8: 2026-03-28 - Refactored yogafan V10,11:
-                 - MAJOR MILESTONE: 'yogafan' driver accepted UPSTREAM.
+                 - MAJOR MILESTONE: 'yogafan' V11 driver accepted UPSTREAM.
                     - Mapped ACPI paths directly via DMI quirks.
                     - Fixed Documentation formatting (0-day robot warnings).
                     - Implemented 100ms MIN_SAMPLING to address rapid polling concerns.
