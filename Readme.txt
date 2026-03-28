@@ -155,6 +155,7 @@ V0.7: 2026-03-25 - KDE 6 Compatibility: Full sensor documentation and formatting
                     - FOPTD Verification: Clamps RPM change to prevent jitter (Inertia Simulation).
                     - Upstream Submission: Lenovo fan driver submitted upstream.
 V0.8: 2026-03-25 - Refactored yogafan V10,11:
+                 - MAJOR MILESTONE: 'yogafan' driver accepted UPSTREAM.
                     - Mapped ACPI paths directly via DMI quirks.
                     - Fixed Documentation formatting (0-day robot warnings).
                     - Implemented 100ms MIN_SAMPLING to address rapid polling concerns.
