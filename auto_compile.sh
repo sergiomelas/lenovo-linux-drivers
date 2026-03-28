@@ -69,8 +69,27 @@ echo  ""
 #Install libs
 sudo apt-get install build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang   libdw-dev:native
 
-#Configure kernel
-cp -v /boot/config-$(uname -r) .config
+# --- CONFIGURE KERNEL BASE (Auto-Detect Debian Config) ---
+echo -e "${BLUE}------------------------------------------------------------------${NC}"
+echo -e "${CYAN} Searching for the latest official Debian base configuration...${NC}"
+
+# Find the latest official Debian config (ignores your -"$postfix" builds)
+LATEST_CONFIG=$(ls -v /boot/config-* 2>/dev/null | grep -v "$postfix" | tail -n 1)
+
+if [ -n "$LATEST_CONFIG" ]; then
+    echo -e "${GREEN} SUCCESS: Found latest system config: ${NC}$LATEST_CONFIG"
+    cp -v "$LATEST_CONFIG" .config
+else
+    echo -e "${GOLD} WARNING: No official Debian config found.${NC}"
+    echo -e "${BLUE} Falling back to currently running kernel config...${NC}"
+    cp -v /boot/config-$(uname -r) .config
+fi
+
+echo -e "${BLUE}------------------------------------------------------------------${NC}"
+echo -e "${GOLD} [ACTION REQUIRED] Check the config above.${NC}"
+read -p " Press ENTER to continue or CTRL+C to abort..."
+echo -e "${BLUE}------------------------------------------------------------------${NC}"
+
 
 #To see option dependencies run
 # make menuconfig

@@ -1,6 +1,6 @@
 #!/bin/bash
 #This script will compile a kernel and create the deb packages
-#Create a folder for kernel compile at same level of .\Kernel acpi . Copy this file in the folder, run it in a sh terminal
+#the file has to be at the same level of .\Kernel acpi . Run this file in a sh terminal
 
 
 ##################################################################"
@@ -34,6 +34,7 @@ echo -e " #                                                                #"
 echo -e " ##################################################################"
 echo -e " ${NC}"
 
+
 # 1. Your manual personalization string
 postfix="yoga"
 
@@ -52,15 +53,9 @@ case "$ARCH_TYPE" in
     *)         ARCH_SUFFIX="$ARCH_TYPE" ;; # Fallback to raw hardware name
 esac
 
-# 3. Combine for the final string
+# 3. Combine them for the final string
+# Result will be "yoga-amd64" or "yoga-arm64"
 full_postfix="${postfix}-${ARCH_SUFFIX}"
-
-
-#Change to local directory
-echo  ""
-VAR=$0
-DIR="$(dirname "${VAR}")"
-cd  "${DIR}"
 
 #Admin login
 echo  "Login as administrator to install"
@@ -68,7 +63,26 @@ sudo ls >/dev/null
 echo  ""
 
 #Install libs
-sudo apt-get install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang libdw-dev:native bc
+sudo apt-get install build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper   libdw-dev:native
+sudo apt-get install wget unzip
+
+#Change to local directory
+echo  ""
+VAR=$0
+DIR="$(dirname "${VAR}")"
+cd  "${DIR}"
+
+rm -rf ./linux-latest
+
+mkdir ./linux-latest
+
+cd ./linux-latest
+
+#download latest kernel from github
+wget https://github.com/torvalds/linux/archive/refs/heads/master.zip
+
+unzip -q './master.zip'
+cd linux-master
 
 # --- CONFIGURE KERNEL BASE (Auto-Detect Debian Config) ---
 echo -e "${BLUE}------------------------------------------------------------------${NC}"
@@ -91,8 +105,11 @@ echo -e "${GOLD} [ACTION REQUIRED] Check the config above.${NC}"
 read -p " Press ENTER to continue or CTRL+C to abort..."
 echo -e "${BLUE}------------------------------------------------------------------${NC}"
 
+#To see option dependencies run
+# make menuconfig
+# Press / for search (use arrows to scroll)
 
-# --- START OF OPTIMIZED MODULE CONFIGURATION (YOGA 14c ACN) ---
+# --- START OF OPTIMIZED MODULE CONFIGURATION ---
 
 # 1. Enable Rust (2026 Toolchain)
 scripts/config --set-val CONFIG_RUST y                                # Enables Rust infrastructure
@@ -119,11 +136,10 @@ scripts/config --disable CONFIG_GDB_SCRIPTS                           # No Pytho
 
 # --- END OF OPTIMIZED MODULE CONFIGURATION ---
 
-
 #To prevent question
 make olddefconfig
 
-# --- Capture info for Post-Processing ---
+# --- Capture version info for Post-Processing ---
 VERSION_BASE=$(make kernelversion)
 FULL_VER="${VERSION_BASE}-${full_postfix}"
 
@@ -147,14 +163,12 @@ mv "linux-libc-dev_${FULL_VER}_${ARCH_SUFFIX}.deb" "linux-libc-dev_${FULL_VER}.d
 rm -f *.buildinfo
 rm -f *.changes
 
-#Install new kernel using the clean names
+#Install automatically with clean names
 sudo apt-mark unhold linux-libc-dev
 sudo dpkg -i "linux-image-${FULL_VER}.deb" \
              "linux-headers-${FULL_VER}.deb" \
              "linux-libc-dev_${FULL_VER}.deb"
 sudo apt-mark hold linux-libc-dev
 
-echo -e "${CYAN}Success! kernel ${FULL_VER} installed with clean names.${NC}"
-
-
+echo -e "${CYAN}Success! Latest kernel ${FULL_VER} installed.${NC}"
 

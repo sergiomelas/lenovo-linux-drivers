@@ -21,6 +21,10 @@ export DEBEMAIL="sergiomelas@gmail.com"
 # Your kernel personalization string
 postfix="yoga"
 
+# Your Patch data
+PATCH_DIR="../../Lenovo Drivers"
+PATCH_NAME="v11-0001-hwmon-yogafan-Add-support-for-Lenovo-Yoga-Legion-fan-monitoring.patch"
+
 # ANSI Color Codes
 CYAN='\033[0;36m'
 GOLD='\033[1;33m'
@@ -67,6 +71,7 @@ sudo ls >/dev/null
 # Install libs
 sudo apt-get install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang libdw-dev:native bc
 
+
 # --- CONFIGURE KERNEL BASE (Auto-Detect Debian Config) ---
 echo -e "${BLUE}------------------------------------------------------------------${NC}"
 echo -e "${CYAN} Searching for the latest official Debian base configuration...${NC}"
@@ -88,31 +93,34 @@ echo -e "${GOLD} [ACTION REQUIRED] Check the config above.${NC}"
 read -p " Press ENTER to continue or CTRL+C to abort..."
 echo -e "${BLUE}------------------------------------------------------------------${NC}"
 
-# --- DRIVER INJECTION (Yoga Fan) ---
-echo -e "${BLUE}Injecting Yoga Fan Driver ...${NC}"
-SOURCE_CODE="../../Lenovo Drivers/yogafan.c"
-TARGET_FILE="./drivers/hwmon/yogafan.c"
+# --- NEW DRIVER INJECTION (Via Patch File) ---
+echo -e "${BLUE}Injecting Yoga Fan Driver via Official Patch...${NC}"
 
-if [ -f "$SOURCE_CODE" ]; then
-    cp "$SOURCE_CODE" "$TARGET_FILE"
+# Resolve the relative path to an absolute path for safety
+FULL_PATCH_FILE="$(readlink -f "$PATCH_DIR/$PATCH_NAME")"
+
+if [ -f "$FULL_PATCH_FILE" ]; then
+    echo -e "${BLUE}Found patch at: ${CYAN}$FULL_PATCH_FILE${NC}"
+    # Apply the p1 patch (must be executed from the kernel source root)
+    if patch -p1 < "$FULL_PATCH_FILE"; then
+        echo -e "${GREEN}Patch v11 applied successfully!${NC}"
+    else
+        echo -e "${GOLD}Warning: Patch failed or already applied. Checking files...${NC}"
+        # Check if the driver file already exists (likely from a previous run)
+        if [ ! -f "./drivers/hwmon/yogafan.c" ]; then
+            echo -e "${GOLD}Error: Patching failed! Driver source not found.${NC}"
+            exit 1
+        fi
+    fi
 else
-    echo -e "${GOLD}Error: Source not found!${NC}"
+    echo -e "${GOLD}Error: Patch file NOT found at $PATCH_DIR/$PATCH_NAME${NC}"
+    echo -e "${GOLD}Ensure the 'Lenovo Drivers' folder is located next to your kernel source folder.${NC}"
     exit 1
 fi
 
-if ! grep -q "yogafan.o" ./drivers/hwmon/Makefile; then
-    echo "obj-\$(CONFIG_SENSORS_YOGAFAN) += yogafan.o" >> ./drivers/hwmon/Makefile
-fi
-
-if ! grep -q "config SENSORS_YOGAFAN" ./drivers/hwmon/Kconfig; then
-    cat <<EOF >> ./drivers/hwmon/Kconfig
-config SENSORS_YOGAFAN
-	tristate "Lenovo Yoga Fan Hardware Monitoring"
-	depends on ACPI && HWMON
-	help
-	  Support for fan RPM on modern Lenovo laptops.
-EOF
-fi
+# Abilitiamo il driver appena patchato nel .config
+scripts/config --set-val CONFIG_HWMON y
+scripts/config --set-val CONFIG_SENSORS_YOGAFAN m
 
 # --- START OF OPTIMIZED MODULE CONFIGURATION (YOGA 14c ACN) ---
 
