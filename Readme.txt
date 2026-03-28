@@ -31,10 +31,14 @@ Installation Instructions:
  1)- Edit the scripts to change some options (autoinstall, kustom modules)
  2)- Open terminal
  3)- Run the scripts following your need:
-        - Create-Kernel-From-Upstream.sh      : To download and install the latest kernel
-        - Auto_Compile.sh                     : To compile a kernel (Simplest kernel)
-        - Auto_Compile_Rust.sh                : To compile a kernel (Rust support)
-        - auto_compile_rust_lenovo_drivers.sh : Rust + AMD Optimization + Universal Yogafan V8.0
+        - create-Kernel-From-Upstream.sh      : To download and install the latest kernel
+        - auto_Compile.sh                     : To compile a kernel (Simplest kernel)
+        - auto_Compile_Rust.sh                : To compile a kernel (Rust support)
+        - auto_compile_rust_lenovo_drivers.sh : Rust + AMD Optimization + Universal Yogafan
+                                                V11.0 from driver source code (Best for local driver development)
+        - auto_compile_rust_lenovo_patch.sh   : Rust + AMD Optimization + Universal Yogafan V11.0 from official
+                                                kernel patch (Best for upstream-compliant builds)
+
      This one last 3 files needs to be placed in the root directory of the downloaded kernel source.
  4)- A directory is created containing the latest deb packages:
         linux-headers-xxxxxxxxxxx_amd64.deb
