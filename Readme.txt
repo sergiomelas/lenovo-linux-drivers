@@ -6,7 +6,7 @@
                     ##################################################################
                     ##################################################################
 
-This Script install dependencies to create debian packages for the latest kernel using debian Configuration.
+This Scripts install dependencies to create debian packages for the latest kernel using debian Configuration.
 Add desired kernel options, compile it and make Debian packages then installs it (if configured so).
 
 WARNING & DISCLAIMER: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -20,6 +20,10 @@ WARNING & DISCLAIMER: ━━━━━━━━━━━━━━━━━━━�
 ┃ without limitation, those resulting from loss of use, data or profits, and on any theory of      ┃
 ┃ liability, arising out of or in  connection with the use of this software.                       ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+================================================================================
+Debian pakaes Creation from upstream
+================================================================================
 
 Installation Instructions:
  0)- Make the scripts executable and copy to a directory where you will store the created debs
@@ -80,9 +84,9 @@ Filter Details:
 - Suspend Safety: Uses boottime clock (ktime_get_boottime) for resume consistency.
 - Precision: 12-bit fixed-point math for 1-RPM step resolution.
 
-Activation (Module Load):  <<<<To remove
-$ echo "yogafan" | sudo tee /etc/modules-load.d/yogafan.conf
-$ sudo modprobe yogafan
+Note: The driver is automatically loaded at boot via DMI matching. No manual configuration is required.
+If you previously created a kernel module load file with: echo "yogafan" | sudo tee /etc/modules-load.d/yogafan.conf,
+please remove it with: sudo rm /etc/modules-load.d/yogafan.conf
 
 Verification:
 $ sensors
