@@ -143,8 +143,8 @@ References
 ##################################################################################################################
 Change log:
 
-V0.8: 2026-03-28 - Refactored yogafan V10,11:
-                 - MAJOR MILESTONE: 'yogafan' V11 driver accepted UPSTREAM.
+V0.8: 2026-04-01 - Refactored yogafan V10,11:
+                 - MAJOR MILESTONE: 'yogafan' V11 driver accepted UPSTREAM and is in linux next.
                     - Mapped ACPI paths directly via DMI quirks.
                     - Fixed Documentation formatting (0-day robot warnings).
                     - Implemented 100ms MIN_SAMPLING to address rapid polling concerns.
