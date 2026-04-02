@@ -1,6 +1,6 @@
-From acfccbe4588633b3a6d78bff4dd1384a9db56283 Mon Sep 17 00:00:00 2001
+From c98d535ed81d4eb75820ba551c58ef7fb987cf0a Mon Sep 17 00:00:00 2001
 From: Sergio Melas <sergiomelas@gmail.com>
-Date: Thu, 2 Apr 2026 10:37:40 +0200
+Date: Fri, 3 Apr 2026 01:10:42 +0200
 Subject: [PATCH v12] Subject: [PATCH v12] hwmon: (yogafan) Add support for
  Lenovo Yoga/Legion fan monitoring
 
@@ -23,7 +23,39 @@ discrete PWM steps instead of raw tachometer data.
 This to support discrete RPM EC architectures. By mapping these steps (Nmax)
 to physical fan characteristics (Rmax),
 the driver now provides consistent RPM monitoring for legacy hardware
-that previously reported only "levels" or zero-readings.
+that previously reported only "levels" or zero-readings. That expanded
+greatly the supported model list:
+
+  * YOGA & SLIM SERIES (8-bit / Discrete Logic)
+    - Yoga 14cACN, 14s, 13 (including Aura Edition)
+    - Yoga Slim 7, 7i, 7 Pro, 7 Carbon
+    - Yoga Pro 7, 9 (83E2, 83DN)
+    - Yoga 710, 720, 510 (Discrete Step Logic)
+    - Yoga 3 14, 11s, Yoga 2 13 (Discrete Step Logic)
+    - Xiaoxin Pro, Air, 14, 16 (All PRC/Chinese Variants)
+
+  * LEGION, LOQ & G-SERIES (16-bit High-Precision Raw)
+    - Legion 5, 5i, 5 Pro (AMD & Intel 82JW/82JU)
+    - Legion 7, 7i, 7 Slim (82WQ)
+    - LOQ 15, 16 (82XV, 83DV)
+    - GeekPro G5000, G6000 (PRC Gaming Series)
+
+  * IDEAPAD & FLEX SERIES (8-bit / Discrete Logic)
+    - IdeaPad 5, 5i, 5 Pro (81YM, 82FG)
+    - IdeaPad 3, 3i (Modern 8-bit variants)
+    - IdeaPad 500S, U31-70 (Discrete Step Logic)
+    - Flex 5, 5i (81X1)
+
+  * THINKBOOK, V-SERIES & LEGACY (Discrete Logic)
+    - ThinkBook G6, G7 (83AK)
+    - V330-15IKB, V580
+    - Legacy U-Series (U330p, U430p)
+
+This driver covers now over 95% of Lenovo's consumer and ultra-portable laptop portfolio
+released between 2011 and 2026, providing a unified hardware abstraction layer for diverse Embedded Controller
+(EC) architectures.
+
+The driver exposes the RLLag V12 physical filter parameters (time constant and slew-rate limit) in SI units (seconds), dynamically synchronizing them with the specific model's maximum RPM to ensure a consistent physical response across the entire Lenovo product stack.
 
 Signed-off-by: Sergio Melas <sergiomelas@gmail.com>
 ---
@@ -100,12 +132,12 @@ v1:
 ---
 ---
  Documentation/hwmon/index.rst   |   1 +
- Documentation/hwmon/yogafan.rst | 201 +++++++++++++++++
+ Documentation/hwmon/yogafan.rst | 272 ++++++++++++++++
  MAINTAINERS                     |   8 +
- drivers/hwmon/Kconfig           |  13 ++
+ drivers/hwmon/Kconfig           |  13 +
  drivers/hwmon/Makefile          |   1 +
- drivers/hwmon/yogafan.c         | 385 ++++++++++++++++++++++++++++++++
- 6 files changed, 609 insertions(+)
+ drivers/hwmon/yogafan.c         | 553 ++++++++++++++++++++++++++++++++
+ 6 files changed, 848 insertions(+)
  create mode 100644 Documentation/hwmon/yogafan.rst
  create mode 100644 drivers/hwmon/yogafan.c
 
@@ -121,10 +153,10 @@ index b2ca8513c..ca438f294 100644
     zl6100
 diff --git a/Documentation/hwmon/yogafan.rst b/Documentation/hwmon/yogafan.rst
 new file mode 100644
-index 000000000..a8ce059c1
+index 000000000..325e40228
 --- /dev/null
 +++ b/Documentation/hwmon/yogafan.rst
-@@ -0,0 +1,201 @@
+@@ -0,0 +1,272 @@
 +.. SPDX-License-Identifier: GPL-2.0-only
 +
 +===============================================================================================
@@ -133,23 +165,70 @@ index 000000000..a8ce059c1
 +
 +Supported chips:
 +
++  * YOGA & SLIM SERIES (8-bit / Discrete Logic)
++    - Yoga 14cACN, 14s, 13 (including Aura Edition)
++    - Yoga Slim 7, 7i, 7 Pro, 7 Carbon
++    - Yoga Pro 7, 9 (83E2, 83DN)
++    - Yoga 710, 720, 510 (Discrete Step Logic)
++    - Yoga 3 14, 11s, Yoga 2 13 (Discrete Step Logic)
++    - Xiaoxin Pro, Air, 14, 16 (All PRC/Chinese Variants)
++
++  * LEGION, LOQ & G-SERIES (16-bit High-Precision Raw)
++    - Legion 5, 5i, 5 Pro (AMD & Intel 82JW/82JU)
++    - Legion 7, 7i, 7 Slim (82WQ)
++    - LOQ 15, 16 (82XV, 83DV)
++    - GeekPro G5000, G6000 (PRC Gaming Series)
++
++  * IDEAPAD & FLEX SERIES (8-bit / Discrete Logic)
++    - IdeaPad 5, 5i, 5 Pro (81YM, 82FG)
++    - IdeaPad 3, 3i (Modern 8-bit variants)
++    - IdeaPad 500S, U31-70 (Discrete Step Logic)
++    - Flex 5, 5i (81X1)
++
++  * THINKBOOK, V-SERIES & LEGACY (Discrete Logic)
++    - ThinkBook G6, G7 (83AK)
++    - V330-15IKB, V580
++    - Legacy U-Series (U330p, U430p)
 +
 +    Prefix: 'yogafan'
-+    Addresses: ACPI handle (See HAL Database Below)
-+    Prefix: 'yogafan'
-+    Addresses: ACPI handle (See Database Below)
-+    Supported chips: Lenovo Yoga , Legion, IdeaPad, Slim, Flex, LOQ, GeekPro and Xiaoxin
-+
++    Addresses: ACPI handle (DMI Quirk Table Fallback)
++    Datasheet: Not available; based on ACPI DSDT and EC reverse engineering.
 +
 +Author: Sergio Melas <sergiomelas@gmail.com>
 +
 +Description
 +-----------
 +
-+This driver provides fan speed monitoring for modern Lenovo consumer laptops.
-+Most Lenovo laptops do not provide fan tachometer data through standard
-+ISA/LPC hardware monitoring chips. Instead, the data is stored in the
-+Embedded Controller (EC) and exposed via ACPI.
++This driver provides fan speed monitoring for a wide range of Lenovo consumer
++laptops. Unlike standard ThinkPads, these models do not use the 'thinkpad_acpi'
++interface for fan speed but instead store fan telemetry in the Embedded
++Controller (EC).
++
++The driver interfaces with the ACPI namespace to locate the fan tachometer
++objects. If the ACPI path is not standard, it falls back to a machine-specific
++quirk table based on DMI information.
++
++This driver covers over 95% of Lenovo's consumer and ultra-portable laptop portfolio
++released between 2011 and 2026, providing a unified hardware abstraction layer for diverse
++Embedded Controller (EC) architectures.
++
++The driver exposes the RLLag V12 physical filter parameters (time constant and slew-rate limit) in SI units (seconds),
++dynamically synchronizing them with the specific model's maximum RPM to ensure a consistent physical response
++across the entire Lenovo product stack.
++
++Filter Physics (RLLag V12)
++--------------------------
++
++To address low-resolution tachometer sampling in the Embedded Controller,
++the driver implements a passive discrete-time first-order lag filter
++with slew-rate limiting.
++
++* Multirate Filtering: The filter adapts to the sampling time (dt) of the
++  userspace request.
++* Discrete Logic: For older models (e.g., Yoga 710), it estimates RPM based
++  on discrete duty-cycle steps.
++* Continuous Logic: For modern models (e.g., Legion), it maps raw high-precision
++  units to RPM.
 +
 +The driver implements a **Rate-Limited Lag (RLLag)** filter to handle
 +low-resolution sampling in Lenovo EC firmware. The update equation is:
@@ -158,9 +237,9 @@ index 000000000..a8ce059c1
 +                                          -limit[t], limit[t])
 +
 +    Where:
-+    Ts[t]    = Sys_time[t+1] - Sys_time[t]            /* Time delta between reads       */
-+    Alpha    = 1 - exp(-Ts[t] / Tau)                  /* Low-pass smoothing factor      */
-+    limit[t] = MAX_SLEW_RPM_S * Ts[t]                 /* Time-normalized slew limit     */
++    Ts[t]    = Sys_time[t+1] - Sys_time[t]              /* Time delta between reads       */
++    Alpha    = 1 - exp(-Ts[t] / Tau)                    /* Low-pass smoothing factor      */
++    limit[t] = MAX_SLEW_RPM_S * Ts[t]                   /* Time-normalized slew limit     */
 +
 +To avoid expensive floating-point exponential calculations in the kernel,
 +we use a first-order Taylor/Bilinear approximation:
@@ -180,10 +259,12 @@ index 000000000..a8ce059c1
 +The input of the filter (raw_RPM) is derived from the EC using the logic defined in the
 +HAL section below.
 +
++The driver exposes the RLLag  physical filter parameters (time constant and slew-rate limit) in SI units (seconds), dynamically synchronizing them with the specific model's maximum RPM to ensure a consistent physical response across the entire Lenovo product stack.
++
 +Hardware Identification and Multiplier Logic
 +--------------------------------------------
 +
-+The driver supports three distinct EC architectures.. Differentiation is handled
++The driver supports three distinct EC architectures. Differentiation is handled
 +deterministically via a DMI Product Family quirk table during the probe phase,
 +eliminating the need for runtime heuristics.
 +
@@ -273,39 +354,61 @@ index 000000000..a8ce059c1
 +   - 8-bit (Multiplier 100): Standard for Yoga/IdeaPad. Raw values (0-255).
 +   - 16-bit (Multiplier 1): Standard for Legion/LOQ. Two registers (0xFE/0xFF).
 +
++
 +================================================================================================================
 +              LENOVO FAN CONTROLLER: MASTER REFERENCE DATABASE (2026) Hardware Abstraction Layer
 +================================================================================================================
 +
-+ MODEL      |      FAMILY,     | EC OFFSET |     FULL ACPI OBJECT PATH      | WIDTH  | NMAX    |  RMAX  | MULT
-+(DMI PN)    |      SERIES      | 8/16 bits |                                |        | (STEPS) | (RPM)  |
++ MODEL      |      FAMILY,      | EC OFFSET |      FULL ACPI OBJECT PATH      | WIDTH  | NMAX    |  RMAX  | MULT
++(DMI PN)    |      SERIES       | 8/16 bits |                                 |        | (STEPS) | (RPM)  |
 +----------------------------------------------------------------------------------------------------------------
-+82N7        | Yoga 14cACN      | 0x06      | \_SB.PCI0.LPC0.EC0.FANS        |  8-bit | 0       | 0      | 100
-+80V2 / 81C3 | Yoga 710/720     | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0        |  8-bit | 59      | 4500   | 0
-+83E2 / 83DN | Yoga Pro 7/9     | 0xFE      | \_SB.PCI0.LPC0.EC0.FANS        |  8-bit | 0       | 0      | 100
-+82A2 / 82A3 | Yoga Slim 7      | 0x06      | \_SB.PCI0.LPC0.EC0.FANS        |  8-bit | 0       | 0      | 100
-+81YM / 82FG | IdeaPad 5        | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0        |  8-bit | 0       | 0      | 100
-+80S7        | Yoga 510         | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0        |  8-bit | 41      | 4500   | 0
-+81AX        | V330-15IKB       | 0x95      | \_SB.PCI0.LPC0.EC0.FAN0        |  8-bit | 0       | 0      | 100
-+82JW / 82JU | Legion 5 (AMD)   | 0xFE/0xFF | \_SB.PCI0.LPC0.EC0.FANS (Fan1) | 16-bit | 0       | 0      | 1
-+82JW / 82JU | Legion 5 (AMD)   | 0xFE/0xFF | \_SB.PCI0.LPC0.EC0.FA2S (Fan2) | 16-bit | 0       | 0      | 1
-+82WQ        | Legion 7i (Int)  | 0xFE/0xFF | \_SB.PCI0.LPC0.EC0.FANS (Fan1) | 16-bit | 0       | 0      | 1
-+82WQ        | Legion 7i (Int)  | 0xFE/0xFF | \_SB.PCI0.LPC0.EC0.FA2S (Fan2) | 16-bit | 0       | 0      | 1
-+82XV / 83DV | LOQ 15/16        | 0xFE/0xFF | \_SB.PCI0.LPC0.EC0.FANS (Fan1) | 16-bit | 0       | 0      | 1
-+82XV / 83DV | LOQ 15/16        | 0xFE/0xFF | \_SB.PCI0.LPC0.EC0.FA2S (Fan2) | 16-bit | 0       | 0      | 1
-+83AK        | ThinkBook G6     | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0        |  8-bit | 0       | 0      | 100
-+81X1        | Flex 5           | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0        |  8-bit | 0       | 0      | 100
-+80SR / 80SX | Ideapad 500S     | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0        |  8-bit | 44      | 4800   | 0
-+80KU        | U31-70           | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0        |  8-bit | 44      | 4800   | 0
-+80JH        | Yoga 3 14        | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0        |  8-bit | 80      | 5000   | 0
-+20344       | Yoga 2 13        | 0xAB      | \_SB.PCI0.LPC0.EC0.FAN0        |  8-bit | 8       | 4200   | 0
-+20191       | Yoga 13          | 0xF2      | \_SB.PCI0.LPC0.EC0.FAN1/2      |  8-bit | 255     | 5000   | 0
-+*Legacy*    | U330p/U430p      | 0x92      | \_SB.PCI0.LPC0.EC0.FAN0        | 16-bit | 768     | 5000   | 0
++82N7        | Yoga 14cACN       | 0x06      | \_SB.PCI0.LPC0.EC0.FANS         |  8-bit | 0       | 5500   | 100
++80V2 / 81C3 | Yoga 710/720      | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 59      | 4500   | 0
++83E2 / 83DN | Yoga Pro 7/9      | 0xFE      | \_SB.PCI0.LPC0.EC0.FANS         |  8-bit | 0       | 6000   | 100
++82A2 / 82A3 | Yoga Slim 7       | 0x06      | \_SB.PCI0.LPC0.EC0.FANS         |  8-bit | 0       | 5500   | 100
++81YM / 82FG | IdeaPad 5         | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 0       | 4500   | 100
++80S7        | Yoga 510          | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 41      | 4500   | 0
++81AX        | V330-15IKB        | 0x95      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 116     | 4200   | 100
++82JW / 82JU | Legion 5 (AMD)    | 0xFE/0xFF | \_SB.PCI0.LPC0.EC0.FANS (Fan1)  | 16-bit | 0       | 6500   | 1
++82JW / 82JU | Legion 5 (AMD)    | 0xFE/0xFF | \_SB.PCI0.LPC0.EC0.FA2S (Fan2)  | 16-bit | 0       | 6500   | 1
++82WQ        | Legion 7i (Int)   | 0xFE/0xFF | \_SB.PCI0.LPC0.EC0.FANS (Fan1)  | 16-bit | 0       | 8000   | 1
++82WQ        | Legion 7i (Int)   | 0xFE/0xFF | \_SB.PCI0.LPC0.EC0.FA2S (Fan2)  | 16-bit | 0       | 8000   | 1
++82XV / 83DV | LOQ 15/16         | 0xFE/0xFF | \_SB.PCI0.LPC0.EC0.FANS (Fan1)  | 16-bit | 0       | 6500   | 1
++82XV / 83DV | LOQ 15/16         | 0xFE/0xFF | \_SB.PCI0.LPC0.EC0.FA2S (Fan2)  | 16-bit | 0       | 6500   | 1
++83AK        | ThinkBook G6      | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 0       | 5400   | 100
++81X1        | Flex 5            | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 0       | 4500   | 100
++80SR / 80SX | Ideapad 500S-13   | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 44      | 5500   | 100
++80S1        | Ideapad 500S-14   | 0x95      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 116     | 5000   | 100
++80TK        | Ideapad 510S      | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 41      | 5100   | 100
++80S9        | Ideapad 710S      | 0x95/0x98 | \_SB.PCI0.LPC0.EC0.FAN1/2       |  8-bit | 72      | 5200   | 100
++80KU        | U31-70            | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 44      | 5500   | 100
++80S1        | U41-70            | 0x95      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 116     | 5000   | 100
++80JH        | Yoga 3 14         | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 80      | 5000   | 0
++20344       | Yoga 2 13         | 0xAB      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 8       | 4200   | 0
++2191 / 20191| Yoga 13           | 0xF2/0xF3 | \_SB.PCI0.LPC0.EC0.FAN1/2       |  8-bit | 255     | 5000   | 0
++Legacy      | Yoga 11s          | 0x56      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 80      | 4500   | 100
++20GJ / 20GK | ThinkPad 13       | 0x85      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 7       | 5500   | 100
++1143 (E520) | ThinkPad E520     | 0x95      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 100     | 4200   | 100
++3698        | ThinkPad Helix    | 0x2F      | \_SB.PCI0.LPC0.EC0.FANS         |  8-bit | 7       | 4500   | 100
++20M7 / 20M8 | ThinkPad L380     | 0x95      | \_SB.PCI0.LPC0.EC0.FAN1         |  8-bit | 52      | 4600   | 100
++20NR / 20NS | ThinkPad L390     | 0x95      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 64      | 5500   | 100
++2464 / 2468 | ThinkPad L530     | 0x95      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 75      | 4400   | 100
++2356        | ThinkPad T430s    | 0x2F      | \_SB.PCI0.LPC0.EC0.FANS         |  8-bit | 7       | 5000   | 100
++20AQ / 20AR | ThinkPad T440s    | 0x4E      | \_SB.PCI0.LPC0.EC0.FANS         |  8-bit | 7       | 5200   | 100
++20BE / 20BF | ThinkPad T540p    | 0x2F      | \_SB.PCI0.LPC0.EC0.FANS         |  8-bit | 7       | 5500   | 100
++3051        | ThinkPad x121e    | 0x2F      | \_SB.PCI0.LPC0.EC0.FANS         |  8-bit | 7       | 4500   | 100
++4290        | ThinkPad x220i    | 0x2F      | \_SB.PCI0.LPC0.EC0.FANS         |  8-bit | 7       | 5000   | 100
++2324 / 2325 | ThinkPad x230     | 0x2F      | \_SB.PCI0.LPC0.EC0.FANS         |  8-bit | 7       | 5000   | 100
++Legacy      | Ideapad Y580      | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 95      | 5200   | 100
++Legacy      | Ideapad V580      | 0x95      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 100     | 5000   | 100
++Legacy      | U160              | 0x95      | \_SB.PCI0.LPC0.EC0.FAN0         |  8-bit | 64      | 4500   | 100
++Legacy      | U330p/U430p       | 0x92      | \_SB.PCI0.LPC0.EC0.FAN0         | 16-bit | 768     | 5000   | 0
 +-----------------------------------------------------------------------------------------------------------------
 +
 +Note:
-+Nmax > 0 => raw_RPM = (Rmax * IN) / Nmax   /* Discrete Level Estimation */
++Nmax > 0 => raw_RPM = (Rmax * IN) / Nmax    /* Discrete Level Estimation */
 +Nmax = 0 => raw_RPM = IN * Multiplier      /* Continuous Unit Mapping   */
++
 +
 +
 +References
@@ -383,10 +486,10 @@ index 5833c807c..83c48b886 100644
  obj-$(CONFIG_SENSORS_PECI)	+= peci/
 diff --git a/drivers/hwmon/yogafan.c b/drivers/hwmon/yogafan.c
 new file mode 100644
-index 000000000..8f7868f6b
+index 000000000..b557785e0
 --- /dev/null
 +++ b/drivers/hwmon/yogafan.c
-@@ -0,0 +1,385 @@
+@@ -0,0 +1,553 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/**
 + * yoga_fan.c - Lenovo Yoga/Legion Fan Hardware Monitoring Driver
@@ -413,6 +516,7 @@ index 000000000..8f7868f6b
 +#include <linux/platform_device.h>
 +#include <linux/slab.h>
 +#include <linux/math64.h>
++#include <linux/hwmon-sysfs.h>
 +
 +/* Driver Configuration Constants */
 +#define DRVNAME			"yogafan"
@@ -423,9 +527,22 @@ index 000000000..8f7868f6b
 +#define MAX_SLEW_RPM_S		1500	/* Maximum allowed change in RPM per second */
 +#define MAX_SAMPLING		5000	/* Maximum allowed Ts for reset (ms) */
 +#define MIN_SAMPLING		100	/* Minimum interval between filter updates (ms) */
++#define MIN_TAU_MS              10      /* Minimum value accepted for the time constant (ms) */
++#define MIN_THRESHOLD_RPM       10      /* Minimum value accepted for the RPM  threshold (rpm)  */
 +
 +/* RPM Sanitation Constants */
 +#define RPM_FLOOR_LIMIT		50	/* Snap filtered value to 0 if raw is 0 */
++
++static uint tau_s = 1;
++module_param(tau_s, uint, 0644);
++MODULE_PARM_DESC(tau_s, "Filter time constant in SECONDS");
++
++static uint slew_time_s = 4;
++module_param(slew_time_s, uint, 0644);
++MODULE_PARM_DESC(slew_time_s, "Seconds to reach Max RPM from zero");
++
++static uint stop_threshold_rpm = 50;
++module_param(stop_threshold_rpm, uint, 0644);
 +
 +struct yogafan_config {
 +	int multiplier;     /* Used if n_max == 0 */
@@ -438,26 +555,30 @@ index 000000000..8f7868f6b
 +struct yoga_fan_data {
 +	acpi_handle active_handles[MAX_FANS];
 +	long filtered_val[MAX_FANS];
++	long raw_val[MAX_FANS];
 +	ktime_t last_sample[MAX_FANS];
-+	const struct yogafan_config *config; /* Store pointer to active quirk */
++	const struct yogafan_config *config;
 +	int fan_count;
++	/* Per-device physics constants */
++	unsigned int internal_tau_ms;
++	unsigned int internal_max_slew_rpm_s;
++	unsigned int device_max_rpm;
 +};
 +
 +/* Specific configurations mapped via DMI */
-+
 +//* --- CONTINUOUS PROFILES (Nmax = 0) --- */
 +
-+/* --- CONTINUOUS PROFILES (NMAX = 0) --- */
-+
-+/* Standard 8-bit Yoga/IdeaPad (1 Fan, Multi-path search) */
++/* Standard 8-bit Yoga/IdeaPad (Covers 82N7, Slim 7, etc.) */
 +static const struct yogafan_config yoga_continuous_8bit_cfg = {
-+	.multiplier = 100, .fan_count = 1, .n_max = 0, .r_max = 0,
++	.multiplier = 100, .fan_count = 1, .n_max = 0,
++	.r_max = 5500,  /* Verified 14cACN peak */
 +	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FAN0" }
 +};
 +
 +/* Legion / LOQ Gaming (2 Fans, Raw RPM 16-bit) */
 +static const struct yogafan_config legion_continuous_16bit_cfg = {
-+	.multiplier = 1, .fan_count = 2, .n_max = 0, .r_max = 0,
++	.multiplier = 1, .fan_count = 2, .n_max = 0,
++	.r_max = 6500,  /* Standard Legion/LOQ peak */
 +	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FA2S" }
 +};
 +
@@ -477,7 +598,7 @@ index 000000000..8f7868f6b
 +
 +/* Ideapad 500S / U31-70 (N=44) */
 +static const struct yogafan_config ideapad_500s_discrete_cfg = {
-+	.multiplier = 0, .fan_count = 1, .n_max = 44, .r_max = 4800,
++	.multiplier = 0, .fan_count = 1, .n_max = 44, .r_max = 5500,
 +	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", NULL }
 +};
 +
@@ -505,6 +626,56 @@ index 000000000..8f7868f6b
 +	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", NULL }
 +};
 +
++/* ThinkPad 13 / Helix / T-Series (Strict Discrete) */
++static const struct yogafan_config thinkpad_discrete_cfg = {
++	.multiplier = 0, .fan_count = 1, .n_max = 7,
++	.r_max = 5500, /* Matching table peak for T540p/TP13 */
++	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", "\\_SB.PCI0.LPC0.EC0.FANS" }
++};
++
++/* ThinkPad L-Series / V580 (Continuous 8-bit) */
++static const struct yogafan_config thinkpad_l_cfg = {
++	.multiplier = 100, .fan_count = 1, .n_max = 100,
++	.r_max = 5500, /* Matching table peak for L390 */
++	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", "\\_SB.PCI0.LPC0.EC0.FAN1" }
++};
++
++/* High Performance (Strict Continuous) */
++static const struct yogafan_config legion_high_perf_cfg = {
++	.multiplier = 1, .fan_count = 2, .n_max = 0,
++	.r_max = 8000, /* Peak for Legion 7i / Yoga Pro 9 */
++	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FA2S" }
++};
++
++/* --- Custom Sysfs Interface for Companion App --- */
++static ssize_t show_custom_rpm(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct sensor_device_attribute *sensor_attr = to_sensor_dev_attr(attr);
++	struct yoga_fan_data *data = dev_get_drvdata(dev);
++	int nr = sensor_attr->index;
++
++	/* Using index to differentiate between raw (0,1) and max (2,3) */
++	if (strstr(attr->attr.name, "_max"))
++		return sysfs_emit(buf, "%u\n", data->device_max_rpm);
++
++	return sysfs_emit(buf, "%ld\n", data->raw_val[nr]);
++}
++
++static SENSOR_DEVICE_ATTR(fan1_raw, 0444, show_custom_rpm, NULL, 0);
++static SENSOR_DEVICE_ATTR(fan1_max, 0444, show_custom_rpm, NULL, 0);
++static SENSOR_DEVICE_ATTR(fan2_raw, 0444, show_custom_rpm, NULL, 1);
++static SENSOR_DEVICE_ATTR(fan2_max, 0444, show_custom_rpm, NULL, 1);
++
++static struct attribute *yogafan_attrs[] = {
++	&sensor_dev_attr_fan1_raw.dev_attr.attr,
++	&sensor_dev_attr_fan1_max.dev_attr.attr,
++	&sensor_dev_attr_fan2_raw.dev_attr.attr,
++	&sensor_dev_attr_fan2_max.dev_attr.attr,
++	NULL
++};
++
++static const struct attribute_group yogafan_group = { .attrs = yogafan_attrs };
++static const struct attribute_group *yogafan_groups[] = { &yogafan_group, NULL };
 +
 +static void apply_rllag_filter(struct yoga_fan_data *data, int idx, long raw_rpm)
 +{
@@ -513,12 +684,21 @@ index 000000000..8f7868f6b
 +	long delta, step, limit, alpha;
 +	s64 temp_num;
 +
-+	if (raw_rpm < RPM_FLOOR_LIMIT) {
++	/* 1. PHYSICAL CLAMP & TELEMETRY: Use per-device device_max_rpm */
++	if (raw_rpm > (long)data->device_max_rpm)
++		raw_rpm = (long)data->device_max_rpm;
++
++	data->raw_val[idx] = raw_rpm;
++
++	/* 2. Threshold logic */
++	if (raw_rpm < (long)(stop_threshold_rpm < MIN_THRESHOLD_RPM
++		? MIN_THRESHOLD_RPM : stop_threshold_rpm)) {
 +		data->filtered_val[idx] = 0;
 +		data->last_sample[idx] = now;
 +		return;
 +	}
 +
++	/* 3. Auto-reset logic */
 +	if (data->last_sample[idx] == 0 || dt_ms > MAX_SAMPLING) {
 +		data->filtered_val[idx] = raw_rpm;
 +		data->last_sample[idx] = now;
@@ -534,14 +714,16 @@ index 000000000..8f7868f6b
 +		return;
 +	}
 +
++	/* 4. V12 PHYSICS: Use per-device internal_tau_ms */
 +	temp_num = dt_ms << 12;
-+	alpha = (long)div64_s64(temp_num, (s64)(TAU_MS + dt_ms));
++	alpha = (long)div64_s64(temp_num, (s64)(data->internal_tau_ms + dt_ms));
 +	step = (delta * alpha) >> 12;
 +
 +	if (step == 0 && delta != 0)
 +		step = (delta > 0) ? 1 : -1;
 +
-+	limit = (MAX_SLEW_RPM_S * (long)dt_ms) / 1000;
++	/* 5. V12 SLEW: Use per-device internal_max_slew_rpm_s */
++	limit = ((long)data->internal_max_slew_rpm_s * (long)dt_ms) / 1000;
 +	if (limit < 1)
 +		limit = 1;
 +
@@ -581,9 +763,18 @@ index 000000000..8f7868f6b
 +
 +	/* Smooth via RLLag filter */
 +	apply_rllag_filter(data, channel, rpm_raw);
-+	*val = data->filtered_val[channel];
 +
-+	return 0;
++	if (attr == hwmon_fan_input) {
++		*val = data->filtered_val[channel];
++		return 0;
++	}
++	/* This to support KDE auto-scaling */
++	if (attr == hwmon_fan_max) {
++		*val = (long)data->device_max_rpm; /* Use the struct member */
++		return 0;
++	}
++
++	return -EOPNOTSUPP;
 +}
 +
 +static umode_t yoga_fan_is_visible(const void *data, enum hwmon_sensor_types type,
@@ -604,10 +795,10 @@ index 000000000..8f7868f6b
 +
 +static const struct hwmon_channel_info *yoga_fan_info[] = {
 +	HWMON_CHANNEL_INFO(fan,
-+			   HWMON_F_INPUT, HWMON_F_INPUT,
-+			   HWMON_F_INPUT, HWMON_F_INPUT,
-+			   HWMON_F_INPUT, HWMON_F_INPUT,
-+			   HWMON_F_INPUT, HWMON_F_INPUT),
++			   HWMON_F_INPUT | HWMON_F_MAX, HWMON_F_INPUT | HWMON_F_MAX,
++			   HWMON_F_INPUT | HWMON_F_MAX, HWMON_F_INPUT | HWMON_F_MAX,
++			   HWMON_F_INPUT | HWMON_F_MAX, HWMON_F_INPUT | HWMON_F_MAX,
++			   HWMON_F_INPUT | HWMON_F_MAX, HWMON_F_INPUT | HWMON_F_MAX),
 +	NULL
 +};
 +
@@ -663,6 +854,48 @@ index 000000000..8f7868f6b
 +		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Lenovo u330p") },
 +		.driver_data = (void *)&legacy_u_discrete_cfg,
 +	},
++	{
++		.ident = "ThinkPad 13",
++		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "ThinkPad 13") },
++		.driver_data = (void *)&thinkpad_discrete_cfg,
++	},
++	{
++		.ident = "ThinkPad Helix",
++		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "3698") },
++		.driver_data = (void *)&thinkpad_discrete_cfg,
++	},
++	{
++		.ident = "ThinkPad X-Series",
++		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "ThinkPad X") },
++		.driver_data = (void *)&thinkpad_discrete_cfg,
++	},
++	{
++		.ident = "ThinkPad T-Series",
++		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "ThinkPad T") },
++		.driver_data = (void *)&thinkpad_discrete_cfg,
++	},
++	{
++		.ident = "Lenovo V330",
++		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "81AX") },
++		.driver_data = (void *)&thinkpad_l_cfg,
++	},
++
++	/* --- SPECIAL PROFILES (Must precede general fallbacks) --- */
++	{
++		.ident = "Lenovo Yoga Pro",
++		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Yoga Pro") },
++		.driver_data = (void *)&legion_high_perf_cfg,
++	},
++	{
++		.ident = "Lenovo Legion Pro",
++		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Legion P") },
++		.driver_data = (void *)&legion_high_perf_cfg,
++	},
++	{
++		.ident = "Lenovo ThinkPad L",
++		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "ThinkPad L") },
++		.driver_data = (void *)&thinkpad_l_cfg,
++	},
 +
 +	/* --- CONTINUOUS FALLBACKS (Family matches last) --- */
 +	{
@@ -685,11 +918,40 @@ index 000000000..8f7868f6b
 +		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "IdeaPad") },
 +		.driver_data = (void *)&yoga_continuous_8bit_cfg,
 +	},
++	{
++		.ident = "Lenovo Xiaoxin",
++		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "Xiaoxin") },
++		.driver_data = (void *)&yoga_continuous_8bit_cfg,
++	},
++	{
++		.ident = "Lenovo GeekPro",
++		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "GeekPro") },
++		.driver_data = (void *)&legion_continuous_16bit_cfg,
++	},
++	{
++		.ident = "Lenovo ThinkBook",
++		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "ThinkBook") },
++		.driver_data = (void *)&yoga_continuous_8bit_cfg,
++	},
++	{
++		.ident = "Lenovo Slim",
++		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "Slim") },
++		.driver_data = (void *)&yoga_continuous_8bit_cfg,
++	},
++	{
++		.ident = "Lenovo V-Series",
++		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Lenovo V") },
++		.driver_data = (void *)&yoga_continuous_8bit_cfg,
++	},
++	{
++		.ident = "Lenovo Aura Edition",
++		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Aura") },
++		.driver_data = (void *)&yoga_continuous_8bit_cfg,
++	},
 +	{ }
 +};
 +
 +MODULE_DEVICE_TABLE(dmi, yogafan_quirks);
-+
 +
 +static int yoga_fan_probe(struct platform_device *pdev)
 +{
@@ -711,6 +973,13 @@ index 000000000..8f7868f6b
 +
 +	data->config = cfg;
 +
++	/* Global sync for V12 Physics - Now stored per-device */
++	data->device_max_rpm = cfg->r_max ? cfg->r_max : 5000;
++	data->internal_tau_ms = tau_s * 1000;
++	if (data->device_max_rpm == 0)
++		data->device_max_rpm = 5000;
++	data->internal_max_slew_rpm_s = data->device_max_rpm / (slew_time_s ? slew_time_s : 1);
++
 +	for (i = 0; i < 2; i++) {
 +		if (!cfg->paths[i])
 +			continue;
@@ -728,8 +997,10 @@ index 000000000..8f7868f6b
 +	if (data->fan_count == 0)
 +		return -ENODEV;
 +
++	/* V12 Update: Pass 'yogafan_groups' to expose raw/max attributes to sysfs */
 +	hwmon_dev = devm_hwmon_device_register_with_info(&pdev->dev, DRVNAME,
-+							 data, &yoga_fan_chip_info, NULL);
++							 data, &yoga_fan_chip_info,
++							 yogafan_groups);
 +
 +	return PTR_ERR_OR_ZERO(hwmon_dev);
 +}

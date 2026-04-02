@@ -74,8 +74,9 @@ git init
 git add .
 git commit -m "Baseline: Official Linux 7.0-rc6"
 
-# 3. Create your clean export branch
+# 3. Create your clean export branch depending on the type of patch
 git checkout -b yogafan_full_v12
+git checkout -b yogafan_diff_v12
 
 # 4. Physically copy your V12 files into the folders
 # (Overwrite the existing ones or add the new ones)
