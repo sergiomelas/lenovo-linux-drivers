@@ -23,7 +23,8 @@ postfix="yoga"
 
 # Your Patch data
 PATCH_DIR="../../Lenovo Drivers"
-PATCH_NAME="v11-0001-hwmon-yogafan-Add-support-for-Lenovo-Yoga-Legion-fan-monitoring.patch"
+#PATCH_NAME="v11-0001-hwmon-yogafan-Add-support-for-Lenovo-Yoga-Legion-fan-monitoring.patch"
+PATCH_NAME="v12-0001-hwmon-yogafan-Add-support-for-Lenovo-Yoga-Legion-fan-monitoring-full-V12.patch"
 
 # ANSI Color Codes
 CYAN='\033[0;36m'
@@ -103,7 +104,7 @@ if [ -f "$FULL_PATCH_FILE" ]; then
     echo -e "${BLUE}Found patch at: ${CYAN}$FULL_PATCH_FILE${NC}"
     # Apply the p1 patch (must be executed from the kernel source root)
     if patch -p1 < "$FULL_PATCH_FILE"; then
-        echo -e "${GREEN}Patch v11 applied successfully!${NC}"
+        echo -e "${GREEN}Patch applied successfully!${NC}"
     else
         echo -e "${GOLD}Warning: Patch failed or already applied. Checking files...${NC}"
         # Check if the driver file already exists (likely from a previous run)
@@ -118,7 +119,7 @@ else
     exit 1
 fi
 
-# Abilitiamo il driver appena patchato nel .config
+# Activate the yogafan driver
 scripts/config --set-val CONFIG_HWMON y
 scripts/config --set-val CONFIG_SENSORS_YOGAFAN m
 

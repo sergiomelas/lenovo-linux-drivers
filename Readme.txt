@@ -34,9 +34,11 @@ Installation Instructions:
         - create-Kernel-From-Upstream.sh      : To download and install the latest kernel
         - auto_Compile.sh                     : To compile a kernel (Simplest kernel)
         - auto_Compile_Rust.sh                : To compile a kernel (Rust support)
+        - auto_compile_rust_lenovo.sh         : Rust + AMD Optimization (Best for vanilla upstream-
+                                                compliant builds)
         - auto_compile_rust_lenovo_drivers.sh : Rust + AMD Optimization + Universal Yogafan
-                                                V11.0 from driver source code (Best for local driver development)
-        - auto_compile_rust_lenovo_patch.sh   : Rust + AMD Optimization + Universal Yogafan V11.0 from official
+                                                from driver source code (Best for local driver development)
+        - auto_compile_rust_lenovo_patch.sh   : Rust + AMD Optimization + Universal Yogafan rom official
                                                 kernel patch (Best for upstream-compliant builds)
 
      This one last 3 files needs to be placed in the root directory of the downloaded kernel source.
@@ -74,14 +76,46 @@ LENOVO-SPECIFIC POST-INSTALLATION GUIDE (Updated 2026)
 auto_compile_rust_lenovo_drivers.sh
 ================================================================================
 
-1. UNIVERSAL FAN & SENSOR SUPPORT (yogafan v11.0)
+1. UNIVERSAL FAN & SENSOR SUPPORT (yogafan v12.0)
 -----------------------------------------------
 This build injects the Sergio Melas "yogafan" driver V8. It uses a passive RLLag
 (Rate-Limited Lag) filter for smooth RPM readings.
 
+YOGAFAN V12.0 / GITHUB V1.0 - SUPPORTED MODELS LIST (2026)
+
+YOGA & SLIM SERIES (8-bit / Discrete)
+-------------------------------------
+- Yoga 14cACN, 14s, 13 (including Aura Edition)
+- Yoga Slim 7, 7i, 7 Pro, 7 Carbon
+- Yoga Pro 7, 9 (83E2, 83DN)
+- Yoga 710, 720, 510 (Discrete Step Logic)
+- Yoga 3 14, 11s, Yoga 2 13 (Discrete Step Logic)
+- Xiaoxin Pro, Air, 14, 16 (All PRC/Chinese Variants)
+
+LEGION, LOQ & G-SERIES (16-bit Raw)
+-----------------------------------
+- Legion 5, 5i, 5 Pro (AMD & Intel 82JW/82JU)
+- Legion 7, 7i, 7 Slim (82WQ)
+- LOQ 15, 16 (82XV, 83DV)
+- GeekPro G5000, G6000 (PRC Gaming Series)
+
+IDEAPAD & FLEX SERIES (8-bit / Discrete)
+----------------------------------------
+- IdeaPad 5, 5i, 5 Pro (81YM, 82FG)
+- IdeaPad 3, 3i (Modern 8-bit variants)
+- IdeaPad 500S, U31-70 (Discrete Step Logic)
+- Flex 5, 5i (81X1)
+
+THINKBOOK, V-SERIES & LEGACY (Discrete)
+---------------------------------------
+- ThinkBook G6, G7 (83AK)
+- V330-15IKB, V580
+- Legacy U-Series (U330p, U430p)
+
 Hardware Identification (DMI Quirk Table):
 - 8-bit EC (Multiplier 100): Yoga, IdeaPad, Slim, Flex.
 - 16-bit EC (Multiplier 1): Legion, LOQ.
+- Level based Fan control (no RPM Tacometer onlu lom, med..)
 
 Filter Details:
 - Slew-Rate Limiting: Capped at 1500 RPM/s to match motor inertia.
@@ -143,13 +177,32 @@ References
 ##################################################################################################################
 Change log:
 
+
+V1.0: 2026-04-01 - Updated yogafan V12:
+                 - Hybrid Engine: Added Nmax/Rmax logic for Discrete ECs (Yoga 710/510, IdeaPad 500S/U31).
+                 - Expanded HAL: Added "FAN0"/"FA2S" ACPI path mapping (ThinkBook G6, IdeaPad 5, Flex 5, LOQ).
+                 - HWMON Refinement: Synced quirk table to exclude non-RPM reporting configs for compliance.
+                 - Documentation: Updated Master Reference Database (2026) with newly validated EC offsets.
+                 - Code Cleanup: Standardized indentation, 32-bit safety (div64_s64), and removed trailing comments..
+
+V0.9: 2026-04-01 - Refactored yogafan V12:
+                 - Expanded Hardware Support & Quirk Refinement:
+                    - Added Support for "Register 0x06" architecture (Yoga 710, 510, IdeaPad 510s/500S/U31/Y580).
+                    - Added "FAN0" ACPI Path Mapping (ThinkBook G6, IdeaPad 5, Flex 5, V330, V580).
+                 - Refined Hardware Scope: Excluded non-RPM reporting configs (ThinkPad/Legacy Yoga)
+                   to ensure HWMON compliance.
+                 - Documentation: Updated Master Reference Database with new validated offsets.
+                 - Code Cleanup: Standardized indentation and removed trailing comments.
+
 V0.8: 2026-04-01 - Refactored yogafan V10,11:
-                 - MAJOR MILESTONE: 'yogafan' V11 driver accepted UPSTREAM and is in linux next.
+                 - MAJOR MILESTONE: 'yogafan' V11 driver accepted UPSTREAM and is in linux next (7.1).
                     - Mapped ACPI paths directly via DMI quirks.
                     - Fixed Documentation formatting (0-day robot warnings).
                     - Implemented 100ms MIN_SAMPLING to address rapid polling concerns.
                     - Removed redundant platform_set_drvdata() in probe.
                     - Explicitly defined platform device ID as -1 for cleaner sysfs naming.
+                    - Already Supported Models: Yoga 14c, Slim 7, Pro 7, Pro 9, Legion 5, Legion 7i, LOQ.
+
 
 V0.7: 2026-03-25 - KDE 6 Compatibility: Full sensor documentation and formatting for modern Plasma dashboards.
                  - S3 Sleep Integration: DSTS (Device Status) ACPI modifications for robust resume from sleep.
