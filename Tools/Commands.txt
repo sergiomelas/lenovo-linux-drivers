@@ -19,7 +19,11 @@ Code Verification for format
 #Documentazione (RST):
 rst2html Documentation/hwmon/yogafan.rst > /dev/null
 
-Compile to sest sintax
+#Compile to test sintax
 make M=drivers/hwmon
 
+#Check commit:
+git status
 
+#apply patch
+patch -p1 < <Path to patch>

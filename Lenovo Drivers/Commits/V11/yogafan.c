@@ -39,10 +39,8 @@
 #define RPM_FLOOR_LIMIT		50	/* Snap filtered value to 0 if raw is 0 */
 
 struct yogafan_config {
-	int multiplier;     /* Used if n_max == 0 */
-	int fan_count;      /* 1 or 2 */
-	int n_max;          /* Discrete steps (0 = Continuous) */
-	int r_max;          /* Max physical RPM for estimation */
+	int multiplier;
+	int fan_count;
 	const char *paths[2];
 };
 
@@ -50,72 +48,28 @@ struct yoga_fan_data {
 	acpi_handle active_handles[MAX_FANS];
 	long filtered_val[MAX_FANS];
 	ktime_t last_sample[MAX_FANS];
-	const struct yogafan_config *config; /* Store pointer to active quirk */
+	int multiplier;
 	int fan_count;
 };
 
 /* Specific configurations mapped via DMI */
-
-//* --- CONTINUOUS PROFILES (Nmax = 0) --- */
-
-/* --- CONTINUOUS PROFILES (NMAX = 0) --- */
-
-/* Standard 8-bit Yoga/IdeaPad (1 Fan, Multi-path search) */
-static const struct yogafan_config yoga_continuous_8bit_cfg = {
-	.multiplier = 100, .fan_count = 1, .n_max = 0, .r_max = 0,
-	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FAN0" }
+static const struct yogafan_config yoga_8bit_fans_cfg = {
+	.multiplier = 100,
+	.fan_count = 1,
+	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", NULL }
 };
 
-/* Legion / LOQ Gaming (2 Fans, Raw RPM 16-bit) */
-static const struct yogafan_config legion_continuous_16bit_cfg = {
-	.multiplier = 1, .fan_count = 2, .n_max = 0, .r_max = 0,
+static const struct yogafan_config ideapad_8bit_fan0_cfg = {
+	.multiplier = 100,
+	.fan_count = 1,
+	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", NULL }
+};
+
+static const struct yogafan_config legion_16bit_dual_cfg = {
+	.multiplier = 1,
+	.fan_count = 2,
 	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FA2S" }
 };
-
-/* --- DISCRETE ESTIMATION PROFILES (NMAX > 0) --- */
-
-/* Yoga 710/720 (N=59) */
-static const struct yogafan_config yoga_710_discrete_cfg = {
-	.multiplier = 0, .fan_count = 1, .n_max = 59, .r_max = 4500,
-	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", NULL }
-};
-
-/* Yoga 510 / Ideapad 510s (N=41) */
-static const struct yogafan_config yoga_510_discrete_cfg = {
-	.multiplier = 0, .fan_count = 1, .n_max = 41, .r_max = 4500,
-	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", NULL }
-};
-
-/* Ideapad 500S / U31-70 (N=44) */
-static const struct yogafan_config ideapad_500s_discrete_cfg = {
-	.multiplier = 0, .fan_count = 1, .n_max = 44, .r_max = 4800,
-	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", NULL }
-};
-
-/* Yoga 3 14 / Yoga 11s (N=80) */
-static const struct yogafan_config yoga3_14_discrete_cfg = {
-	.multiplier = 0, .fan_count = 1, .n_max = 80, .r_max = 5000,
-	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", "\\_SB.PCI0.LPC0.EC0.FANS" }
-};
-
-/* Yoga 2 13 (N=8) */
-static const struct yogafan_config yoga2_13_discrete_cfg = {
-	.multiplier = 0, .fan_count = 1, .n_max = 8, .r_max = 4200,
-	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", NULL }
-};
-
-/* Yoga 13 (N=255) - Dual Fan */
-static const struct yogafan_config yoga13_discrete_cfg = {
-	.multiplier = 0, .fan_count = 2, .n_max = 255, .r_max = 5000,
-	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN1", "\\_SB.PCI0.LPC0.EC0.FAN2" }
-};
-
-/* Legacy U330p/U430p (N=768) */
-static const struct yogafan_config legacy_u_discrete_cfg = {
-	.multiplier = 0, .fan_count = 1, .n_max = 768, .r_max = 5000,
-	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", NULL }
-};
-
 
 static void apply_rllag_filter(struct yoga_fan_data *data, int idx, long raw_rpm)
 {
@@ -169,9 +123,7 @@ static int yoga_fan_read(struct device *dev, enum hwmon_sensor_types type,
 			 u32 attr, int channel, long *val)
 {
 	struct yoga_fan_data *data = dev_get_drvdata(dev);
-	const struct yogafan_config *cfg = data->config;
 	unsigned long long raw_acpi;
-	long rpm_raw;
 	acpi_status status;
 
 	if (type != hwmon_fan || attr != hwmon_fan_input)
@@ -181,17 +133,7 @@ static int yoga_fan_read(struct device *dev, enum hwmon_sensor_types type,
 	if (ACPI_FAILURE(status))
 		return -EIO;
 
-	/* Select Calculation Path */
-	if (cfg->n_max > 0) {
-		/* Formula: (RMAX * IN) / NMAX */
-		rpm_raw = (long)div64_s64((s64)cfg->r_max * raw_acpi, cfg->n_max);
-	} else {
-		/* Formula: IN * Multiplier */
-		rpm_raw = (long)raw_acpi * cfg->multiplier;
-	}
-
-	/* Smooth via RLLag filter */
-	apply_rllag_filter(data, channel, rpm_raw);
+	apply_rllag_filter(data, channel, (long)raw_acpi * data->multiplier);
 	*val = data->filtered_val[channel];
 
 	return 0;
@@ -228,79 +170,33 @@ static const struct hwmon_chip_info yoga_fan_chip_info = {
 };
 
 static const struct dmi_system_id yogafan_quirks[] = {
-	/* --- DISCRETE OVERRIDES (Specific matches MUST come first) --- */
-	{
-		.ident = "Lenovo Yoga 710",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Yoga 710") },
-		.driver_data = (void *)&yoga_710_discrete_cfg,
-	},
-	{
-		.ident = "Lenovo Yoga 510",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Yoga 510") },
-		.driver_data = (void *)&yoga_510_discrete_cfg,
-	},
-	{
-		.ident = "Lenovo Ideapad 510s",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Ideapad 510s") },
-		.driver_data = (void *)&yoga_510_discrete_cfg,
-	},
-	{
-		.ident = "Lenovo Ideapad 500S",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Ideapad 500S") },
-		.driver_data = (void *)&ideapad_500s_discrete_cfg,
-	},
-	{
-		.ident = "Lenovo U31-70",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "U31-70") },
-		.driver_data = (void *)&ideapad_500s_discrete_cfg,
-	},
-	{
-		.ident = "Lenovo Yoga 3 14",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "80JH") },
-		.driver_data = (void *)&yoga3_14_discrete_cfg,
-	},
-	{
-		.ident = "Lenovo Yoga 2 13",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "20344") },
-		.driver_data = (void *)&yoga2_13_discrete_cfg,
-	},
-	{
-		.ident = "Lenovo Yoga 13",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "20191") },
-		.driver_data = (void *)&yoga13_discrete_cfg,
-	},
-	{
-		.ident = "Lenovo U330p/U430p",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Lenovo u330p") },
-		.driver_data = (void *)&legacy_u_discrete_cfg,
-	},
-
-	/* --- CONTINUOUS FALLBACKS (Family matches last) --- */
-	{
-		.ident = "Lenovo Legion",
-		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "Legion") },
-		.driver_data = (void *)&legion_continuous_16bit_cfg,
-	},
-	{
-		.ident = "Lenovo LOQ",
-		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "LOQ") },
-		.driver_data = (void *)&legion_continuous_16bit_cfg,
-	},
 	{
 		.ident = "Lenovo Yoga",
-		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "Yoga") },
-		.driver_data = (void *)&yoga_continuous_8bit_cfg,
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+			DMI_MATCH(DMI_PRODUCT_FAMILY, "Yoga"),
+		},
+		.driver_data = (void *)&yoga_8bit_fans_cfg,
+	},
+	{
+		.ident = "Lenovo Legion",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+			DMI_MATCH(DMI_PRODUCT_FAMILY, "Legion"),
+		},
+		.driver_data = (void *)&legion_16bit_dual_cfg,
 	},
 	{
 		.ident = "Lenovo IdeaPad",
-		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "IdeaPad") },
-		.driver_data = (void *)&yoga_continuous_8bit_cfg,
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+			DMI_MATCH(DMI_PRODUCT_FAMILY, "IdeaPad"),
+		},
+		.driver_data = (void *)&ideapad_8bit_fan0_cfg,
 	},
 	{ }
 };
-
 MODULE_DEVICE_TABLE(dmi, yogafan_quirks);
-
 
 static int yoga_fan_probe(struct platform_device *pdev)
 {
@@ -308,7 +204,6 @@ static int yoga_fan_probe(struct platform_device *pdev)
 	const struct yogafan_config *cfg;
 	struct yoga_fan_data *data;
 	struct device *hwmon_dev;
-	acpi_status status;
 	int i;
 
 	dmi_id = dmi_first_match(yogafan_quirks);
@@ -320,20 +215,15 @@ static int yoga_fan_probe(struct platform_device *pdev)
 	if (!data)
 		return -ENOMEM;
 
-	data->config = cfg;
+	data->multiplier = cfg->multiplier;
 
-	for (i = 0; i < 2; i++) {
-		if (!cfg->paths[i])
-			continue;
+	for (i = 0; i < cfg->fan_count; i++) {
+		acpi_status status;
 
 		status = acpi_get_handle(NULL, (char *)cfg->paths[i],
 					 &data->active_handles[data->fan_count]);
-
-		if (ACPI_SUCCESS(status)) {
+		if (ACPI_SUCCESS(status))
 			data->fan_count++;
-			if (data->fan_count >= cfg->fan_count)
-				break;
-		}
 	}
 
 	if (data->fan_count == 0)
