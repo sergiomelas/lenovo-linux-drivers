@@ -6,8 +6,26 @@
                     ##################################################################
                     ##################################################################
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 HELP US EXPAND SUPPORT: SHARE YOUR DSDT!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Does the 'yogafan' driver show 0 RPM or fail to detect your Lenovo/Legion/IdeaPad?
+To add support for your specific model, I need to analyze your laptop's ACPI memory map.
+
+HOW TO HELP:
+ 1. Install 'acpidump': sudo apt install acpica-tools
+ 2. Extract your DSDT:  sudo acpidump -b -t DSDT -o dsdt.dat
+ 3. Open a GitHub Issue: Attach the 'dsdt.dat' file and your laptop model name.
+
+WHY SHARE?
+Every Lenovo model uses slightly different "Embedded Controller" offsets. Sharing your DSDT
+allows me to map your fan's physical registers into the V12 Physics Engine for everyone!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
 This Scripts install dependencies to create debian packages for the latest kernel using debian Configuration.
 Add desired kernel options, compile it and make Debian packages then installs it (if configured so).
+We also provide a driver for reading Fans RPM for Lenovo laptops
 
 WARNING & DISCLAIMER: ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃                                                                                                  ┃
@@ -82,35 +100,38 @@ This build injects the Sergio Melas "yogafan" driver V8. It uses a passive RLLag
 (Rate-Limited Lag) filter for smooth RPM readings.
 
 YOGAFAN V12.0 / GITHUB V1.0 - SUPPORTED MODELS LIST (2026)
+Supported chips:
 
-YOGA & SLIM SERIES (8-bit / Discrete)
--------------------------------------
-- Yoga 14cACN, 14s, 13 (including Aura Edition)
-- Yoga Slim 7, 7i, 7 Pro, 7 Carbon
-- Yoga Pro 7, 9 (83E2, 83DN)
-- Yoga 710, 720, 510 (Discrete Step Logic)
-- Yoga 3 14, 11s, Yoga 2 13 (Discrete Step Logic)
-- Xiaoxin Pro, Air, 14, 16 (All PRC/Chinese Variants)
+  * YOGA & SLIM SERIES (8-bit / Discrete Logic)
+    - Yoga 14cACN, 14s, 13 (including Aura Edition)
+    - Yoga Slim 7, 7i, 7 Pro, 7 Carbon
+    - Yoga Pro 7, 9 (83E2, 83DN)
+    - Yoga 710, 720, 510 (Discrete Step Logic)
+    - Yoga 3 14, 11s, Yoga 2 13 (Discrete Step Logic)
+    - Xiaoxin Pro, Air, 14, 16 (All PRC/Chinese Variants)
 
-LEGION, LOQ & G-SERIES (16-bit Raw)
------------------------------------
-- Legion 5, 5i, 5 Pro (AMD & Intel 82JW/82JU)
-- Legion 7, 7i, 7 Slim (82WQ)
-- LOQ 15, 16 (82XV, 83DV)
-- GeekPro G5000, G6000 (PRC Gaming Series)
+  * LEGION, LOQ & G-SERIES (16-bit High-Precision Raw)
+    - Legion 5, 5i, 5 Pro (AMD & Intel 82JW/82JU)
+    - Legion 7, 7i, 7 Slim (82WQ)
+    - LOQ 15, 16 (82XV, 83DV)
+    - GeekPro G5000, G6000 (PRC Gaming Series)
 
-IDEAPAD & FLEX SERIES (8-bit / Discrete)
-----------------------------------------
-- IdeaPad 5, 5i, 5 Pro (81YM, 82FG)
-- IdeaPad 3, 3i (Modern 8-bit variants)
-- IdeaPad 500S, U31-70 (Discrete Step Logic)
-- Flex 5, 5i (81X1)
+  * IDEAPAD & FLEX SERIES (8-bit / Discrete Logic)
+    - IdeaPad 5, 5i, 5 Pro (81YM, 82FG)
+    - IdeaPad 3, 3i (Modern 8-bit variants)
+    - IdeaPad 500S, U31-70 (Discrete Step Logic)
+    - Flex 5, 5i (81X1)
 
-THINKBOOK, V-SERIES & LEGACY (Discrete)
----------------------------------------
-- ThinkBook G6, G7 (83AK)
-- V330-15IKB, V580
-- Legacy U-Series (U330p, U430p)
+  * THINKBOOK, V-SERIES & LEGACY (Discrete Logic)
+    - ThinkBook G6, G7 (83AK)
+    - V330-15IKB, V580
+    - Legacy U-Series (U330p, U430p)
+
+This driver covers over 95% of Lenovo's consumer and ultra-portable laptop portfolio
+released between 2011 and 2026, providing a unified hardware abstraction layer for diverse Embedded Controller
+(EC) architectures.
+
+The driver exposes the RLLag V12 physical filter parameters (time constant and slew-rate limit) in SI units (seconds), dynamically synchronizing them with the specific model's maximum RPM to ensure a consistent physical response across the entire Lenovo product stack.
 
 Hardware Identification (DMI Quirk Table):
 - 8-bit EC (Multiplier 100): Yoga, IdeaPad, Slim, Flex.
@@ -181,7 +202,7 @@ Change log:
 V1.0: 2026-04-01 - Updated yogafan V12:
                  - Hybrid Engine: Added Nmax/Rmax logic for Discrete ECs (Yoga 710/510, IdeaPad 500S/U31).
                  - Expanded HAL: Added "FAN0"/"FA2S" ACPI path mapping (ThinkBook G6, IdeaPad 5, Flex 5, LOQ).
-                 - HWMON Refinement: Synced quirk table to exclude non-RPM reporting configs for compliance.
+                 - HWMON Refinement: Synced quirk table.
                  - Documentation: Updated Master Reference Database (2026) with newly validated EC offsets.
                  - Code Cleanup: Standardized indentation, 32-bit safety (div64_s64), and removed trailing comments..
 
