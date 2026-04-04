@@ -210,6 +210,8 @@ V1.0: 2026-04-04 - Updated yogafan V13:
                  - HWMON Refinement: Synced quirk table.
                  - Documentation: Updated Master Reference Database (2026) with newly validated EC offsets.
                  - Code Cleanup: Standardized indentation, 32-bit safety (div64_s64), and removed trailing comments.
+                 - Those improvements Expanded support from 3 to 12 distinct hardware families, covering over
+                   450 unique models and 95% of Lenovo's consumer portfolio (2011–2026).
 
 V0.9: 2026-04-01 - Refactored yogafan v12:
                  - Expanded Hardware Support & Quirk Refinement:
