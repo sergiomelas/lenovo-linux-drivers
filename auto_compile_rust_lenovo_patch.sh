@@ -24,7 +24,7 @@ postfix="yoga"
 # Your Patch data
 PATCH_DIR="../../Lenovo Drivers"
 #PATCH_NAME="v11-0001-hwmon-yogafan-Add-support-for-Lenovo-Yoga-Legion-fan-monitoring.patch"
-PATCH_NAME="v12-0001-hwmon-yogafan-Add-support-for-Lenovo-Yoga-Legion-fan-monitoring-full-V12.patch"
+PATCH_NAME="v13-0001-hwmon-yogafan-Add-support-for-Lenovo-Yoga-Legion-fan-monitoring-V11-V13-full.patch"
 
 # ANSI Color Codes
 CYAN='\033[0;36m'
