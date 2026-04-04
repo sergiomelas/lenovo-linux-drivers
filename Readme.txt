@@ -19,7 +19,7 @@ HOW TO HELP:
 
 WHY SHARE?
 Every Lenovo model uses slightly different "Embedded Controller" offsets. Sharing your DSDT
-allows me to map your fan's physical registers into the V12 Physics Engine for everyone!
+allows me to map your fan's physical registers into the v13 Physics Engine for everyone!
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
@@ -94,12 +94,12 @@ LENOVO-SPECIFIC POST-INSTALLATION GUIDE (Updated 2026)
 auto_compile_rust_lenovo_drivers.sh
 ================================================================================
 
-1. UNIVERSAL FAN & SENSOR SUPPORT (yogafan v12.0)
+1. UNIVERSAL FAN & SENSOR SUPPORT (yogafan v13.0)
 -----------------------------------------------
 This build injects the Sergio Melas "yogafan" driver V8. It uses a passive RLLag
 (Rate-Limited Lag) filter for smooth RPM readings.
 
-YOGAFAN V12.0 / GITHUB V1.0 - SUPPORTED MODELS LIST (2026)
+YOGAFAN V13.0 / GITHUB V1.0 - SUPPORTED MODELS LIST (2026)
 Supported chips:
 
   * YOGA & SLIM SERIES (8-bit / Discrete Logic)
@@ -127,11 +127,16 @@ Supported chips:
     - V330-15IKB, V580
     - Legacy U-Series (U330p, U430p)
 
-This driver covers over 95% of Lenovo's consumer and ultra-portable laptop portfolio
-released between 2011 and 2026, providing a unified hardware abstraction layer for diverse Embedded Controller
-(EC) architectures.
 
-The driver exposes the RLLag V12 physical filter parameters (time constant and slew-rate limit) in SI units (seconds), dynamically synchronizing them with the specific model's maximum RPM to ensure a consistent physical response across the entire Lenovo product stack.
+This update expands the support from 3 to 12 distinct hardware families,
+covering over 450 unique models.
+It now accounts for 95% of Lenovo's consumer and ultra-portable portfolio
+released between 2011 and 2026 through a unified hardware abstraction layer.
+
+The driver exposes the RLLag V13 physical filter parameters (time constant and
+slew-rate limit) in SI units (seconds), dynamically synchronizing them with the
+specific model's maximum RPM to ensure a consistent physical response across
+the entire Lenovo product stack.
 
 Hardware Identification (DMI Quirk Table):
 - 8-bit EC (Multiplier 100): Yoga, IdeaPad, Slim, Flex.
@@ -199,14 +204,14 @@ References
 Change log:
 
 
-V1.0: 2026-04-01 - Updated yogafan V12:
+V1.0: 2026-04-04 - Updated yogafan V13:
                  - Hybrid Engine: Added Nmax/Rmax logic for Discrete ECs (Yoga 710/510, IdeaPad 500S/U31).
                  - Expanded HAL: Added "FAN0"/"FA2S" ACPI path mapping (ThinkBook G6, IdeaPad 5, Flex 5, LOQ).
                  - HWMON Refinement: Synced quirk table.
                  - Documentation: Updated Master Reference Database (2026) with newly validated EC offsets.
-                 - Code Cleanup: Standardized indentation, 32-bit safety (div64_s64), and removed trailing comments..
+                 - Code Cleanup: Standardized indentation, 32-bit safety (div64_s64), and removed trailing comments.
 
-V0.9: 2026-04-01 - Refactored yogafan V12:
+V0.9: 2026-04-01 - Refactored yogafan v12:
                  - Expanded Hardware Support & Quirk Refinement:
                     - Added Support for "Register 0x06" architecture (Yoga 710, 510, IdeaPad 510s/500S/U31/Y580).
                     - Added "FAN0" ACPI Path Mapping (ThinkBook G6, IdeaPad 5, Flex 5, V330, V580).

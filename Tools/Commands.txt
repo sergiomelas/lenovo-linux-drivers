@@ -1,0 +1,81 @@
+#Remove Stray caracters
+sed -i 's/\xc2\xa0/ /g' /<path to c code>
+
+# test kernel cpu of drivers
+sudo perf top -e cycles:k
+# / to open filter popup to filter
+
+#Check documentation
+rst2html Documentation/hwmon/yogafan.rst > /dev/null
+
+#Compile documetation kernel section:
+make SPHINXDIRS=hwmon htmldocs
+#Complie all documents
+make htmldocs
+
+
+Code Verification for format
+#C:
+./scripts/checkpatch.pl --strict --file drivers/hwmon/yogafan.c
+
+#Patch:
+./scripts/checkpatch.pl --strict v11-0001-hwmon-yogafan-Add-support-for-Lenovo-Yoga-Legion-fan-monitoring.patch
+
+#Documentazione (RST):
+rst2html Documentation/hwmon/yogafan.rst > /dev/null
+
+#Compile to test sintax
+make M=drivers/hwmon
+
+#Check commit:
+git status
+
+#apply patch
+patch -p1 < <Path to patch>
+
+#Compile and load a module without rebuild kernl:
+------------------------------------------------
+1. Compile and Link the Module
+The first command only creates the object file (.o). You need to tell the kernel build system to finish the job and create the actual kernel module (.ko).
+
+Run these from the root of your kernel source tree:
+
+Bash
+# Compile the object file (The check we just did)
+make M=drivers/hwmon/ yogafan.o
+
+# Link the final kernel module (.ko)
+make M=drivers/hwmon/ CONFIG_SENSORS_YOGAFAN=m modules
+2. Clean up and Install
+Before loading the new V12 version, we need to remove the old driver and "clean the pipes."
+
+Bash
+# Remove the currently running driver (if any)
+sudo rmmod yogafan
+
+# (Optional but recommended) Install it into the system's module path
+sudo make M=drivers/hwmon/ modules_install
+
+# Refresh the module dependency list
+sudo depmod -a
+3. Load with Physics Parameters
+Now, load the driver. We will use the SI Unit (seconds) parameters we defined in the code to set the "feel" of the filter.
+
+Bash
+# Load with 1 second smoothing and 4 second acceleration limit
+sudo insmod drivers/hwmon/yogafan.ko tau_s=1 slew_time_s=4
+4. The Final Verification (The "No-Bullshit" Check)
+Now we verify that the Sysfs interface is reporting the values from the Master Table and that the RLLag filter is active.
+
+Check the Hardware Max (Should be 5500):
+
+Bash
+cat /sys/class/hwmon/hwmon$(idx)/fan1_max
+(Replace $(idx) with your hwmon number, likely 6 based on your previous logs).
+
+Watch the V12 Physics Engine in action:
+Run this command to see the 8-bit EC "steps" being smoothed into 1-RPM increments by the filter:
+
+Bash
+watch -n 0.1 "echo 'RAW EC STEP: '\$(cat /sys/class/hwmon/hwmon*/fan1_raw); \
+               echo 'V12 FILTERED: '\$(cat /sys/class/hwmon/hwmon*/fan1_input)"
