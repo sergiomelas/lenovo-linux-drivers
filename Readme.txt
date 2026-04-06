@@ -15,7 +15,9 @@ To add support for your specific model, I need to analyze your laptop's ACPI mem
 HOW TO HELP:
  1. Install 'acpidump': sudo apt install acpica-tools
  2. Extract your DSDT:  sudo acpidump -b -t DSDT -o dsdt.dat
- 3. Open a GitHub Issue: Attach the 'dsdt.dat' file and your laptop model name.
+ 3. To get the family name  run:  sudo dmidecode -s system-product-family
+ 4. To get the identifier run: sudo dmidecode -s system-product-name
+ 5. Open a GitHub Issue: Attach the 'dsdt.dat' file and your laptop model name, family name, and identifier
 
 WHY SHARE?
 Every Lenovo model uses slightly different "Embedded Controller" offsets. Sharing your DSDT
@@ -40,7 +42,7 @@ WARNING & DISCLAIMER: ━━━━━━━━━━━━━━━━━━━�
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
 ================================================================================
-Debian pakaes Creation from upstream
+Debian Package Creation from upstream
 ================================================================================
 
 Installation Instructions:
@@ -56,11 +58,14 @@ Installation Instructions:
                                                 compliant builds)
         - auto_compile_rust_lenovo_drivers.sh : Rust + AMD Optimization + Universal Yogafan
                                                 from driver source code (Best for local driver development)
+                                                Uses a symlink to pull the latest source from the Commits
+                                                folder automatically.
         - auto_compile_rust_lenovo_patch.sh   : Rust + AMD Optimization + Universal Yogafan rom official
                                                 kernel patch (Best for upstream-compliant builds)
-
-     This one last 3 files needs to be placed in the root directory of the downloaded kernel source.
- 4)- A directory is created containing the latest deb packages:
+                                                Uses a symlink to pull the latest patch from the Commits
+                                                folder automatically.
+     The auto_*.sh scripts need to be placed in the root directory of the downloaded kernel source.
+ 4)- Running those latest deb packages are created:
         linux-headers-xxxxxxxxxxx_amd64.deb
         linux-image-xxxxxxxxxxx_amd64.deb
         linux-libc-xxxxxxxxxxx_amd64.deb
@@ -91,7 +96,7 @@ Removal instructions:
 
 ================================================================================
 LENOVO-SPECIFIC POST-INSTALLATION GUIDE (Updated 2026)
-auto_compile_rust_lenovo_drivers.sh
+auto_compile_rust_lenovo_*.sh
 ================================================================================
 
 1. UNIVERSAL FAN & SENSOR SUPPORT (yogafan v13.0)
@@ -99,33 +104,34 @@ auto_compile_rust_lenovo_drivers.sh
 This build injects the Sergio Melas "yogafan" driver V8. It uses a passive RLLag
 (Rate-Limited Lag) filter for smooth RPM readings.
 
-YOGAFAN V13.0 / GITHUB V1.0 - SUPPORTED MODELS LIST (2026)
+YOGAFAN V1 (part 2) / GITHUB V1.0 - SUPPORTED MODELS LIST (2026)
 Supported chips:
 
   * YOGA & SLIM SERIES (8-bit / Discrete Logic)
-    - Yoga 14cACN, 14s, 13 (including Aura Edition)
-    - Yoga Slim 7, 7i, 7 Pro, 7 Carbon
-    - Yoga Pro 7, 9 (83E2, 83DN)
+    - Yoga 14cACN, 14s, 13 (including Aura Edition Gen 9 [83CV])
+    - Yoga Slim 7, 7i, 7 Pro, 7 Carbon (Gen 8/9)
+    - Yoga Pro 7, 9 (83E2, 83DN - Gen 9)
     - Yoga 710, 720, 510 (Discrete Step Logic)
     - Yoga 3 14, 11s, Yoga 2 13 (Discrete Step Logic)
     - Xiaoxin Pro, Air, 14, 16 (All PRC/Chinese Variants)
 
   * LEGION, LOQ & G-SERIES (16-bit High-Precision Raw)
     - Legion 5, 5i, 5 Pro (AMD & Intel 82JW/82JU)
-    - Legion 7, 7i, 7 Slim (82WQ)
-    - LOQ 15, 16 (82XV, 83DV)
+    - Legion 7, 7i, 7 Slim (83FD, 83DE - Gen 9)
+    - LOQ 15, 16 (83DV, 83JC, 83DX - Gen 9/10)
     - GeekPro G5000, G6000 (PRC Gaming Series)
 
   * IDEAPAD & FLEX SERIES (8-bit / Discrete Logic)
-    - IdeaPad 5, 5i, 5 Pro (81YM, 82FG)
-    - IdeaPad 3, 3i (Modern 8-bit variants)
+    - IdeaPad 5, 5i, 5 Pro (83DT, 83DS - Gen 9 2-in-1)
+    - IdeaPad 3, 3i (Modern 8-bit variants [83ER])
     - IdeaPad 500S, U31-70 (Discrete Step Logic)
-    - Flex 5, 5i (81X1)
+    - Flex 5, 5i (81X1, 83xx)
 
   * THINKBOOK, V-SERIES & LEGACY (Discrete Logic)
-    - ThinkBook G6, G7 (83AK)
+    - ThinkBook 14/16 G6+, G7 (83AK)
     - V330-15IKB, V580
     - Legacy U-Series (U330p, U430p)
+
 
 
 This update expands the support from 3 to 12 distinct hardware families,
@@ -133,7 +139,7 @@ covering over 450 unique models.
 It now accounts for 95% of Lenovo's consumer and ultra-portable portfolio
 released between 2011 and 2026 through a unified hardware abstraction layer.
 
-The driver exposes the RLLag V13 physical filter parameters (time constant and
+The driver exposes the RLLag physical filter parameters (time constant and
 slew-rate limit) in SI units (seconds), dynamically synchronizing them with the
 specific model's maximum RPM to ensure a consistent physical response across
 the entire Lenovo product stack.
@@ -151,6 +157,9 @@ Filter Details:
 Note: The driver is automatically loaded at boot via DMI matching. No manual configuration is required.
 If you previously created a kernel module load file with: echo "yogafan" | sudo tee /etc/modules-load.d/yogafan.conf,
 please remove it with: sudo rm /etc/modules-load.d/yogafan.conf
+
+Note on Versioning: Folders marked (Accepted) match the official Linux mainline code.
+Folders marked (Rejected) or (Unsubmitted) are for development/testing and are not yet part of the official kernel.
 
 Verification:
 $ sensors
@@ -204,7 +213,7 @@ References
 Change log:
 
 
-V1.0: 2026-04-04 - Updated yogafan V13:
+V1.0: 2026-04-04 - Updated yogafan V1 (part 2):
                  - Hybrid Engine: Added Nmax/Rmax logic for Discrete ECs (Yoga 710/510, IdeaPad 500S/U31).
                  - Expanded HAL: Added "FAN0"/"FA2S" ACPI path mapping (ThinkBook G6, IdeaPad 5, Flex 5, LOQ).
                  - HWMON Refinement: Synced quirk table.
