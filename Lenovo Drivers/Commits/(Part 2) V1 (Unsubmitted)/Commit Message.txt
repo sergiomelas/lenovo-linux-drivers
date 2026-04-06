@@ -1,0 +1,38 @@
+hwmon: (yogafan) Extend support to more Lenovo consumer models
+
+This expansion adds hardware compatibility for the yogafan driver to cover
+additional Lenovo consumer families. It implements linear estimation for
+discrete Embedded Controllers and refactors the architecture to move
+physics constants into hardware profiles for model-specific tuning.
+
+Key improvements:
+- Implementation of linear estimation for discrete Embedded Controllers.
+- Architectural refactor to move physics constants into hardware profiles.
+- Safety fixes for divide-by-zero risks and filter state consistency.
+
+Signed-off-by: Sergio Melas <sergiomelas@gmail.com>
+---
+
+v1 (Part 2):
+ - Initial submission of the driver expansion (following base driver merge).
+ - Technical content addresses previous feedback regarding "phantom fans"
+   by stopping ACPI path discovery once the expected fan count is reached.
+ - Improved code documentation: Removed internal development notes and
+   standardized comments for kernel upstreaming.
+ - Structural Cleanup: Removed unused raw_val array to reduce memory
+   footprint.
+ - Physics Consistency: Modified the RLLag filter to use per-device
+   internal_tau_ms and device_max_rpm variables resolved during probe.
+ - Mathematical Safety: Implemented safety clamps (?: 1) and used resolved
+   max_rpm as a physical basis to prevent potential division-by-zero.
+ - State Protection: yoga_fan_read() now handles static attributes (max)
+   immediately to prevent userspace polling from corrupting filter ktime.
+ - Sysfs Sanitation: Fully migrated to standard HWMON core registration,
+   removing all non-standard attributes.
+ - Documentation Sync: Updated Documentation/hwmon/yogafan.rst to reflect
+   the new hardware profiles and secondary ACPI path discovery.
+
+History:
+ - Base Driver (Part 1): Previously accepted and merged into hwmon-next.
+   Established the core RLLag filter logic and initial support for
+   mainstream Yoga/Legion families (v1 through v12 series).

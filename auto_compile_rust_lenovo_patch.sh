@@ -23,8 +23,7 @@ postfix="yoga"
 
 # Your Patch data
 PATCH_DIR="../../Lenovo Drivers"
-#PATCH_NAME="v11-0001-hwmon-yogafan-Add-support-for-Lenovo-Yoga-Legion-fan-monitoring.patch"
-PATCH_NAME="v13-0001-hwmon-yogafan-Add-support-for-Lenovo-Yoga-Legion-fan-monitoring-V11-V13-full.patch"
+PATCH_NAME="Current-full.patch"
 
 # ANSI Color Codes
 CYAN='\033[0;36m'
@@ -73,18 +72,18 @@ sudo ls >/dev/null
 sudo apt-get install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang libdw-dev:native bc
 
 
-# --- CONFIGURE KERNEL BASE (Auto-Detect Debian Config) ---
+# --- CONFIGURE KERNEL BASE (Smart Auto-Detect) ---
 echo -e "${BLUE}------------------------------------------------------------------${NC}"
-echo -e "${CYAN} Searching for the latest official Debian base configuration...${NC}"
+echo -e "${CYAN} Searching for the latest official System configuration...${NC}"
 
-# Find the latest official Debian config (ignores your -"$postfix" builds)
-LATEST_CONFIG=$(ls -v /boot/config-* 2>/dev/null | grep -v "$postfix" | tail -n 1)
+# Match pure official naming conventions only
+LATEST_CONFIG=$(ls -v /boot/config-* 2>/dev/null | grep -E '/boot/config-[0-9.]+.*-(amd64|generic)$' | grep -vE 'yoga|patch|lts' | tail -n 1)
 
 if [ -n "$LATEST_CONFIG" ]; then
-    echo -e "${GREEN} SUCCESS: Found latest system config: ${NC}$LATEST_CONFIG"
+    echo -e "${GREEN} SUCCESS: Found official system config: ${NC}$LATEST_CONFIG"
     cp -v "$LATEST_CONFIG" .config
 else
-    echo -e "${GOLD} WARNING: No official Debian config found.${NC}"
+    echo -e "${GOLD} WARNING: No official base config found among your kernels.${NC}"
     echo -e "${BLUE} Falling back to currently running kernel config...${NC}"
     cp -v /boot/config-$(uname -r) .config
 fi

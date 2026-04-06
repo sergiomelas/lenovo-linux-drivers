@@ -67,18 +67,18 @@ sudo ls >/dev/null
 # Install libs
 sudo apt-get install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang libdw-dev:native bc
 
-# --- CONFIGURE KERNEL BASE (Auto-Detect Debian Config) ---
+# --- CONFIGURE KERNEL BASE (Smart Auto-Detect) ---
 echo -e "${BLUE}------------------------------------------------------------------${NC}"
-echo -e "${CYAN} Searching for the latest official Debian base configuration...${NC}"
+echo -e "${CYAN} Searching for the latest official System configuration...${NC}"
 
-# Find the latest official Debian config (ignores your -"$postfix" builds)
-LATEST_CONFIG=$(ls -v /boot/config-* 2>/dev/null | grep -v "$postfix" | tail -n 1)
+# Match pure official naming conventions only
+LATEST_CONFIG=$(ls -v /boot/config-* 2>/dev/null | grep -E '/boot/config-[0-9.]+.*-(amd64|generic)$' | grep -vE 'yoga|patch|lts' | tail -n 1)
 
 if [ -n "$LATEST_CONFIG" ]; then
-    echo -e "${GREEN} SUCCESS: Found latest system config: ${NC}$LATEST_CONFIG"
+    echo -e "${GREEN} SUCCESS: Found official system config: ${NC}$LATEST_CONFIG"
     cp -v "$LATEST_CONFIG" .config
 else
-    echo -e "${GOLD} WARNING: No official Debian config found.${NC}"
+    echo -e "${GOLD} WARNING: No official base config found among your kernels.${NC}"
     echo -e "${BLUE} Falling back to currently running kernel config...${NC}"
     cp -v /boot/config-$(uname -r) .config
 fi
@@ -93,26 +93,31 @@ echo -e "${BLUE}Injecting Yoga Fan Driver ...${NC}"
 SOURCE_CODE="../../Lenovo Drivers/yogafan.c"
 TARGET_FILE="./drivers/hwmon/yogafan.c"
 
+# Use -L to ensure we follow the symlink and copy the actual .c code
 if [ -f "$SOURCE_CODE" ]; then
-    cp "$SOURCE_CODE" "$TARGET_FILE"
+    cp -L "$SOURCE_CODE" "$TARGET_FILE"
 else
-    echo -e "${GOLD}Error: Source not found!${NC}"
+    echo -e "${GOLD}Error: Source not found at $SOURCE_CODE!${NC}"
     exit 1
 fi
 
+# 1. Update Makefile (Only if missing)
 if ! grep -q "yogafan.o" ./drivers/hwmon/Makefile; then
     echo "obj-\$(CONFIG_SENSORS_YOGAFAN) += yogafan.o" >> ./drivers/hwmon/Makefile
 fi
 
+# 2. Update Kconfig (Only if missing)
 if ! grep -q "config SENSORS_YOGAFAN" ./drivers/hwmon/Kconfig; then
-    cat <<EOF >> ./drivers/hwmon/Kconfig
-config SENSORS_YOGAFAN
-	tristate "Lenovo Yoga Fan Hardware Monitoring"
-	depends on ACPI && HWMON
-	help
-	  Support for fan RPM on modern Lenovo laptops.
-EOF
+    # Instead of appending to the very end, we use 'sed' to insert BEFORE the final 'endif'
+    # This keeps the driver INSIDE the HWMON menu in 'make menuconfig'
+    sed -i '/endif/i \
+config SENSORS_YOGAFAN \
+	tristate "Lenovo Yoga Fan Hardware Monitoring" \
+	depends on ACPI && HWMON \
+	help \
+	  Support for fan RPM on modern Lenovo laptops.' ./drivers/hwmon/Kconfig
 fi
+
 
 # --- START OF OPTIMIZED MODULE CONFIGURATION (YOGA 14c ACN) ---
 
