@@ -491,7 +491,12 @@ static int yoga_fan_probe(struct platform_device *pdev)
 	data->internal_tau_ms = cfg->tau_ms;                                                   // Physics: Initialize smoothing speed.
 	data->internal_max_slew_rpm_s = data->device_max_rpm / (cfg->slew_time_s ?: 1);        // Physics: Initialize acceleration cap.
 
-	/* 1. ACPI DISCOVERY: Locate fan objects in the BIOS Memory Map */                      // Action: Translates BIOS paths into binary handles.
+
+	/* 1.
+	 * Iterate through the ACPI paths defined in the hardware profile.
+	 * We check up to MAX_FANS, but stop once we find the number of fans
+	 * expected by the specific model's configuration.
+	 */                      							       // Action: Translates BIOS paths into binary handles.
 	for (i = 0; i < 2 && cfg->paths[i]; i++) {                                             // Traverse: Try both paths in the profile.
 		acpi_handle handle;
 
@@ -508,7 +513,11 @@ static int yoga_fan_probe(struct platform_device *pdev)
 	if (data->fan_count == 0)                                                              // Failure: DMI matched, but no ACPI fan nodes were found in the BIOS.
 		return -ENODEV;
 
-	/* 2. HWMON SETUP: Describe the hardware capabilities to Linux */                       // Action: Defines the sysfs interface.
+	/* 2.
+	 * Dynamically build the HWMON channel configuration based on the
+	 * number of fans actually discovered. We allocate one extra slot
+	 * to serve as a null terminator for the HWMON core.
+	 */                   								       // Action: Defines the sysfs interface.
 	fan_config = devm_kcalloc(&pdev->dev, data->fan_count + 1, sizeof(u32), GFP_KERNEL);
 	if (!fan_config)
 		return -ENOMEM;

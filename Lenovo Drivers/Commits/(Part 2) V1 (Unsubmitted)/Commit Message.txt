@@ -5,6 +5,11 @@ additional Lenovo consumer families. It implements linear estimation for
 discrete Embedded Controllers and refactors the architecture to move
 physics constants into hardware profiles for model-specific tuning.
 
+This driver covers 450 models that is  over 95% of Lenovo's consumer and
+ultra-portable laptop portfolio released between 2011 and 2026, providing a
+unified hardware abstraction layer for diverse Embedded Controller (EC)
+architectures for 11 families.
+
 Key improvements:
 - Implementation of linear estimation for discrete Embedded Controllers.
 - Architectural refactor to move physics constants into hardware profiles.
@@ -14,6 +19,7 @@ Signed-off-by: Sergio Melas <sergiomelas@gmail.com>
 ---
 
 v1 (Part 2):
+ - Integrated documentation markup improvements suggested by Randy Dunlap.
  - Initial submission of the driver expansion (following base driver merge).
  - Technical content addresses previous feedback regarding "phantom fans"
    by stopping ACPI path discovery once the expected fan count is reached.

@@ -107,37 +107,41 @@ This build injects the Sergio Melas "yogafan" driver V8. It uses a passive RLLag
 YOGAFAN V1 (part 2) / GITHUB V1.0 - SUPPORTED MODELS LIST (2026)
 Supported chips:
 
-  * YOGA & SLIM SERIES (8-bit / Discrete Logic)
-    - Yoga 14cACN, 14s, 13 (including Aura Edition Gen 9 [83CV])
-    - Yoga Slim 7, 7i, 7 Pro, 7 Carbon (Gen 8/9)
-    - Yoga Pro 7, 9 (83E2, 83DN - Gen 9)
-    - Yoga 710, 720, 510 (Discrete Step Logic)
-    - Yoga 3 14, 11s, Yoga 2 13 (Discrete Step Logic)
-    - Xiaoxin Pro, Air, 14, 16 (All PRC/Chinese Variants)
 
-  * LEGION, LOQ & G-SERIES (16-bit High-Precision Raw)
-    - Legion 5, 5i, 5 Pro (AMD & Intel 82JW/82JU)
-    - Legion 7, 7i, 7 Slim (83FD, 83DE - Gen 9)
-    - LOQ 15, 16 (83DV, 83JC, 83DX - Gen 9/10)
-    - GeekPro G5000, G6000 (PRC Gaming Series)
+* **YOGA & SLIM SERIES (8-bit / Discrete Logic)**
+  - Yoga 14cACN (82N7), 14s, 13
+  - Yoga Aura Edition
+  - Yoga Slim 7, 7i, 7 Pro, 7 Carbon
+  - Yoga Pro 7 (83DN, 83CV)
+  - Yoga Pro 9i (83E2)
+  - Yoga 710, 720, 510 (Discrete Step Logic)
+  - Yoga 3 14, 11s, Yoga 2 13 (Discrete Step Logic)
+  - Xiaoxin Pro, Air, 14, 16 (PRC Variants: 83JC, 83DX)
 
-  * IDEAPAD & FLEX SERIES (8-bit / Discrete Logic)
-    - IdeaPad 5, 5i, 5 Pro (83DT, 83DS - Gen 9 2-in-1)
-    - IdeaPad 3, 3i (Modern 8-bit variants [83ER])
-    - IdeaPad 500S, U31-70 (Discrete Step Logic)
-    - Flex 5, 5i (81X1, 83xx)
+* **LEGION, LOQ & G-SERIES (16-bit High-Precision Raw)**
+  - Legion 5, 5i, 5 Pro (82JW, 82JU)
+  - Legion 7, 7i, 7 Slim (82WQ, 83FD, 83DE)
+  - Legion 9 / Extreme (Triple-fan setup)
+  - LOQ 15, 16 (82XV, 83DV)
+  - GeekPro G5000, G6000 (PRC Gaming Series)
 
-  * THINKBOOK, V-SERIES & LEGACY (Discrete Logic)
-    - ThinkBook 14/16 G6+, G7 (83AK)
-    - V330-15IKB, V580
-    - Legacy U-Series (U330p, U430p)
+* **IDEAPAD & FLEX SERIES (8-bit / Discrete Logic)**
+  - IdeaPad 5, 5i, 5 Pro (81YM, 82FG)
+  - IdeaPad 3, 3i (Modern 8-bit variants)
+  - IdeaPad 500S, U31-70 (Discrete Step Logic)
+  - IdeaPad Y580 (Discrete Step Logic)
+  - Flex 5, 5i (81X1)
+
+* **THINKBOOK, V-SERIES & LEGACY (Discrete Logic)**
+  - ThinkBook G6, G7 (83AK)
+  - ThinkPad T/X/L-Series, Helix, 13 (Discrete Logic)
+  - V330-15IKB, V580
 
 
 
-This update expands the support from 3 to 12 distinct hardware families,
-covering over 450 unique models.
-It now accounts for 95% of Lenovo's consumer and ultra-portable portfolio
-released between 2011 and 2026 through a unified hardware abstraction layer.
+This driver covers 450 models that is  over 95% of Lenovo's consumer and ultra-portable
+laptop portfolio released between 2011 and 2026, providing a unified hardware abstraction layer for diverse
+Embedded Controller (EC) architectures for 11 families.
 
 The driver exposes the RLLag physical filter parameters (time constant and
 slew-rate limit) in SI units (seconds), dynamically synchronizing them with the
@@ -213,7 +217,7 @@ References
 Change log:
 
 
-V1.0: 2026-04-04 - Updated yogafan V1 (part 2):
+V1.0: 2026-04-06 - Updated yogafan V1 (part 2):
                  - Hybrid Engine: Added Nmax/Rmax logic for Discrete ECs (Yoga 710/510, IdeaPad 500S/U31).
                  - Expanded HAL: Added "FAN0"/"FA2S" ACPI path mapping (ThinkBook G6, IdeaPad 5, Flex 5, LOQ).
                  - HWMON Refinement: Synced quirk table.
