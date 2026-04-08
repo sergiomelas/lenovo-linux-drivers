@@ -217,7 +217,7 @@ References
 Change log:
 
 
-V1.0: 2026-04-06 - Updated yogafan V1 (part 2):
+V1.0: 2026-04-08 - Updated yogafan V1 (part 2):
                  - Hybrid Engine: Added Nmax/Rmax logic for Discrete ECs (Yoga 710/510, IdeaPad 500S/U31).
                  - Expanded HAL: Added "FAN0"/"FA2S" ACPI path mapping (ThinkBook G6, IdeaPad 5, Flex 5, LOQ).
                  - HWMON Refinement: Synced quirk table.

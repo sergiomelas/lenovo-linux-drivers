@@ -28,11 +28,9 @@
 
 /* Driver Configuration Constants */
 #define DRVNAME			"yogafan"
-#define MAX_FANS		8
+#define MAX_FANS		3
 
 /* Filter Configuration Constants */
-#define TAU_MS			1000	/* Time constant for the first-order lag (ms) */
-#define MAX_SLEW_RPM_S		1500	/* Maximum allowed change in RPM per second */
 #define MAX_SAMPLING		5000	/* Maximum allowed Ts for reset (ms) */
 #define MIN_SAMPLING		100	/* Minimum interval between filter updates (ms) */
 
@@ -48,7 +46,7 @@ struct yogafan_config {
 	unsigned int tau_ms;		/* To store the smoothing speed    */
 	unsigned int slew_time_s;	/* To store the acceleration limit */
 	unsigned int stop_threshold;	/* To store the RPM floor */
-	const char *paths[2];		/* Paths */
+	const char *paths[MAX_FANS];	/* Paths */
 };
 
 struct yoga_fan_data {
@@ -82,7 +80,54 @@ static struct yogafan_config legion_continuous_16bit_cfg = {
 	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FA2S" }
 };
 
+/* ThinkPad L-Series / V580 (Continuous 8-bit) */
+static struct yogafan_config thinkpad_l_cfg = {
+	.multiplier = 100, .fan_count = 1, .n_max = 0,
+	.r_max = 5500, /* Matching table peak for L390 */
+	.tau_ms = 1000, .slew_time_s = 4, .stop_threshold = 50,
+	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", "\\_SB.PCI0.LPC0.EC0.FAN1" }
+};
+
+
+/* High Performance (Strict Continuous) */
+static struct yogafan_config legion_high_perf_cfg = {
+	.multiplier = 1, .fan_count = 2, .n_max = 0,
+	.r_max = 8000, /* Peak for Legion 7i / Yoga Pro 9 */
+	.tau_ms = 1000, .slew_time_s = 4, .stop_threshold = 50,
+	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FA2S" }
+};
+
+/* Yoga 13 (8-bit Continuous) - Dual Fan */
+static struct yogafan_config yoga13_continous_cfg = {
+	.multiplier = 100, .fan_count = 2, .n_max = 0, .r_max = 5000,
+	.tau_ms = 1000, .slew_time_s = 4, .stop_threshold = 50,
+	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN1", "\\_SB.PCI0.LPC0.EC0.FAN2" }
+};
+
+/* Legion 9i / Extreme (3 Fans, 16-bit) */
+static struct yogafan_config legion_triple_16bit_cfg = {
+	.multiplier = 1, .fan_count = 3, .n_max = 0,
+	.r_max = 8000,
+	.tau_ms = 1000, .slew_time_s = 4, .stop_threshold = 50,
+	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FA2S", "\\_SB.PCI0.LPC0.EC0.FA3S" }
+};
+
+/* Dual-Fan 8-bit (Yoga Slim 7 Pro, IdeaPad Pro 5, ThinkBook 16p) */
+static struct yogafan_config yoga_dual_8bit_cfg = {
+	.multiplier = 100, .fan_count = 2, .n_max = 0,
+	.r_max = 6000,
+	.tau_ms = 1000, .slew_time_s = 4, .stop_threshold = 50,
+	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FA2S" }
+};
+
 /* --- DISCRETE ESTIMATION PROFILES (NMAX > 0) --- */
+
+/* IdeaPad Y580 (N=35) */
+static struct yogafan_config ideapad_y580_discrete_cfg = {
+	.multiplier = 0, .fan_count = 1, .n_max = 35, .r_max = 4800,
+	.tau_ms = 1000, .slew_time_s = 4, .stop_threshold = 50,
+	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", "\\_SB.PCI0.LPC0.EC0.FANS" }
+};
 
 /* Yoga 710/720 (N=59) */
 static struct yogafan_config yoga_710_discrete_cfg = {
@@ -119,12 +164,6 @@ static struct yogafan_config yoga2_13_discrete_cfg = {
 	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", NULL }
 };
 
-/* Yoga 13 (N=255) - Dual Fan */
-static struct yogafan_config yoga13_discrete_cfg = {
-	.multiplier = 0, .fan_count = 2, .n_max = 255, .r_max = 5000,
-	.tau_ms = 1000, .slew_time_s = 4, .stop_threshold = 50,
-	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN1", "\\_SB.PCI0.LPC0.EC0.FAN2" }
-};
 
 /* Legacy U330p/U430p (N=768) */
 static struct yogafan_config legacy_u_discrete_cfg = {
@@ -141,21 +180,7 @@ static struct yogafan_config thinkpad_discrete_cfg = {
 	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", "\\_SB.PCI0.LPC0.EC0.FANS" }
 };
 
-/* ThinkPad L-Series / V580 (Continuous 8-bit) */
-static struct yogafan_config thinkpad_l_cfg = {
-	.multiplier = 100, .fan_count = 1, .n_max = 100,
-	.r_max = 5500, /* Matching table peak for L390 */
-	.tau_ms = 1000, .slew_time_s = 4, .stop_threshold = 50,
-	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", "\\_SB.PCI0.LPC0.EC0.FAN1" }
-};
 
-/* High Performance (Strict Continuous) */
-static struct yogafan_config legion_high_perf_cfg = {
-	.multiplier = 1, .fan_count = 2, .n_max = 0,
-	.r_max = 8000, /* Peak for Legion 7i / Yoga Pro 9 */
-	.tau_ms = 1000, .slew_time_s = 4, .stop_threshold = 50,
-	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FA2S" }
-};
 
 /*
  * Filter Physics (RLLag)
@@ -170,7 +195,7 @@ static struct yogafan_config legion_high_perf_cfg = {
  * Where:
  * Ts[t]    = Sys_time[t+1] - Sys_time[t]  (Time delta between reads)
  * Alpha    = 1 - exp(-Ts[t] / Tau)        (Low-pass smoothing factor)
- * limit[t] = MAX_SLEW_RPM_S * Ts[t]       (Time-normalized slew limit)
+ * limit[t] = Slew_Limit * Ts[t]           (Time-normalized slew limit)
  *
  * To avoid expensive floating-point exponential calculations in the kernel,
  * we use a first-order Taylor/Bilinear approximation:
@@ -180,7 +205,7 @@ static struct yogafan_config legion_high_perf_cfg = {
  * Ts             = current_time - last_sample_time
  * Alpha          = Ts / (Tau + Ts)
  * step           = Alpha * (raw_RPM - RPM_old)
- * limit          = MAX_SLEW_RPM_S * Ts
+ * limit          = Slew_Limit * Ts
  * step_clamped   = clamp(step, -limit, limit)
  * RPM_new        = RPM_old + step_clamped
  *
@@ -275,6 +300,7 @@ static int yoga_fan_read(struct device *dev, enum hwmon_sensor_types type,
 
 	/* 3. Calculate raw RPM based on architecture */
 	if (cfg->n_max > 0)
+		/* Use s64 promotion to prevent overflow during multiplication before division */
 		rpm_raw = (long)div64_s64((s64)data->device_max_rpm * raw_acpi, cfg->n_max);
 	else
 		rpm_raw = (long)raw_acpi * cfg->multiplier;
@@ -303,10 +329,19 @@ static const struct hwmon_ops yoga_fan_hwmon_ops = {
 };
 
 static const struct dmi_system_id yogafan_quirks[] = {
-	/* --- DISCRETE OVERRIDES (Specific matches MUST come first) --- */
-
+	/* --- 1. SPECIFIC DISCRETE OVERRIDES (Highest Priority) --- */
 	{
-		.ident = "Lenovo Yoga 510",
+		.ident = "Lenovo V580",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "V580") },
+		.driver_data = &thinkpad_l_cfg,
+	},
+	{
+		.ident = "Lenovo V330-15IKB",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "V330-15IKB") },
+		.driver_data = &thinkpad_l_cfg,
+	},
+	{
+		.ident = "Lenovo Yoga 510 / Ideapad 510s",
 		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Yoga 510") },
 		.driver_data = &yoga_510_discrete_cfg,
 	},
@@ -316,8 +351,18 @@ static const struct dmi_system_id yogafan_quirks[] = {
 		.driver_data = &yoga_510_discrete_cfg,
 	},
 	{
-		.ident = "Lenovo Ideapad 500S",
+		.ident = "Lenovo Ideapad 510s / Yoga 510 (Alt ID)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "80S7") },
+		.driver_data = &yoga_510_discrete_cfg,
+	},
+	{
+		.ident = "Lenovo Ideapad 500S / U31-70",
 		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Ideapad 500S") },
+		.driver_data = &ideapad_500s_discrete_cfg,
+	},
+	{
+		.ident = "Lenovo Ideapad 500S-13 (Alt ID)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Ideapad 500S-13") },
 		.driver_data = &ideapad_500s_discrete_cfg,
 	},
 	{
@@ -338,13 +383,35 @@ static const struct dmi_system_id yogafan_quirks[] = {
 	{
 		.ident = "Lenovo Yoga 13",
 		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "20191") },
-		.driver_data = &yoga13_discrete_cfg,
+		.driver_data = &yoga13_continous_cfg,
+	},
+	{
+		.ident = "Lenovo Ideapad 710S",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Ideapad 710S") },
+		.driver_data = &yoga13_continous_cfg,
+	},
+	{
+		.ident = "Lenovo Ideapad Y580",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Lenovo IdeaPad Y580") },
+		.driver_data = &ideapad_y580_discrete_cfg,
 	},
 	{
 		.ident = "Lenovo U330p/U430p",
 		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Lenovo u330p") },
 		.driver_data = &legacy_u_discrete_cfg,
 	},
+	{
+		.ident = "Lenovo Yoga 710",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Yoga 710") },
+		.driver_data = &yoga_710_discrete_cfg,
+	},
+	{
+		.ident = "Lenovo Yoga 11s",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Yoga 11s") },
+		.driver_data = &yoga3_14_discrete_cfg, /* Both use N=80 */
+	},
+
+	/* --- 2. THINKPAD & V-SERIES MATCHES --- */
 	{
 		.ident = "ThinkPad 13",
 		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "ThinkPad 13") },
@@ -356,14 +423,19 @@ static const struct dmi_system_id yogafan_quirks[] = {
 		.driver_data = &thinkpad_discrete_cfg,
 	},
 	{
-		.ident = "ThinkPad X-Series",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "ThinkPad X") },
+		.ident = "ThinkPad Classic (T/X/Edge)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "ThinkPad") },
 		.driver_data = &thinkpad_discrete_cfg,
 	},
 	{
-		.ident = "ThinkPad T-Series",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "ThinkPad T") },
-		.driver_data = &thinkpad_discrete_cfg,
+		.ident = "ThinkPad L-Series",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "ThinkPad L") },
+		.driver_data = &thinkpad_l_cfg,
+	},
+	{
+		.ident = "ThinkPad Edge E520 / V580",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "20147") },
+		.driver_data = &thinkpad_l_cfg,
 	},
 	{
 		.ident = "Lenovo V330",
@@ -371,99 +443,185 @@ static const struct dmi_system_id yogafan_quirks[] = {
 		.driver_data = &thinkpad_l_cfg,
 	},
 
-	/* --- SPECIAL PROFILES (Must precede general fallbacks) --- */
+	/* --- 3. PRO & DUAL-FAN MODELS --- */
+	{
+		.ident = "Lenovo Legion 9 / Extreme",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Legion 9") },
+		.driver_data = &legion_triple_16bit_cfg,
+	},
+	{
+		.ident = "Lenovo Yoga Slim 7 Pro / ProX",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Yoga Slim 7 Pro") },
+		.driver_data = &yoga_dual_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo IdeaPad Pro 5",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "IdeaPad Pro 5") },
+		.driver_data = &yoga_dual_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo ThinkBook 14/16 Plus/p",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "ThinkBook 1") },
+		.driver_data = &yoga_dual_8bit_cfg,
+	},
+
+	/* --- 4. HIGH PERFORMANCE / GAMING OVERRIDES --- */
 	{
 		.ident = "Lenovo Yoga 14cACN",
 		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "82N7") },
 		.driver_data = &yoga_continuous_8bit_cfg,
 	},
-
 	{
 		.ident = "Lenovo Yoga Pro",
 		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Yoga Pro") },
 		.driver_data = &legion_high_perf_cfg,
 	},
 	{
-		.ident = "Lenovo Legion Pro",
+		.ident = "Lenovo Legion High Perf",
 		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Legion P") },
 		.driver_data = &legion_high_perf_cfg,
 	},
 	{
-		.ident = "Lenovo ThinkPad L",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "ThinkPad L") },
-		.driver_data = &thinkpad_l_cfg,
+		.ident = "Lenovo Yoga 720",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Yoga 720") },
+		.driver_data = &yoga_710_discrete_cfg,
+	},
+	{
+		.ident = "Lenovo Yoga 14s",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Yoga 14s") },
+		.driver_data = &yoga_continuous_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo Yoga Slim 7 Carbon",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Yoga Slim 7 Carbon") },
+		.driver_data = &yoga_continuous_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo Yoga Pro 9i (83E2)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "83E2") },
+		.driver_data = &legion_high_perf_cfg,
+	},
+	{
+		.ident = "Lenovo Yoga Pro 7 (83DN)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "83DN") },
+		.driver_data = &yoga_dual_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo Yoga Pro 7 (83CV)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "83CV") },
+		.driver_data = &yoga_dual_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo Xiaoxin Pro (83JC)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "83JC") },
+		.driver_data = &yoga_dual_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo Xiaoxin Pro (83DX)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "83DX") },
+		.driver_data = &yoga_dual_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo Yoga Aura Edition",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Aura Edition") },
+		.driver_data = &yoga_continuous_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo IdeaPad 5 Pro (81YM)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "81YM") },
+		.driver_data = &yoga_dual_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo IdeaPad 5 Pro (82FG)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "82FG") },
+		.driver_data = &yoga_dual_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo Flex 5 (81X1)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "81X1") },
+		.driver_data = &yoga_continuous_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo ThinkBook G7 (83AK)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "83AK") },
+		.driver_data = &yoga_continuous_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo Legion 5 (82JW/82JU)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "82JW") },
+		.driver_data = &legion_continuous_16bit_cfg,
+	},
+	{
+		.ident = "Lenovo Legion 5 (82JU)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "82JU") },
+		.driver_data = &legion_continuous_16bit_cfg,
+	},
+	{
+		.ident = "Lenovo Legion 7 (82WQ)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "82WQ") },
+		.driver_data = &legion_high_perf_cfg,
+	},
+	{
+		.ident = "Lenovo Legion 7 (83FD)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "83FD") },
+		.driver_data = &legion_high_perf_cfg,
+	},
+	{
+		.ident = "Lenovo Legion 7 (83DE)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "83DE") },
+		.driver_data = &legion_high_perf_cfg,
+	},
+	{
+		.ident = "Lenovo LOQ (82XV/83DV)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "82XV") },
+		.driver_data = &legion_continuous_16bit_cfg,
+	},
+	{
+		.ident = "Lenovo LOQ (83DV)",
+		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "83DV") },
+		.driver_data = &legion_continuous_16bit_cfg,
 	},
 
-	/* --- CONTINUOUS FALLBACKS (Family matches last) --- */
+	/* --- 5. GENERAL FAMILY FALLBACKS (Last Priority) --- */
 	{
-		.ident = "Lenovo Legion",
-		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "Legion") },
-		.driver_data = &legion_continuous_16bit_cfg,
-	},
-	{
-		.ident = "Lenovo LOQ",
-		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "LOQ") },
-		.driver_data = &legion_continuous_16bit_cfg,
-	},
-	{
-		.ident = "Lenovo Yoga",
-		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "Yoga") },
-		.driver_data = &yoga_continuous_8bit_cfg,
-	},
-	{
-		.ident = "Lenovo IdeaPad",
-		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "IdeaPad") },
-		.driver_data = &yoga_continuous_8bit_cfg,
-	},
-	{
-		.ident = "Lenovo Xiaoxin",
+		.ident = "Lenovo Xiaoxin Family",
 		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "Xiaoxin") },
 		.driver_data = &yoga_continuous_8bit_cfg,
 	},
 	{
-		.ident = "Lenovo GeekPro",
+		.ident = "Lenovo GeekPro Family",
 		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "GeekPro") },
 		.driver_data = &legion_continuous_16bit_cfg,
 	},
 	{
-		.ident = "Lenovo ThinkBook",
+		.ident = "Lenovo Legion Family",
+		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "Legion") },
+		.driver_data = &legion_continuous_16bit_cfg,
+	},
+	{
+		.ident = "Lenovo LOQ Family",
+		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "LOQ") },
+		.driver_data = &legion_continuous_16bit_cfg,
+	},
+	{
+		.ident = "Lenovo Yoga Family",
+		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "Yoga") },
+		.driver_data = &yoga_continuous_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo IdeaPad Family",
+		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "IdeaPad") },
+		.driver_data = &yoga_continuous_8bit_cfg,
+	},
+	{
+		.ident = "Lenovo ThinkBook Family",
 		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "ThinkBook") },
 		.driver_data = &yoga_continuous_8bit_cfg,
 	},
 	{
-		.ident = "Lenovo Slim",
-		.matches = { DMI_MATCH(DMI_PRODUCT_FAMILY, "Slim") },
-		.driver_data = &yoga_continuous_8bit_cfg,
-	},
-	{
-		.ident = "Lenovo V-Series",
+		.ident = "Lenovo V/Aura/Slim Family",
 		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Lenovo V") },
 		.driver_data = &yoga_continuous_8bit_cfg,
-	},
-	{
-		.ident = "Lenovo Aura Edition",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Aura") },
-		.driver_data = &yoga_continuous_8bit_cfg,
-	},
-	{
-		.ident = "Lenovo Legion Series",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Legion") },
-		.driver_data = &legion_continuous_16bit_cfg,
-	},
-	{
-		.ident = "Lenovo Yoga Series",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "Yoga") },
-		.driver_data = &yoga_continuous_8bit_cfg,
-	},
-	{
-		.ident = "Lenovo IdeaPad Series",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "IdeaPad") },
-		.driver_data = &yoga_continuous_8bit_cfg,
-	},
-	{
-		.ident = "Lenovo LOQ Series",
-		.matches = { DMI_MATCH(DMI_PRODUCT_NAME, "LOQ") },
-		.driver_data = &legion_continuous_16bit_cfg,
 	},
 	{ }
 };
@@ -480,6 +638,7 @@ static int yoga_fan_probe(struct platform_device *pdev)
 	u32 *fan_config;
 	acpi_status status;
 	int i;
+	const struct hwmon_channel_info **chip_info_array;
 
 	dmi_id = dmi_first_match(yogafan_quirks);
 	if (!dmi_id)
@@ -490,29 +649,47 @@ static int yoga_fan_probe(struct platform_device *pdev)
 	if (!data)
 		return -ENOMEM;
 
+	// Log Device identified
+	dev_info(&pdev->dev, "Identified hardware: %s\n", dmi_id->ident);
+
 	data->config = cfg;
 	data->device_max_rpm = cfg->r_max ?: 5000;
 	data->internal_tau_ms = cfg->tau_ms;
 	data->internal_max_slew_rpm_s = data->device_max_rpm / (cfg->slew_time_s ?: 1);
 
-	/* 1. Discover handles and set the REAL fan_count */
-	for (i = 0; i < 2 && cfg->paths[i]; i++) {
+	/* * 1. Deterministic Multi-Path Discovery:
+	 * We iterate through the available paths to find physical handles.
+	 * This loop tests variations until data->fan_count matches the
+	 * cfg->fan_count expected for this model profile.
+	 */
+	for (i = 0; i < MAX_FANS && data->fan_count < cfg->fan_count; i++) {
 		acpi_handle handle;
+
+		/* Integrity check: End of defined paths in the quirk table */
+		if (!cfg->paths[i])
+			break;
 
 		status = acpi_get_handle(NULL, cfg->paths[i], &handle);
 		if (ACPI_SUCCESS(status)) {
 			data->active_handles[data->fan_count] = handle;
 			data->fan_count++;
-
-			if (cfg->fan_count == 1)
-				break;
+		} else {
+			/* Log variation failure for troubleshooting */
+			dev_dbg(&pdev->dev, "Fan path variation %s not found\n", cfg->paths[i]);
 		}
 	}
 
-	if (data->fan_count == 0)
+	/* Integrity Check: Fail probe if no fans were successfully registered */
+	if (data->fan_count == 0) {
+		dev_err(&pdev->dev, "Hardware identification failed: No fans found\n");
 		return -ENODEV;
+	}
 
-	/* 2. Dynamically build the HWMON channel info  */
+	/* 2.
+	 * Dynamically build the HWMON channel configuration based on the
+	 * number of fans actually discovered. We allocate one extra slot
+	 * to serve as a null terminator for the HWMON core.
+	 */
 	fan_config = devm_kcalloc(&pdev->dev, data->fan_count + 1, sizeof(u32), GFP_KERNEL);
 	if (!fan_config)
 		return -ENOMEM;
@@ -521,21 +698,19 @@ static int yoga_fan_probe(struct platform_device *pdev)
 		fan_config[i] = HWMON_F_INPUT | HWMON_F_MAX;
 
 	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
+
 	if (!info)
 		return -ENOMEM;
 
 	info->type = hwmon_fan;
 	info->config = fan_config;
 
-/* 3. Wrap it in chip_info */
+	/* 3. Wrap it in chip_info */
 	chip_info = devm_kzalloc(&pdev->dev, sizeof(*chip_info), GFP_KERNEL);
 	if (!chip_info)
 		return -ENOMEM;
 
 	chip_info->ops = &yoga_fan_hwmon_ops;
-
-	/* Create AND ALLOCATE the temporary pointer array */
-	const struct hwmon_channel_info **chip_info_array;
 
 	chip_info_array = devm_kcalloc(&pdev->dev, 2, sizeof(*chip_info_array), GFP_KERNEL);
 	if (!chip_info_array)
