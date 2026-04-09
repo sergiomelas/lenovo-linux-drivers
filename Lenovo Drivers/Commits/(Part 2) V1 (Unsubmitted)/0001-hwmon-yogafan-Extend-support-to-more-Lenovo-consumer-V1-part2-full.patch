@@ -1,6 +1,6 @@
-From d9e4e70f0b338e033597398b2ebb806c8c36a8a1 Mon Sep 17 00:00:00 2001
+From 77d3ab14700aa5808aa8f43f8865c8890cbf0972 Mon Sep 17 00:00:00 2001
 From: Sergio Melas <sergiomelas@gmail.com>
-Date: Thu, 9 Apr 2026 10:08:26 +0200
+Date: Thu, 9 Apr 2026 13:44:51 +0200
 Subject: [PATCH v1 (Part 2)] hwmon: (yogafan) Massive hardware expansion and
  structural refactoring
 MIME-Version: 1.0
@@ -75,12 +75,12 @@ History:
    initial support for ~12 modern Yoga/Legion families (Accepted).
 ---
  Documentation/hwmon/index.rst   |   1 +
- Documentation/hwmon/yogafan.rst | 696 +++++++++++++++++++++++++
+ Documentation/hwmon/yogafan.rst | 670 ++++++++++++++++++++++++
  MAINTAINERS                     |   8 +
  drivers/hwmon/Kconfig           |  12 +
  drivers/hwmon/Makefile          |   1 +
  drivers/hwmon/yogafan.c         | 868 ++++++++++++++++++++++++++++++++
- 6 files changed, 1586 insertions(+)
+ 6 files changed, 1560 insertions(+)
  create mode 100644 Documentation/hwmon/yogafan.rst
  create mode 100644 drivers/hwmon/yogafan.c
 
@@ -96,10 +96,10 @@ index b2ca8513c..ca438f294 100644
     zl6100
 diff --git a/Documentation/hwmon/yogafan.rst b/Documentation/hwmon/yogafan.rst
 new file mode 100644
-index 000000000..e2d7d9602
+index 000000000..5799900c8
 --- /dev/null
 +++ b/Documentation/hwmon/yogafan.rst
-@@ -0,0 +1,696 @@
+@@ -0,0 +1,670 @@
 +.. SPDX-License-Identifier: GPL-2.0-only
 +
 +=====================
@@ -111,8 +111,7 @@ index 000000000..e2d7d9602
 +filter to ensure smooth and physically accurate RPM telemetry.
 +
 +
-+Supported Hardware
-+------------------
++**Supported Hardware**
 +
 +The ``yogafan`` driver supports over 450 Lenovo models released between 2011
 +and 2026. Hardware is categorized by the following series:
@@ -163,9 +162,6 @@ index 000000000..e2d7d9602
 +  - U330p, U430p (High-resolution discrete)
 +  - U31-70, U41-70, U160
 +
-+ Copyright (C) 2021-2026 Sergio Melas <sergiomelas@gmail.com>
-+
-+
 +    Prefix: 'yogafan'
 +
 +    Addresses: ACPI handle (DMI Quirk Table Fallback)
@@ -174,8 +170,7 @@ index 000000000..e2d7d9602
 +
 +Author: Sergio Melas <sergiomelas@gmail.com>
 +
-+Description
-+-----------
++**Description**
 +
 +This driver provides fan speed monitoring for a wide range of Lenovo consumer
 +laptops. Unlike standard ThinkPads, these models do not use the 'thinkpad_acpi'
@@ -208,8 +203,7 @@ index 000000000..e2d7d9602
 +to ensure deterministic telemetry and prevent thermal monitoring failures
 +across the supported product stack.
 +
-+Filter Physics (RLLag )
-+--------------------------
++**Filter Physics (RLLag )**
 +
 +To address low-resolution tachometer sampling in the Embedded Controller,
 +the driver implements a passive discrete-time first-order lag filter
@@ -282,15 +276,13 @@ index 000000000..e2d7d9602
 +    between userspace reads, ensuring a consistent physical curve regardless
 +    of polling frequency.
 +
-+Hardware Identification and Multiplier Logic
-+--------------------------------------------
++**Hardware Identification and Multiplier Logic**
 +
 +The driver supports three distinct EC architectures. Differentiation is handled
 +deterministically via a DMI Product Family quirk table during the probe phase,
 +eliminating the need for runtime heuristics.
 +
-+Continuous RPM Reads
-+~~~~~~~~~~~~~~~~~~~~
++**Continuous RPM Reads**
 +
 +1. 8-bit EC Architecture (Multiplier: 100)
 +   - **Families:** Yoga, IdeaPad, Slim, Flex, Xiaoxin.
@@ -304,8 +296,7 @@ index 000000000..e2d7d9602
 +   precision for fans exceeding 6000 RPM. These use a 16-bit word (2 bytes)
 +   storing the raw RPM value directly.
 +
-+Discrete RPM Reads
-+~~~~~~~~~~~~~~~~~~
++**Discrete RPM Reads**
 +
 +3. Discrete Level Architecture (Linear Estimation)
 +   - **Families:** Yoga 710/510/13, IdeaPad 500S, Legacy U-Series.
@@ -326,8 +317,7 @@ index 000000000..e2d7d9602
 +     here to simulate mechanical acceleration, smoothing the transition
 +     for the final fanX_input attribute.
 +
-+Suspend and Resume
-+------------------
++**Suspend and Resume**
 +
 +The driver utilizes the boottime clock (ktime_get_boottime()) to calculate the
 +sampling delta. This ensures that time spent in system suspend is accounted
@@ -335,8 +325,7 @@ index 000000000..e2d7d9602
 +filter automatically resets to the current hardware value to prevent
 +reporting "ghost" RPM data from before the sleep state.
 +
-+Usage
-+-----
++**Usage**
 +
 +The driver exposes standard hwmon sysfs attributes:
 +Attribute         Description
@@ -345,8 +334,7 @@ index 000000000..e2d7d9602
 +Note: If the hardware reports 0 RPM, the filter is bypassed and 0 is reported
 +immediately to ensure the user knows the fan has stopped.
 +
-+Lenovo Fan HAL
-+--------------
++**Lenovo Fan HAL**
 +
 +METHODOLOGY & IDENTIFICATION:
 +
@@ -362,26 +350,15 @@ index 000000000..e2d7d9602
 +
 +3. DATA-WIDTH ANALYSIS (THE MULTIPLIER):
 +   - 8-bit (Multiplier 100): Standard for Yoga/IdeaPad. Raw values (0-255)
-+     represent units of 100 RPM.
++   represent units of 100 RPM.
 +   - 16-bit (Multiplier 1): Standard for Legion/LOQ. High-precision 16-bit
-+     readings spread across two registers (0xFE/0xFF) for raw RPM telemetry.
++   readings spread across two registers (0xFE/0xFF) for raw RPM telemetry.
 +   - 8-bit (Nmax Levels): Used  in some older model. Raw values (0-Nmax)
-+     represent units of RMAX // NMAX  RPM.
++   represent units of RMAX // NMAX  RPM.
 +
-+Which gives the following table:
++Which gives the in the following paragraph:
 +
-+================================================
-+LENOVO FAN CONTROLLER Hardware Abstraction Layer
-+================================================
-+
-+================================================
-+LENOVO FAN CONTROLLER Hardware Abstraction Layer
-+================================================
-+
-+============================================================
-+LENOVO FAN HAL: INERTIA-SCALED RLLAG PARAMETER DATABASE
-+============================================================
-+
++**LENOVO FAN CONTROLLER Hardware Abstraction Layer**
 +::
 +
 +  +=============+===================+=========+================================+========+=======+=======+======+==========+==========+=======================+
@@ -526,8 +503,7 @@ index 000000000..e2d7d9602
 +inertia relationship (J ∝ d²). These provide a deterministic physical
 +baseline for the RLLag filter and are subject to community verification.
 +
-+Safety and Design Integrity
-+---------------------------
++**Safety and Design Integrity**
 +
 +The yogafan driver is designed following the principles of **IEC 61508** (Functional
 +Safety), **IEC 61511** (Process Safety), and **IEC 62443** (Industrial Cybersecurity)
@@ -564,7 +540,6 @@ index 000000000..e2d7d9602
 +as I am less familiar with the advanced formal verification techniques specific to
 +the Linux kernel community. I am open to guidance if this documentation style or
 +the implemented safety barriers deviate from standard kernel practices.
-+
 +
 +::
 +
@@ -760,8 +735,7 @@ index 000000000..e2d7d9602
 +  ================================================================================
 +
 +
-+References
-+----------
++**References**
 +
 +1. **ACPI Specification (Field Objects):** Documentation on how 8-bit vs 16-bit
 +   fields are accessed in OperationRegions.
