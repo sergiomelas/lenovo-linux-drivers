@@ -15,7 +15,7 @@ To add support for your specific model, I need to analyze your laptop's ACPI mem
 HOW TO HELP:
  1. Install 'acpidump': sudo apt install acpica-tools
  2. Extract your DSDT:  sudo acpidump -b -t DSDT -o dsdt.dat
- 3. To get the family name  run:  sudo dmidecode -s system-product-family
+ 3. To get the family name  run: sudo dmidecode -s system-family
  4. To get the identifier run: sudo dmidecode -s system-product-name
  5. Open a GitHub Issue: Attach the 'dsdt.dat' file and your laptop model name, family name, and identifier
 
