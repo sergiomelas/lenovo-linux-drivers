@@ -9,8 +9,7 @@ by interfacing with the Embedded Controller (EC) via ACPI, implementing a Rate-L
 filter to ensure smooth and physically accurate RPM telemetry.
 
 
-Supported Hardware
-------------------
+**Supported Hardware**
 
 The ``yogafan`` driver supports over 450 Lenovo models released between 2011
 and 2026. Hardware is categorized by the following series:
@@ -61,9 +60,6 @@ and 2026. Hardware is categorized by the following series:
   - U330p, U430p (High-resolution discrete)
   - U31-70, U41-70, U160
 
- Copyright (C) 2021-2026 Sergio Melas <sergiomelas@gmail.com>
-
-
     Prefix: 'yogafan'
 
     Addresses: ACPI handle (DMI Quirk Table Fallback)
@@ -72,8 +68,7 @@ and 2026. Hardware is categorized by the following series:
 
 Author: Sergio Melas <sergiomelas@gmail.com>
 
-Description
------------
+**Description**
 
 This driver provides fan speed monitoring for a wide range of Lenovo consumer
 laptops. Unlike standard ThinkPads, these models do not use the 'thinkpad_acpi'
@@ -106,8 +101,7 @@ The driver architecture is grounded in a Bow-Tie risk analysis (IEC 61508/61511)
 to ensure deterministic telemetry and prevent thermal monitoring failures
 across the supported product stack.
 
-Filter Physics (RLLag )
---------------------------
+**Filter Physics (RLLag )**
 
 To address low-resolution tachometer sampling in the Embedded Controller,
 the driver implements a passive discrete-time first-order lag filter
@@ -180,15 +174,13 @@ This approach ensures that the RLLag filter is a passive discrete-time first-ord
     between userspace reads, ensuring a consistent physical curve regardless
     of polling frequency.
 
-Hardware Identification and Multiplier Logic
---------------------------------------------
+**Hardware Identification and Multiplier Logic**
 
 The driver supports three distinct EC architectures. Differentiation is handled
 deterministically via a DMI Product Family quirk table during the probe phase,
 eliminating the need for runtime heuristics.
 
-Continuous RPM Reads
-~~~~~~~~~~~~~~~~~~~~
+**Continuous RPM Reads**
 
 1. 8-bit EC Architecture (Multiplier: 100)
    - **Families:** Yoga, IdeaPad, Slim, Flex, Xiaoxin.
@@ -202,8 +194,7 @@ Continuous RPM Reads
    precision for fans exceeding 6000 RPM. These use a 16-bit word (2 bytes)
    storing the raw RPM value directly.
 
-Discrete RPM Reads
-~~~~~~~~~~~~~~~~~~
+**Discrete RPM Reads**
 
 3. Discrete Level Architecture (Linear Estimation)
    - **Families:** Yoga 710/510/13, IdeaPad 500S, Legacy U-Series.
@@ -224,8 +215,7 @@ Discrete RPM Reads
      here to simulate mechanical acceleration, smoothing the transition
      for the final fanX_input attribute.
 
-Suspend and Resume
-------------------
+**Suspend and Resume**
 
 The driver utilizes the boottime clock (ktime_get_boottime()) to calculate the
 sampling delta. This ensures that time spent in system suspend is accounted
@@ -233,8 +223,7 @@ for. If the delta exceeds 5 seconds (e.g., after waking the laptop), the
 filter automatically resets to the current hardware value to prevent
 reporting "ghost" RPM data from before the sleep state.
 
-Usage
------
+**Usage**
 
 The driver exposes standard hwmon sysfs attributes:
 Attribute         Description
@@ -243,8 +232,7 @@ fanX_input        Filtered fan speed in RPM.
 Note: If the hardware reports 0 RPM, the filter is bypassed and 0 is reported
 immediately to ensure the user knows the fan has stopped.
 
-Lenovo Fan HAL
---------------
+**Lenovo Fan HAL**
 
 METHODOLOGY & IDENTIFICATION:
 
@@ -260,26 +248,15 @@ METHODOLOGY & IDENTIFICATION:
 
 3. DATA-WIDTH ANALYSIS (THE MULTIPLIER):
    - 8-bit (Multiplier 100): Standard for Yoga/IdeaPad. Raw values (0-255)
-     represent units of 100 RPM.
+   represent units of 100 RPM.
    - 16-bit (Multiplier 1): Standard for Legion/LOQ. High-precision 16-bit
-     readings spread across two registers (0xFE/0xFF) for raw RPM telemetry.
+   readings spread across two registers (0xFE/0xFF) for raw RPM telemetry.
    - 8-bit (Nmax Levels): Used  in some older model. Raw values (0-Nmax)
-     represent units of RMAX // NMAX  RPM.
+   represent units of RMAX // NMAX  RPM.
 
-Which gives the following table:
+Which gives the in the following paragraph:
 
-================================================
-LENOVO FAN CONTROLLER Hardware Abstraction Layer
-================================================
-
-================================================
-LENOVO FAN CONTROLLER Hardware Abstraction Layer
-================================================
-
-============================================================
-LENOVO FAN HAL: INERTIA-SCALED RLLAG PARAMETER DATABASE
-============================================================
-
+**LENOVO FAN CONTROLLER Hardware Abstraction Layer**
 ::
 
   +=============+===================+=========+================================+========+=======+=======+======+==========+==========+=======================+
@@ -424,8 +401,7 @@ mechanical time constant relative to fan diameter (d) based on the moment of
 inertia relationship (J ∝ d²). These provide a deterministic physical
 baseline for the RLLag filter and are subject to community verification.
 
-Safety and Design Integrity
----------------------------
+**Safety and Design Integrity**
 
 The yogafan driver is designed following the principles of **IEC 61508** (Functional
 Safety), **IEC 61511** (Process Safety), and **IEC 62443** (Industrial Cybersecurity)
@@ -462,7 +438,6 @@ established industrial methodologies to guarantee code integrity and safety,
 as I am less familiar with the advanced formal verification techniques specific to
 the Linux kernel community. I am open to guidance if this documentation style or
 the implemented safety barriers deviate from standard kernel practices.
-
 
 ::
 
@@ -658,8 +633,7 @@ the implemented safety barriers deviate from standard kernel practices.
   ================================================================================
 
 
-References
-----------
+**References**
 
 1. **ACPI Specification (Field Objects):** Documentation on how 8-bit vs 16-bit
    fields are accessed in OperationRegions.
