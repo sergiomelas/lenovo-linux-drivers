@@ -66,6 +66,7 @@ Key improvements:
 - Fixed safety risks including potential divide-by-zero errors and
   filter state inconsistencies across diverse EC architectures.
 
+Assisted-by: Gemini (Google LLM) <gemini@google.com>
 Signed-off-by: Sergio Melas <sergiomelas@gmail.com>
 ---
 
