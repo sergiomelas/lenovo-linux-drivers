@@ -35,12 +35,11 @@
 #define MIN_SAMPLING		100	/* Minimum interval between filter updates (ms) */
 
 /* RPM Sanitation Constants */
-#define RPM_FLOOR_LIMIT		50	/* Snap filtered value to 0 if raw is 0 */
 #define MIN_THRESHOLD_RPM	10	/* Minimum safety floor for per-model stop thresholds */
 
 struct yogafan_config {
 	int multiplier;			/* Used if n_max == 0 */
-	int fan_count;			/* 1 or 2 */
+	int fan_count;			/* 1 to 3 */
 	int n_max;			/* Discrete steps (0 = Continuous) */
 	int r_max;			/* Max physical RPM for estimation */
 	unsigned int tau_ms;		/* To store the smoothing speed    */
@@ -238,7 +237,7 @@ static struct yogafan_config thinkpad_discrete_cfg = {
  * Attributes of the RLLag model:
  * - Smoothing: Low-resolution step increments are smoothed into 1-RPM increments.
  * - Slew-Rate Limiting: Capping change to ~1500 RPM/s to match physical inertia.
- * - Polling Independence: Math scales based on dt, ensuring a consistent physical
+ * - Polling Independence: Math scales based on Ts, ensuring a consistent physical
  * curve regardless of userspace polling frequency.
  * Fixed-point math (2^12) is used to maintain precision without floating-point
  * overhead, ensuring jitter-free telemetry for thermal management.
@@ -262,14 +261,16 @@ static void apply_rllag_filter(struct yoga_fan_data *data, int idx, long raw_rpm
 		return;
 	}
 
-	/* 3. Auto-Reset Logic: Snap to hardware value after long gaps (>5s) [cite: 53, 333] */
+	/* 3. Auto-Reset Logic: Snap to hardware value after long gaps (>5s)
+	 * Ref: [TAG: INIT_STATE, STALE_DATA_THRESHOLD] */
 	if (data->last_sample[idx] == 0 || dt_ms > MAX_SAMPLING) {
 		data->filtered_val[idx] = raw_rpm;
 		data->last_sample[idx] = now;
 		return;
 	}
 
-	/* 4. Cybersecurity Gating: Ignore polling spam (<100ms) [cite: 314, 338] */
+	/* 4. Cybersecurity Gating: Ignore polling spam (<100ms) to protect EC
+	 * Ref: [TAG: SPAM_FILTER, MIN_INTERVAL] */
 	if (dt_ms < MIN_SAMPLING)
 		return;
 
@@ -279,7 +280,8 @@ static void apply_rllag_filter(struct yoga_fan_data *data, int idx, long raw_rpm
 		return;
 	}
 
-	/* 5. Physics Engine: Use inertia-scaled TAU (Fixed-Point 2^12) [cite: 28-30, 304, 332] */
+	/* 5. Physics Engine: Discretized RLLAG filter (Fixed-Point 2^12)
+	 * Ref: [TAG: MODEL_CONST, ALPHA_DERIVATION, ANTI_STALL_LOGIC] */
 	temp_num = dt_ms << 12;
 	alpha = (long)div64_s64(temp_num, (s64)(data->internal_tau_ms + dt_ms));
 	step = (delta * alpha) >> 12;
@@ -288,7 +290,8 @@ static void apply_rllag_filter(struct yoga_fan_data *data, int idx, long raw_rpm
 	if (step == 0 && delta != 0)
 		step = (delta > 0) ? 1 : -1;
 
-	/* 6. Dynamic Slew Limiting: Applied per-model inertia [cite: 32, 301, 335] */
+	/* 6. Dynamic Slew Limiting: Applied per-model inertia ramp
+	 * Ref: [TAG: SLEW_RATE_MAX, SLOPE_CALC, MIN_SLEW_LIMIT] */
 	limit = ((long)data->internal_max_slew_rpm_s * (long)dt_ms) / 1000;
 	if (limit < 1)
 		limit = 1;
