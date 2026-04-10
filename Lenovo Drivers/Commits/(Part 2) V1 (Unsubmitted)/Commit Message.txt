@@ -25,14 +25,16 @@ me to group hundreds of models into 15 distinct physical profiles based
 on their fan hardware, ensuring the filtering remains physically accurate
 across the entire range.
 
-The hardware data required to integrate the 83KF (Aura Edition) model
-was provided by Phani Pavan Kambhampati <kphanipavan@gmail.com>.
-
-To prevent conflicts with the 'lenovo-wmi-other' driver, we implemented
+To prevent conflicts with the 'lenovo-wmi-other' driver, I implemented
 explicit WMI GUID detection in the probe sequence. This ensures yogafan
 yields to WMI-based management on modern gaming models while remaining
 the only telemetry solution for the extensive range of legacy and
 non-WMI Yoga/IdeaPad laptops.
+
+Hardware telemetry patterns for modern Aura Edition models (e.g., 83KF)
+were analyzed thanks to data provided by Phani Pavan Kambhampati
+<kphanipavan@gmail.com>, allowing the definition of the driver's
+WMI-coexistence boundaries.
 
 This structural refactoring provides good traceability between the
 EC register logic in the code and the HAL profiles in the documentation,
@@ -70,7 +72,7 @@ Assisted-by: Gemini (Google LLM) <gemini@google.com>
 Signed-off-by: Sergio Melas <sergiomelas@gmail.com>
 ---
 
-v1 (Part 2):
+v1 :
  - Integrated 7-section structural reorganization for both the
    DMI quirk table and the yogafan.rst HAL table to support 400+ models.
  - Added support for legacy discrete-step EC logic (Nmax > 0).
@@ -85,9 +87,9 @@ v1 (Part 2):
    device_max_rpm as a physical basis to prevent potential division-by-zero.
  - State Protection: yoga_fan_read() now handles static attributes (max)
    immediately to prevent corruption of the filter timing state.
- - Implemeted WMI GUID detection in the probe sequence
+ - Implemented WMI GUID detection in the probe sequence
 
 
 History:
- - Base Driver (Part 1): Established the core RLLag filter logic and
-   initial support for ~12 modern Yoga/Legion families (Accepted).
+ - Base Driver : Established the core RLLag filter logic and
+   initial support for ~12 modern Yoga/Legion families.
