@@ -22,6 +22,8 @@ HOW TO HELP:
 WHY SHARE?
 Every Lenovo model uses slightly different "Embedded Controller" offsets. Sharing your DSDT
 allows me to map your fan's physical registers into the v13 Physics Engine for everyone!
+Thx for sharing to:
+Phani Pavan Kambhampati: 83KF Aura Edition
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
