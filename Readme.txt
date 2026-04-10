@@ -110,34 +110,53 @@ YOGAFAN V1 (part 2) / GITHUB V1.0 - SUPPORTED MODELS LIST (2026)
 Supported chips:
 
 
-* **YOGA & SLIM SERIES (8-bit / Discrete Logic)**
+
+* **1. YOGA SERIES (8-bit Continuous / Discrete Logic)**
+  - Yoga Pro 9i (83DN), Yoga Pro 7 (83E2), Yoga Slim 7 (83CV)
+  - Yoga Pro 7i Aura Edition (83KF - Lunar Lake PC00 Bus)
+  - Yoga Slim 7, 7i, 7 Pro, 7 Carbon, 7 ProX
   - Yoga 14cACN (82N7), 14s, 13
-  - Yoga Aura Edition
-  - Yoga Slim 7, 7i, 7 Pro, 7 Carbon
-  - Yoga Pro 7 (83DN, 83CV)
-  - Yoga Pro 9i (83E2)
-  - Yoga 710, 720, 510 (Discrete Step Logic)
-  - Yoga 3 14, 11s, Yoga 2 13 (Discrete Step Logic)
-  - Xiaoxin Pro, Air, 14, 16 (PRC Variants: 83JC, 83DX)
+  - Yoga 710, 720, 510, 5 Pro
+  - Yoga 3 14, Yoga 2 13, Yoga 11s (Discrete Step Logic)
 
-* **LEGION, LOQ & G-SERIES (16-bit High-Precision Raw)**
-  - Legion 5, 5i, 5 Pro (82JW, 82JU)
+* **2. XIAOXIN SERIES - PRC (8-bit Continuous / Discrete Logic)**
+  - Xiaoxin Pro 14, Pro 16 (83JC, 83DX, 83FD, 83DE)
+  - Xiaoxin Air 14, Air 15
+  - Xiaoxin 14, 16
+
+* **3. LEGION SERIES (16-bit High-Precision Continuous)**
+  - Legion 9i / Extreme (Triple-fan architecture)
   - Legion 7, 7i, 7 Slim (82WQ, 83FD, 83DE)
-  - Legion 9 / Extreme (Triple-fan setup)
-  - LOQ 15, 16 (82XV, 83DV)
-  - GeekPro G5000, G6000 (PRC Gaming Series)
+  - Legion 5, 5i, 5 Pro (82JW, 82JU)
 
-* **IDEAPAD & FLEX SERIES (8-bit / Discrete Logic)**
+* **4. LOQ SERIES (16-bit High-Precision Continuous)**
+  - LOQ 15, 16 (82XV, 83DV)
+
+* **5. IDEAPAD SERIES (8-bit Continuous / Discrete Logic)**
   - IdeaPad 5, 5i, 5 Pro (81YM, 82FG)
   - IdeaPad 3, 3i (Modern 8-bit variants)
-  - IdeaPad 500S, U31-70 (Discrete Step Logic)
+  - IdeaPad 500S, 510S, 710S
   - IdeaPad Y580 (Discrete Step Logic)
-  - Flex 5, 5i (81X1)
 
-* **THINKBOOK, V-SERIES & LEGACY (Discrete Logic)**
-  - ThinkBook G6, G7 (83AK)
-  - ThinkPad T/X/L-Series, Helix, 13 (Discrete Logic)
-  - V330-15IKB, V580
+* **6. FLEX SERIES (8-bit Continuous)**
+  - Flex 5, 5i (81X1), Flex 6
+
+* **7. THINKPAD SERIES (8-bit Continuous / Discrete Logic)**
+  - ThinkPad L-Series (L380, L390, L530)
+  - ThinkPad T/X/Edge Series (T430s, T440s, T540p, X220, X230)
+  - ThinkPad 13, Helix, x121e
+
+* **8. THINKBOOK SERIES (8-bit Continuous)**
+  - ThinkBook 14, 16 (Plus, p, G6, G7)
+  - ThinkBook 13s, 14s (83AK)
+
+* **9. V-SERIES (8-bit Continuous)**
+  - V330-14, V330-15IKB (81AX)
+  - V580, V580c
+
+* **10. U-SERIES & LEGACY (Discrete Logic)**
+  - U330p, U430p (High-resolution discrete)
+  - U31-70, U41-70, U160
 
 
 
@@ -219,7 +238,7 @@ References
 Change log:
 
 
-V1.0: 2026-04-08 - Updated yogafan V1 (part 2):
+V1.0: 2026-04-10 - Updated yogafan V1 (part 2):
                  - Hybrid Engine: Added Nmax/Rmax logic for Discrete ECs (Yoga 710/510, IdeaPad 500S/U31).
                  - Expanded HAL: Added "FAN0"/"FA2S" ACPI path mapping (ThinkBook G6, IdeaPad 5, Flex 5, LOQ).
                  - HWMON Refinement: Synced quirk table.
