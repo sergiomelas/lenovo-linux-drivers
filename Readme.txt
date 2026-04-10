@@ -269,7 +269,7 @@ V0.3: 2025-04-27 - Integrated Rust-for-Linux abstraction layers and LLVM toolcha
 
 V0.2: 2024-07-21 - First release: Adding many functionality
 
-V0.1: 2023-12-28 - Initial version for personal use
+V0.1: 2021-12-28 - Initial version for personal use
 
 
 
