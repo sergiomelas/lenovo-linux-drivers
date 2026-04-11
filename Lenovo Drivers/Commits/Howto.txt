@@ -1,0 +1,232 @@
+===============================================================================
+LINUX KERNEL DRIVER MASTER GUIDE: REBASE, INTEGRATION & PATCHING
+===============================================================================
+Author: Sergio Melas <sergiomelas@gmail.com>
+Last Updated: April 2026
+Logic: Rebase (Update) -> Integrate (The 6 Files) -> Generate (The Patch)
+-------------------------------------------------------------------------------
+
+========================================================================
+PHASE 1: THE REBASE (Aligning with the Latest Kernel)
+========================================================================
+# 0. Start from the latest RC
+# 1. Add the Linux-Next remote
+git remote add linux-next https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+git fetch linux-next
+
+# Force updated of all remte references
+git fetch --all
+
+# Create a branch for yogafan
+git checkout -b yoga-v1-final linux-next/master --force
+
+# ORA DEVE ESSERCI: verifica con
+ls -l drivers/hwmon/yogafan.c
+
+For other brach repos see below
+========================================================================
+PHASE 2: THE 6-FILE CHECKLIST (Integration Verification)
+========================================================================
+
+Before committing, verify all 6 points are correctly addressed in your tree:
+
+[ ]  MAINTAINERS
+(Contains your contact info and the list of files you are responsible for).
+
+[ ]  Documentation/hwmon/index.rst
+(The master list of documentation where you must add the name yogafan).
+
+[ ] Documentation/hwmon/yogafan.rst
+(The specific description of your driver and the RLLag filter).
+
+[ ] drivers/hwmon/Kconfig
+(The menu entry that allows users to select your driver during a kernel build).
+
+[ ] drivers/hwmon/Makefile
+(The instruction that tells the compiler to build yogafan.o).
+
+[ ] drivers/hwmon/yogafan.c
+(The actual C source code for the driver).
+
+
+========================================================================
+PHASE 3: PATCH GENERATION (THE FINAL EXPORT)
+========================================================================
+
+THE FULL BASELINE PATCH (MANUAL INJECTION)
+--------------------------------------------------
+# 0. If starting from a on line repo jump to 4
+
+# 1. Initialize the downloaded folder as a Git repo, download from kernel.org
+# Run this inside your linux-source folder (e.g., linux-7.1-rc1)
+
+git init
+
+# 2. Create an initial "Baseline" commit (This is the 'Virgin' state)
+git add .
+git commit -m "Baseline: Official Linux Source"
+
+# 3. Create your clean export branch
+git checkout -b yogafan_part2_v1-full
+git checkout -b yogafan_new_v1-old_v11-diff
+
+# 4. Physically copy your v1 files into the folders
+# - MAINTAINERS
+# - Documentation/hwmon/yogafan.rst
+# - Documentation/hwmon/index.rst
+# - drivers/hwmon/Kconfig
+# - drivers/hwmon/Makefile
+# - drivers/hwmon/yogafan.c
+
+# 4.1 Clean the directory of any non-kernel files
+make mrproper
+
+# 5. Force Git to recognize your changes
+git add drivers/hwmon/yogafan.c \
+        MAINTAINERS \
+        Documentation/hwmon/yogafan.rst \
+        Documentation/hwmon/index.rst \
+        drivers/hwmon/Kconfig drivers/hwmon/Makefile
+
+# 6. VERIFY: Ensure all modified files are GREEN
+     (ignore the millon of untraked files if coming from Phase 1)
+git status
+
+# 7. Commit with the PROFESSIONAL v1 message
+git commit
+# (Paste the finalized v1 text into the editor)
+
+# 8. Generate the patch with the Part 2 suffix
+git format-patch -1 --subject-prefix="PATCH v1"
+
+========================================================================
+PHASE 4: FINAL VALIDATION
+========================================================================
+
+# 1. Check for coding style and spelling errors:
+./scripts/checkpatch.pl --strict --codespell v1-0001-hwmon-yogafan-Add-support...patch
+
+# 2. Verify Build:
+scripts/config --module CONFIG_SENSORS_YOGAFAN
+make olddefconfig
+make drivers/hwmon/yogafan.ko
+
+# 3. Verify Docs:
+make htmldocs
+========================================================================
+
+
+----------------------------------------------------------
+Repos data:
+----------------------------------------------------------
+
+1. SUBSYSTEM: HARDWARE MONITORING (HWMON)
+-----------------------------------------
+Primary Maintainer: Guenter Roeck
+Email: linux@roeck-us.net
+Mailing List: linux-hwmon@vger.kernel.org
+
+GIT REMOTE SETUP:
+git remote add hwmon git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git
+git remote add hwmon-main git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-hwmon.git
+git fetch hwmon && git fetch hwmon-main
+
+PATCH SUBMISSION COMMAND:
+git send-email --to="Guenter Roeck <linux@roeck-us.net>" \
+                 --cc="linux-hwmon@vger.kernel.org" \
+                 --cc="linux-kernel@vger.kernel.org" \
+                 v1-0001-hwmon-yogafan-Part2.patch
+
+
+2. SUBSYSTEM: PLATFORM X86 (LENOVO IDEAPAD/YOGA EXTRAS)
+-------------------------------------------------------
+Primary Maintainers: Hans de Goede & Ilpo Järvinen
+Emails: hdegoede@redhat.com, ilpo.jarvinen@linux.intel.com
+Mailing List: platform-driver-x86@vger.kernel.org
+
+GIT REMOTE SETUP:
+git remote add platform-x86 git://git.kernel.org/pub/scm/linux/kernel/git/pdx86/platform-drivers-x86.git
+git fetch platform-x86
+
+PATCH SUBMISSION COMMAND:
+git send-email --to="Hans de Goede <hdegoede@redhat.com>" \
+                 --to="Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>" \
+                 --cc="platform-driver-x86@vger.kernel.org" \
+                 --cc="linux-kernel@vger.kernel.org" \
+                 your-patch.patch
+
+
+3. SUBSYSTEM: ACPI (ADVANCED CONFIGURATION AND POWER INTERFACE)
+---------------------------------------------------------------
+Primary Maintainer: Rafael J. Wysocki
+Email: rafael@kernel.org
+Mailing List: linux-acpi@vger.kernel.org
+
+GIT REMOTE SETUP:
+git remote add acpi git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+git fetch acpi
+
+PATCH SUBMISSION COMMAND:
+git send-email --to="Rafael J. Wysocki <rafael@kernel.org>" \
+                 --cc="linux-acpi@vger.kernel.org" \
+                 --cc="linux-kernel@vger.kernel.org" \
+                 your-patch.patch
+
+
+4. SUBSYSTEM: THERMAL
+---------------------
+Primary Maintainers: Rafael J. Wysocki & Daniel Lezcano
+Emails: rafael@kernel.org, daniel.lezcano@linaro.org
+Mailing List: linux-pm@vger.kernel.org
+
+GIT REMOTE SETUP:
+git remote add thermal git://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git
+git fetch thermal
+
+PATCH SUBMISSION COMMAND:
+git send-email --to="Rafael J. Wysocki <rafael@kernel.org>" \
+                 --to="Daniel Lezcano <daniel.lezcano@linaro.org>" \
+                 --cc="linux-pm@vger.kernel.org" \
+                 --cc="linux-kernel@vger.kernel.org" \
+                 your-patch.patch
+
+
+5. THE INTEGRATION HUB: LINUX-NEXT
+----------------------------------
+Primary Maintainer: Stephen Rothwell
+Email: sfr@canb.auug.org.au
+Mailing List: linux-next@vger.kernel.org
+
+GIT REMOTE SETUP:
+git remote add next git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+git fetch next
+
+PURPOSE:
+Verification branch to ensure your code doesn't conflict with other subsystem
+changes before submission to Guenter.
+
+TESTING COMMANDS:
+git checkout -b yoga-next-test next/master
+git am v1-0001-hwmon-yogafan-Part2.patch
+
+===============================================================================
+NOTES:
+- Always CC 'linux-kernel@vger.kernel.org' (LKML) for visibility.
+- Use 'scripts/get_maintainer.pl' on your patch file to verify maintainers.
+- Ensure line endings are LF only and no trailing whitespace.
+===============================================================================
+
+===============================================================================
+END OF MASTER GUIDE - (C) SERGIO MELAS 2026
+===============================================================================
+
+===============================================================================
+NOTES:
+- Always CC 'linux-kernel@vger.kernel.org' (LKML) for visibility.
+- Use 'scripts/get_maintainer.pl' on your patch file to verify maintainers.
+- Ensure line endings are LF only and no trailing whitespace.
+===============================================================================
+
+===============================================================================
+END OF MASTER GUIDE - (C) SERGIO MELAS 2026
+===============================================================================
