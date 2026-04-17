@@ -22,9 +22,9 @@ export DEBEMAIL="sergiomelas@gmail.com"
 postfix="yoga"
 
 # Your Patch data
-PATCH_DIR="../../Lenovo Drivers"
-#PATCH_NAME="Current-full.patch"   # for old kernel
- PATCH_NAME="Current-diff.patch"   # for kernel sumbission with yogafan in offial reo
+PATCH_DIR="../../Lenovo_Drivers"
+PATCH_NAME="Current-full.patch"   # for old kernel
+#PATCH_NAME="Current-diff.patch"   # for kernel sumbission with yogafan in offial reo
 
 
 # ANSI Color Codes

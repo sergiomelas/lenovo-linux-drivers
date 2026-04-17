@@ -19,7 +19,7 @@ export DEBEMAIL="sergiomelas@gmail.com"
 
 
 # Your kernel personalization string
-postfix="yoga-patch"
+postfix="yoga"
 
 # ANSI Color Codes
 CYAN='\033[0;36m'
