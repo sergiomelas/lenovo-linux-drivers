@@ -31,7 +31,7 @@ make M=drivers/hwmon
 git status
 
 #apply patch
-patch -p1 < <Path to patch>
+patch -p1 <  <Path to patch>
 
 #Compile and load a module without rebuild kernl:
 ------------------------------------------------

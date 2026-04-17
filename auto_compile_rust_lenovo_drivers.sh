@@ -90,7 +90,7 @@ echo -e "${BLUE}----------------------------------------------------------------
 
 # --- DRIVER INJECTION (Yoga Fan) ---
 echo -e "${BLUE}Injecting Yoga Fan Driver ...${NC}"
-SOURCE_CODE="../../Lenovo Drivers/yogafan.c"
+SOURCE_CODE="../../Lenovo_Drivers/yogafan.c"
 TARGET_FILE="./drivers/hwmon/yogafan.c"
 
 # Use -L to ensure we follow the symlink and copy the actual .c code
