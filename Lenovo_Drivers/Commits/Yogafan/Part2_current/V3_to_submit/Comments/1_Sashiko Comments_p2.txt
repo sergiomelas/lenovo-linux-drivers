@@ -1,0 +1,134 @@
+From: sashiko-bot@kernel.org
+To: "Sergio Melas" <sergiomelas@gmail.com>
+Cc: linux-hwmon@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] hwmon: (yogafan) Add support for new Yoga, Legion and LOQ models
+Date: Fri, 17 Apr 2026 16:31:51 +0000	[thread overview]
+Message-ID: <20260417163152.8912EC19425@smtp.kernel.org> (raw)
+In-Reply-To: <20260417142455.18806-2-sergiomelas@gmail.com>
+
+Sashiko AI review found 2 potential issue(s):
+- [High] Out-of-bounds array access and invalid pointer dereference in the ACPI read fallback logic causes a kernel panic.
+- [Medium] DMI quirk table ordering logic error permanently shadows specific device profiles.
+--
+
+commit 5e3726bab54f2c6b5ea348bbc4d3a5bf91397732
+Author: Sergio Melas <sergiomelas@gmail.com>
+
+hwmon: (yogafan) Add support for new Yoga, Legion and LOQ models
+
+This commit expands hardware support for Lenovo laptops including Yoga,
+Legion, LOQ, IdeaPad, and ThinkBook series. It utilizes 15 distinct
+physical profiles based on the Hardware Abstraction Layer (HAL) to manage
+diverse Embedded Controller behaviors.
+
+> diff --git a/drivers/hwmon/yogafan.c b/drivers/hwmon/yogafan.c
+> index 9df42990b723d..de8d1f4ccba04 100644
+> --- a/drivers/hwmon/yogafan.c
+> +++ b/drivers/hwmon/yogafan.c
+[ ... ]
+> @@ -89,6 +103,118 @@ static const struct yogafan_config legion_5_cfg = {
+[ ... ]
+> +/* 1.3 Triple-Fan Continuous */
+> +
+> +/* Legion 9i (d=70mm primary) - Massive inertia, triple assembly */
+> +static const struct yogafan_config legion_triple_16bit_cfg = {
+> +	.multiplier = 1, .fan_count = 3, .n_max = 0,
+> +	.r_max = 8000, .tau_ms = 1500, .slew_time_s = 6, .stop_threshold = 50,
+> +	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS"
+> +		 , "\\_SB.PCI0.LPC0.EC0.FA2S"
+> +		 , "\\_SB.PCI0.LPC0.EC0.FA3S" }
+> +};
+
+Does this new 3-fan profile introduce a regression by exposing an
+out-of-bounds array access in yoga_fan_read()?
+
+When fan_count is 3, channel can be 2. In yoga_fan_read(), the fallback
+logic evaluates:
+
+if (ACPI_FAILURE(status) && cfg->paths[channel + 1])
+    status = acpi_evaluate_integer(data->active_handles[channel + 1],
+                                   NULL, NULL, &raw_acpi);
+
+For channel 2, channel + 1 is 3. Since both cfg->paths and
+data->active_handles are sized to MAX_FANS (3), accessing index 3 will read
+out of bounds.
+
+Due to the structure layout, data->active_handles[3] would read the adjacent
+field, data->filtered_val[0], passing a raw integer instead of an
+acpi_handle to acpi_evaluate_integer(), which could cause a kernel panic.
+
+Additionally, conflating channel + 1 with a fallback path appears to cause
+telemetry cross-talk by reading the next fan's speed when the current one
+fails.
+
+[ ... ]
+> @@ -288,6 +665,228 @@ static const struct dmi_system_id yogafan_quirks[] = {
+[ ... ]
+> +/* --- 7. THINKPAD SERIES --- */
+[ ... ]
+> +	{
+> +		.ident = "ThinkPad Classic (Generic T/X/Edge)",
+> +		.matches = {
+> +			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+> +			DMI_MATCH(DMI_PRODUCT_NAME, "ThinkPad")
+> +		},
+> +		.driver_data = (void *)&thinkpad_discrete_cfg,
+> +	},
+> +	{
+> +		.ident = "ThinkPad L-Series (Generic Match)",
+> +		.matches = {
+> +			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+> +			DMI_MATCH(DMI_PRODUCT_NAME, "ThinkPad L")
+> +		},
+> +		.driver_data = (void *)&thinkpad_l_cfg,
+> +	},
+
+Could this generic "ThinkPad" entry cause a regression by shadowing the
+"ThinkPad L" entry below it?
+
+Since dmi_first_match() processes the yogafan_quirks table sequentially and
+uses strstr() for DMI_MATCH evaluations, placing "ThinkPad" before
+"ThinkPad L" means the generic thinkpad_discrete_cfg profile will
+unconditionally match all L-Series devices.
+
+This seems to prevent the intended thinkpad_l_cfg profile from being applied.
+
+--
+Sashiko AI review · https://sashiko.dev/#/patchset/20260417142455.18806-1-sergiomelas@gmail.com?part=2
+next prev parent reply	other threads:[~2026-04-17 16:31 UTC|newest]
+
+Thread overview: 4+ messages / expand[flat|nested]  mbox.gz  Atom feed  top
+2026-04-17 14:24 [PATCH v2 1/2] hwmon: (yogafan) Use u32 types and improve RLLag filter Sergio Melas
+2026-04-17 14:24 ` [PATCH v2 2/2] hwmon: (yogafan) Add support for new Yoga, Legion and LOQ models Sergio Melas
+2026-04-17 16:31   ` sashiko-bot [this message]
+2026-04-17 15:07 ` [PATCH v2 1/2] hwmon: (yogafan) Use u32 types and improve RLLag filter sashiko-bot
+Reply instructions:
+
+You may reply publicly to this message via plain-text email
+using any one of the following methods:
+
+* Save the following mbox file, import it into your mail client,
+  and reply-to-all from there: mbox
+
+  Avoid top-posting and favor interleaved quoting:
+  https://en.wikipedia.org/wiki/Posting_style#Interleaved_style
+
+* Reply using the --to, --cc, and --in-reply-to
+  switches of git-send-email(1):
+
+  git send-email \
+    --in-reply-to=20260417163152.8912EC19425@smtp.kernel.org \
+    --to=sashiko-bot@kernel.org \
+    --cc=linux-hwmon@vger.kernel.org \
+    --cc=sashiko@lists.linux.dev \
+    --cc=sergiomelas@gmail.com \
+    /path/to/YOUR_REPLY
+
+  https://kernel.org/pub/software/scm/git/docs/git-send-email.html
+
+* If your mail client supports setting the In-Reply-To header
+  via mailto: links, try the mailto: link
+Be sure your reply has a Subject: header at the top and a blank line before the message body.
+This is an external index of several public inboxes,
+see mirroring instructions on how to clone and mirror
+all data and code used by this external index.
