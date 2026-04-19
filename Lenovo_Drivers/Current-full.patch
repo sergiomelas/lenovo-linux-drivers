@@ -1,36 +1,50 @@
-From de7d8fc901865971bf4a03585d1648cce83aa8c9 Mon Sep 17 00:00:00 2001
+From ba46c9e401ea9065d7ca3e59705c60352752c068 Mon Sep 17 00:00:00 2001
 From: Sergio Melas <sergiomelas@gmail.com>
-Date: Sat, 18 Apr 2026 05:29:31 +0800
-Subject: [PATCH v2] hwmon: (yogafan) Add support for new Yoga, Legion and LOQ
- models
+Date: Mon, 20 Apr 2026 01:50:57 +0800
+Subject: [PATCH v3] hwmon: (yogafan) Expand hardware support and refactor HAL
+ logic
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Expand hardware support to cover a broad range of Lenovo consumer
-laptops, including Yoga, Legion, LOQ, IdeaPad, and ThinkBook series.
+Transition the driver to a Hardware Abstraction Layer (HAL) to manage
+diverse Embedded Controller (EC) behaviors across different hardware
+generations. This allows the RLLag filter to remain physically
+consistent across 15 distinct hardware profiles.
 
-This expansion utilizes the Hardware Abstraction Layer (HAL) profiles
-defined in the previous patch to manage diverse Embedded Controller
-behaviors. To maintain physical consistency of the RLLag filter across
-the expanded hardware list, 15 distinct physical profiles are used.
-
+Support is expanded to cover a broad range of Lenovo consumer laptops,
+including Yoga, Legion, LOQ, IdeaPad, and ThinkBook series. Support
+for legacy discrete-step ECs is introduced via linear estimation logic.
 Dynamics (Tau and Slew Rate) for these profiles are derived by scaling
-reference measurements from a Yoga 14cACN based on fan diameter,
-assuming the relationship for the moment of inertia is J ∝ d².
+reference measurements from a Yoga 14cACN based on fan diameter
+(assuming moment of inertia J ∝ d²).
 
+To prevent resource conflicts with the 'lenovo-wmi-other' driver on
+modern gaming models, explicit WMI GUID detection is added to the
+probe sequence. The implementation uses IS_REACHABLE logic to ensure
+compatibility across diverse kernel configurations.
+
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202604180539.EuswNnjG-lkp@intel.com/
+Reported-by: Sashiko AI <sashiko@bot.internal>
+Suggested-by: Rong Zhang <i@rong.moe>
+See: https://lore.kernel.org/all/7fa7d4dd-7b05-4af2-a8da-6e605fa91f90@roeck-us.net/
 Assisted-by: Google:Gemini-3-Flash [DSDT/XML-Data-Aggregation & Formatting]
 Signed-off-by: Sergio Melas <sergiomelas@gmail.com>
 ---
-v3: Safety hardening and documentation sync
- - Integrated path fix for ideapad-laptop.c in documentation following its
-   move to the lenovo/ subdirectory (reported by Ninad Naik).
- - Fixed critical array out-of-bounds access in yoga_fan_read() that could
-   trigger a kernel panic on triple-fan models (reported by Sashiko AI).
- - Removed flawed ACPI fallback logic in the read path to prevent telemetry
-   cross-talk and ensure deterministic data reporting.
- - Reordered DMI quirk table to prevent generic "ThinkPad" strings from
-   shadowing specific "ThinkPad L" profiles.
+v3: Safety hardening and build synchronization
+ - Fixed critical array out-of-bounds access in yoga_fan_read() that
+   could trigger a kernel panic on triple-fan models (Reported-by: Sashiko AI).
+ - Integrated #if IS_REACHABLE(CONFIG_ACPI_WMI) guards and Kconfig
+   optional dependency to fix build errors on non-WMI configurations
+   (Reported-by: kernel test robot, Suggested-by: Rong Zhang).
+ - Integrated path fix for ideapad-laptop.c in documentation following
+   its move to the lenovo/ subdirectory (Reported-by: Ninad Naik).
+ - Removed flawed ACPI fallback logic in the read path to prevent
+   telemetry cross-talk and ensure deterministic data reporting.
+ - Reordered DMI quirk table to prevent generic "ThinkPad" strings
+   from shadowing specific "ThinkPad L" profiles.
+
 v2: Inprovements after feedback
  - Split patch into two parts for easier review
  - Enforced system vendor matching (LENOVO) in all DMI quirk entries.
@@ -66,10 +80,10 @@ History:
  Documentation/hwmon/index.rst   |    3 +-
  Documentation/hwmon/yogafan.rst |  626 +++++++++++++++++++
  MAINTAINERS                     |  501 +++++++++++----
- drivers/hwmon/Kconfig           |   68 ++-
+ drivers/hwmon/Kconfig           |   68 +-
  drivers/hwmon/Makefile          |    3 +-
- drivers/hwmon/yogafan.c         | 1019 +++++++++++++++++++++++++++++++
- 6 files changed, 2078 insertions(+), 142 deletions(-)
+ drivers/hwmon/yogafan.c         | 1021 +++++++++++++++++++++++++++++++
+ 6 files changed, 2080 insertions(+), 142 deletions(-)
  create mode 100644 Documentation/hwmon/yogafan.rst
  create mode 100644 drivers/hwmon/yogafan.c
 
@@ -2232,7 +2246,7 @@ index d1cc0e12f..d4b396dcc 100644
  F:	drivers/pwm/pwm-xilinx.c
  F:	include/clocksource/timer-xilinx.h
 diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index 328867242..fb847ab40 100644
+index 328867242..1a54a30a2 100644
 --- a/drivers/hwmon/Kconfig
 +++ b/drivers/hwmon/Kconfig
 @@ -457,32 +457,6 @@ config SENSORS_ATXP1
@@ -2346,7 +2360,7 @@ index 328867242..fb847ab40 100644
  
 +config SENSORS_YOGAFAN
 +	tristate "Lenovo Yoga Fan Hardware Monitoring"
-+	depends on ACPI && HWMON && DMI
++	depends on ACPI && HWMON && DMI && ( ACPI_WMI || !ACPI_WMI )
 +	help
 +	  If you say yes here you get support for fan speed monitoring
 +	  on Lenovo Yoga, Legion, IdeaPad, Slim and LOQ laptops.
@@ -2389,10 +2403,10 @@ index 5833c807c..0fce31b43 100644
  obj-$(CONFIG_SENSORS_PECI)	+= peci/
 diff --git a/drivers/hwmon/yogafan.c b/drivers/hwmon/yogafan.c
 new file mode 100644
-index 000000000..ba19f34c2
+index 000000000..3ffade114
 --- /dev/null
 +++ b/drivers/hwmon/yogafan.c
-@@ -0,0 +1,1019 @@
+@@ -0,0 +1,1021 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/**
 + * yoga_fan.c - Lenovo Yoga/Legion Fan Hardware Monitoring Driver
@@ -3305,12 +3319,14 @@ index 000000000..ba19f34c2
 +
 +	/* Check for WMI interfaces that handle fan/thermal management. */
 +	/*  If present, we yield to the WMI driver to prevent double-reporting. */
++#if IS_REACHABLE(CONFIG_ACPI_WMI)
 +	if (wmi_has_guid(LENOVO_WMI_OTHER_MODE_GUID) &&
 +	    wmi_has_guid(LENOVO_CAPABILITY_DATA_00_GUID) &&
 +	    wmi_has_guid(LENOVO_WMI_FAN_GUID)) {
 +		dev_info(&pdev->dev, "Lenovo WMI management interface detected; yielding to WMI driver\n");
 +		return -ENODEV;
 +	}
++#endif
 +
 +	dmi_id = dmi_first_match(yogafan_quirks);
 +	if (!dmi_id)

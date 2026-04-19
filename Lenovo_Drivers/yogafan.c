@@ -910,12 +910,14 @@ static int yoga_fan_probe(struct platform_device *pdev)
 
 	/* Check for WMI interfaces that handle fan/thermal management. */
 	/*  If present, we yield to the WMI driver to prevent double-reporting. */
+#if IS_REACHABLE(CONFIG_ACPI_WMI)
 	if (wmi_has_guid(LENOVO_WMI_OTHER_MODE_GUID) &&
 	    wmi_has_guid(LENOVO_CAPABILITY_DATA_00_GUID) &&
 	    wmi_has_guid(LENOVO_WMI_FAN_GUID)) {
 		dev_info(&pdev->dev, "Lenovo WMI management interface detected; yielding to WMI driver\n");
 		return -ENODEV;
 	}
+#endif
 
 	dmi_id = dmi_first_match(yogafan_quirks);
 	if (!dmi_id)
