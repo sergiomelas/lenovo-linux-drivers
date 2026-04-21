@@ -204,14 +204,14 @@ $ cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference # EPP H
 References
 ----------
 
+**References**
 
-1. **ACPI Specification (Field Objects):** Documentation on how 8-bit vs 16-bit
-   fields are accessed in OperationRegions.
+1. **ACPI Specification (Field Objects):** Documentation on how 8-bit vs
+   16-bit    fields are accessed in OperationRegions.
    https://uefi.org/specs/ACPI/6.5/05_ACPI_Software_Programming_Model.html#field-objects
 
-2. **LegionFanControl & NBFC Projects:** Community-driven reverse engineering
+2. **NBFC Projects:** Community-driven reverse engineering
    of Lenovo Legion/LOQ EC memory maps (16-bit raw registers).
-   https://www.legionfancontrol.com/
    https://github.com/hirschmann/nbfc/tree/master/Configs
 
 3. **Linux Kernel Timekeeping API:** Documentation for ktime_get_boottime() and
@@ -220,12 +220,37 @@ References
 
 4. **Lenovo IdeaPad Laptop Driver:** Reference for DMI-based hardware
    feature gating in Lenovo laptops.
-   https://github.com/torvalds/linux/blob/master/drivers/platform/x86/ideapad-laptop.c
+   https://github.com/torvalds/linux/blob/master/drivers/platform/x86/lenovo/ideapad-laptop.c
 
-5. **Lenovo WMI Other Driver** Reference for WMI-based fan reporting on
+5. **Yogafan Community Support & DSDT Collection:**  Resource for out-of-tree
+   testing scripts and collection of user-contributed ACPI DSDT dumps
+   for hardware expansion.
+   https://github.com/sergiomelas/lenovo-linux-drivers
+
+6. **IEC 61508:** Functional safety of electrical/electronic/programmable
+   electronic safety-related systems.
+   https://www.iec.ch/functional-safety
+
+7. **IEC 61511:** Functional safety - Safety instrumented systems for the
+   process industry sector.
+   https://www.iec.ch/functional-safety
+
+8. **ISA/IEC 62443:** Security for industrial automation and control
+  systems (formerly ISA-99).
+   https://www.isa.org/isa99
+
+9.  **Lenovo WMI Other Driver** Reference for WMI-based fan reporting on
    modern Lenovo platforms; used to implement the driver's coexistence
    logic and WMI GUID detection.
    https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/platform/x86/lenovo/wmi-other.c
+
+10. **Lenovo Product Specifications Reference**  Reference for
+   DMI_PRODUCT_NAME and identification; used to implement the yogafan_quirks
+   table and the Lenovo Fan HAL Database above
+   https://psref.lenovo.com/
+
+11. **lenovo-linux-drivers** all information extracted above can be found in my github
+   https://github.com/sergiomelas/lenovo-linux-drivers
 
 
 ##################################################################################################################
