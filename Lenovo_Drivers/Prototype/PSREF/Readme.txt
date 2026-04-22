@@ -11,8 +11,13 @@ and the identifier is the <Machine Type> line
 
 Current page
 https://psref.lenovo.com/l/Withdrawn/
-<ThinkPad>
+<ThinkPad> Done
 
 Arrived at (Included):
-L Series
+
+
+Doing up to:
+
+
+
 
