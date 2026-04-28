@@ -14,12 +14,10 @@ https://psref.lenovo.com/l/Withdrawn/
 <Ideapad>   Done
 <Legion>    Done
 <Yoga>      Done
-<Lenovo>    To Do
-<LOQ>       To Do
-<ZhaoYang>  To DO
-Downloading:
+<Lenovo>    Ongoing
+<LOQ>       Done
+<ZhaoYang>  Done
 
-To Start:
 
 
 
