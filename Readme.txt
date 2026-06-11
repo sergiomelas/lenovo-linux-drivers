@@ -13,9 +13,12 @@
 
 ### 🚀 yogafan Driver Compatibility: ~400 Models Covered (~85% of Lenovo Consumer Hardware)
  The open-source `yogafan` hardware abstraction layer maps embedded controller architectures across
-  11 major hardware families released between 2011 and 2026 (Yoga, IdeaPad, ThinkPad, ThinkBook, Flex, V-Series, U-Series).
+  11 major hardware families released between 2011 and 2026 (Yoga, IdeaPad, ThinkPad, ThinkBook, Flex, 
+  V-Series, U-Series).
 
-  *⚠️ **Legion & LOQ Owners:** Modern gaming platforms are natively handled via the official `lenovo-wmi-other` WMI driver. To prevent unsafe register conflicts, yogafan automatically yields control when a WMI GUID block is detected.*
+  *⚠️ **Legion & LOQ Owners:** Modern gaming platforms are natively handled via the official 
+ `lenovo-wmi-other` WMI driver. To prevent unsafe register conflicts, yogafan automatically yields control 
+   when a WMI GUID block is detected.*
 
 ### 🔍 How to Contribute Your Hardware
 Every Lenovo line utilizes slightly different Embedded Controller (EC) offsets for thermal registers and fan telemetry. Help us safely map your device!
@@ -27,12 +30,14 @@ Every Lenovo line utilizes slightly different Embedded Controller (EC) offsets f
    * **Linux:** Run `sudo dmidecode -s system-family` and `sudo dmidecode -s system-product-name`
    * **Windows:** Run `Get-CimInstance Win32_ComputerSystemProduct | Select-Object Version, Name` in PowerShell
 3. **Open a GitHub Issue:**
-   * File an issue under `[DSDT Entry] <Your Laptop Model>` and attach your `dsdt.dat` along with your extracted Family and Product metadata.
+   * File an issue under `[DSDT Entry] <Your Laptop Model>` and attach your `dsdt.dat` along with your 
+      extracted Family and Product metadata.
 
 📖 **Confused or need step-by-step help?** Check out our full Linux and portable Windows walkthroughs.
 The guide is in ter repository under: /Lenovo_Drivers/Prototype/DSDT/
 
-*Heartfelt thanks to our community pioneers for data validation: **Phani Pavan Kambhampati**, **unlockxiaom**, and **PenPenIsGod**.*
+*Heartfelt thanks to our community pioneers for DSDT share validation: 
+   **Phani Pavan Kambhampati**, **unlockxiaom**, **PenPenIsGod**.*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
