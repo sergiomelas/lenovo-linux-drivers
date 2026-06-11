@@ -36,7 +36,8 @@
      your extracted Family and Product metadata.
 
 📖 **Confused or need step-by-step help?** Check out our full Linux and portable Windows walkthroughs.
-The guide is in the repository under: /Lenovo_Drivers/Prototype/DSDT/
+The guide is in the repository under: /Lenovo_Drivers/Prototype/DSDT/  where the contributed DSDT are
+stored.
 
 *Heartfelt thanks to our community pioneers for DSDT sharing:
  **Phani Pavan Kambhampati
@@ -126,7 +127,7 @@ auto_compile_rust_lenovo_*.sh
 
 1. UNIVERSAL FAN & SENSOR SUPPORT (yogafan v13.0)
 -----------------------------------------------
-This build injects the Sergio Melas "yogafan" driver V8. It uses a passive RLLag
+This build injects the Sergio Melas "yogafan" driver. It uses a passive RLLag
 (Rate-Limited Lag) filter for smooth RPM readings.
 
 YOGAFAN V2 (part 2) / GITHUB V1.0 - SUPPORTED MODELS LIST (2026)
@@ -166,8 +167,6 @@ Supported chips:
 * 7. U-SERIES & LEGACY (Discrete Logic)
   - U330p, U430p (High-resolution discrete)
   - U31-70, U41-70, U160
-
-
 
 This driver covers 400 models that is over 85% of Lenovo's consumer and ultra-portable laptop
 portfolio released between 2011 and 2026, providing a unified hardware abstraction layer for
