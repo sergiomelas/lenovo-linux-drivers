@@ -9,22 +9,30 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🚀 SUPPORTED MODELS: ~400 (Yoga, IdeaPad, ThinkPad, ThinkBook, Flex, V-Series, U-Series)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-The 'yogafan' driver now covers ~85% of Lenovo's consumer portfolio (2011-2026).
-NOTE: Modern Legion and LOQ models are now handled via the official WMI 'lenovo-wmi-other' driver.
-Yogafan strictly yields control to WMI when detected to prevent register conflicts.
+## 📢 Community Call to Action: Help Map the Lenovo Portfolio!
 
-HOW TO HELP:
- 1. Install 'acpidump': sudo apt install acpica-tools
- 2. Extract your DSDT:  sudo acpidump -b -t DSDT -o dsdt.dat
- 3. To get the family name  run: sudo dmidecode -s system-family
- 4. To get the identifier run: sudo dmidecode -s system-product-name
- 5. Open a GitHub Issue: Attach the 'dsdt.dat' file and your laptop model name, family name, and identifier
+### 🚀 yogafan Driver Compatibility: ~400 Models Covered (~85% of Lenovo Consumer Hardware)
+ The open-source `yogafan` hardware abstraction layer maps embedded controller architectures across
+  11 major hardware families released between 2011 and 2026 (Yoga, IdeaPad, ThinkPad, ThinkBook, Flex, V-Series, U-Series).
 
-WHY SHARE?
-Every Lenovo model uses slightly different "Embedded Controller" offsets. Sharing your DSDT
-allows me to map your fan's physical registers into the V2 Physics Engine for everyone!
-Thx for sharing to:
-Phani Pavan Kambhampati: 83KF Aura Edition
+  *⚠️ **Legion & LOQ Owners:** Modern gaming platforms are natively handled via the official `lenovo-wmi-other` WMI driver. To prevent unsafe register conflicts, yogafan automatically yields control when a WMI GUID block is detected.*
+
+### 🔍 How to Contribute Your Hardware
+Every Lenovo line utilizes slightly different Embedded Controller (EC) offsets for thermal registers and fan telemetry. Help us safely map your device!
+
+1. **Extract your DSDT binary table:**
+   * **Linux:** Run `sudo acpidump -b -t DSDT -o dsdt.dat` (requires `acpica-tools`)
+   * **Windows:** Run `iasl.exe -b -t DSDT` via the portable Intel ASL compiler
+2. **Collect system hardware strings:**
+   * **Linux:** Run `sudo dmidecode -s system-family` and `sudo dmidecode -s system-product-name`
+   * **Windows:** Run `Get-CimInstance Win32_ComputerSystemProduct | Select-Object Version, Name` in PowerShell
+3. **Open a GitHub Issue:**
+   * File an issue under `[DSDT Entry] <Your Laptop Model>` and attach your `dsdt.dat` along with your extracted Family and Product metadata.
+
+📖 **Confused or need step-by-step help?** Check out our full Linux and portable Windows walkthroughs.
+The guide is in ter repository under: /Lenovo_Drivers/Prototype/DSDT/
+
+*Heartfelt thanks to our community pioneers for data validation: **Phani Pavan Kambhampati**, **unlockxiaom**, and **PenPenIsGod**.*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
@@ -81,6 +89,7 @@ Removal instructions:
  a)- Boot in a different version and list all installed Linux kernel images:
 
      dpkg --list | egrep -i --color 'linux-image|linux-headers|linux-libc'
+
 
  b)- Delete unwanted and unused kernel images and headers:
    b1)- If you are downgrading: Restore the old linux-libc-dev (e.g. from 6.9.0 => 6.8.9).
@@ -257,7 +266,7 @@ References
 Change log:
 
 
-V1.0: 2026-04-22 - Updating yogafan V3 (part 2): Researching data from PFREF and DSDTs and other various sources
+V1.0: 2026-04-28 - Updating yogafan V3 (part 2): Researching data from PFREF and DSDTs and other various sources
                  - Hybrid Engine: Added Nmax/Rmax logic for Discrete ECs (Yoga 710/510, IdeaPad 500S/U31).
                  - Expanded HAL: Added "FAN0"/"FA2S" ACPI path mapping (ThinkBook G6, IdeaPad 5, Flex 5, LOQ).
                  - HWMON Refinement: Synced quirk table.
