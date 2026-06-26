@@ -42,8 +42,7 @@ The guide is in the repository under: /Lenovo_Drivers/Prototype/DSDT/
 
 *Heartfelt thanks to our community pioneers for DSDT sharing:
  **Phani Pavan Kambhampati
- **unlockxiaom
- **PenPenIsGod
+ **unlockxiaom PenPenIsGod
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
@@ -120,6 +119,44 @@ Removal instructions:
         sudo apt-get --purge remove linux-image-amd64 linux-headers-amd64
      To restore autoupdate reinstall:
         sudo apt-get install linux-image-amd64 linux-headers-amd64 linux-libc-dev
+
+================================================================================
+  🧰 AUTOMATED DEVELOPER TOOLCHAIN & COMPILATION UTILITIES
+================================================================================
+This repository houses an automated development toolkit tailored for building,
+testing, and managing out-of-tree kernel modules and upstream Debian kernel packages.
+
+📂 Core Development Tools (Root Directory)
+├── Check patch.sh               # Validates upstream patch style and compliance via checkpatch.pl
+├── Commands.txt                 # Quick-reference developer cheat sheet for manual kernel mapping
+├── compilation progress.sh      # Live command-line watcher tracking object queues during heavy builds
+├── run_sashiko_local.sh         # Executes localized automation tests inside the Sashiko framework
+├── sashiko install.txt          # Explicit installation reference for Sashiko subsystem dependencies
+├── Stress cpu.sh                # Fires heavy multi-core CPU workloads to validate fan thermal curves
+
+🚀 Local Module Build Triplet (Toolchain/ Directory)
+To accelerate localized driver development, use the automated dynamic triplet scripts.
+These scripts read parameters from top-level variables and auto-fill target configurations
+using live system telemetry (`uname -r`):
+
+1️⃣ Step 1: Workspace Staging
+    $ ./Toolchain/Prepare.sh
+    Purges local build caches, stages your driver source code flat into 'src/', and dynamically
+    generates an out-of-tree Makefile mapped directly to your running kernel's build path.
+
+2️⃣ Step 2: Live Memory Hot-Swapping
+    $ ./Toolchain/Test.sh
+    Escalates execution privileges natively via 'sudo -E' while safely preserving repository
+    paths, compiles the module, handles warm rmmod extraction, inserts the new .ko test binary,
+    and dumps real-time sensors and dmesg telemetry profiles.
+
+3️⃣ Step 3: Production Deployment & Initramfs Sync
+    $ ./Toolchain/Deploy.sh
+    Permanently installs the module into /lib/modules/$(uname -r)/kernel/drivers/hwmon/.
+    It strips legacy binaries, compresses the module using kernel-compliant XZ flags
+    (xz --check=crc32) to prevent modprobe EINVAL faults, rewires maps (depmod), and rebuilds
+    the system Initramfs boot image block so custom fan metrics survive cold reboots.
+
 
 ================================================================================
 LENOVO-SPECIFIC POST-INSTALLATION GUIDE (Updated 2026)
@@ -273,6 +310,8 @@ References
 
 ##################################################################################################################
 Change log:
+
+V1.1: 2026-06-26 - added tools doc and driver tool-chain
 
 
 V1.0: 2026-04-28 - Updating yogafan V3 (part 2): Researching data from PFREF and DSDTs and various
