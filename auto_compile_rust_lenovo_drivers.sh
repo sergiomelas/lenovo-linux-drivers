@@ -7,7 +7,7 @@
 #             Developed by Sergio Melas 2021-26                  #"
 #                                                                #"
 #                  Email: sergiomelas@gmail.com                  #"
-#                      Released under GPL V2.0                   #"
+#                      released under GPL V2.0                   #"
 #                                                                #"
 ##################################################################"
 
@@ -61,8 +61,11 @@ esac
 full_postfix="${postfix}-${ARCH_SUFFIX}"
 
 
-# Admin login
+#Admin login
+echo  "Login as administrator to install"
 sudo ls >/dev/null
+echo  "Done"
+
 
 # Install libs
 sudo apt-get install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang libdw-dev:native bc

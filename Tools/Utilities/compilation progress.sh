@@ -26,17 +26,30 @@ watch -n 10 "
     files_per_min=0
   fi
 
-  # 3. Progress logic
+  # 3. Progress & ETA logic
   target=$T_LOCKED
   if [ \"\$current_total\" -gt \"\$target\" ]; then target=\$current_total; fi
   percent=\$((current_total * 100 / target))
   [ \"\$percent\" -gt 99 ] && percent=99
 
+  # Calculate remaining units
   remaining=\$((target - current_total))
+
+  # Approximate remaining .o files (since target includes both .o and .d files)
+  remaining_o=\$(( remaining / 2 ))
+
+  # Calculate Dynamic ETA in minutes
+  if [ \"\$files_per_min\" -gt 0 ] && [ \"\$remaining_o\" -gt 0 ]; then
+    eta_min=\$(( remaining_o / files_per_min ))
+    # If math rounds down to 0 but objects remain, show a floor value of 1 minute
+    [ \"\$eta_min\" -eq 0 ] && eta_min=1
+  else
+    eta_min=\"...\"
+  fi
 
   # 4. UI Output
   echo \"Build Progress: \$percent% (\$current_total / \$target units)\"
-  echo \"Speed: \$files_per_min files/min | ETA: \${eta_min:-...} min\"
+  echo \"Speed: \$files_per_min files/min | ETA: \$eta_min min\"
 
   # 5. DEB CONSTRUCTION MONITORING
   if [ -d \"debian/tmp\" ]; then
