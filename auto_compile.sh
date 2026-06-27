@@ -64,7 +64,7 @@ cd  "${DIR}"
 #Admin login
 echo  "Login as administrator to install"
 sudo ls >/dev/null
-echo  ""
+echo  "Done"
 
 #Install libs
 sudo apt-get install build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang   libdw-dev:native

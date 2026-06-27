@@ -311,7 +311,20 @@ References
 ##################################################################################################################
 Change log:
 
-V1.1: 2026-06-26 - added tools doc and driver tool-chain
+V1.1: 2026-06-27 - Third Upstream Submission Wave: Released patch V1 (Part 3 / Create_next):
+                   - Deprecated Part 2 development branch due to LLM context-drift and alignment
+                     anomalies, resetting the pipeline to maintain strict reliability while
+                     preserving Part 2's core objective to integrate the comprehensive PSREF
+                     hardware database; tracked via:
+                     ./Lenovo_Drivers/Prototype/PSREF/yogafan_v3_quirks_database.ods
+                   - Initiated Part 3 tracking, rebuilding the patchset step-by-step from the stable
+                     V11 Part 1 baseline currently integrated in the mainline kernel.
+                   - Achieved clean patch application and synchronization on both hwmon-next and 7.1.1.
+                   - Integrated automated diagnostic toolchain documentation and local driver triplet
+                     utilities (Prepare, Test, Deploy).
+                   - Expanded hardware support by integrating several new laptop models into the
+                     DSDT hardware database; tracked via:
+                     ./Lenovo_Drivers/Prototype/DSDT/
 
 
 V1.0: 2026-04-28 - Updating yogafan V3 (part 2): Researching data from PFREF and DSDTs and various

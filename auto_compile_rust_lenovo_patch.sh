@@ -23,8 +23,8 @@ postfix="yoga"
 
 # Your Patch data
 PATCH_DIR="../../Lenovo_Drivers"
-PATCH_NAME="Current-full.patch"   # for old kernel
-#PATCH_NAME="Current-diff.patch"   # for kernel sumbission with yogafan in offial reo
+#PATCH_NAME="Current-full.patch"   # for old kernel
+ PATCH_NAME="Current-diff.patch"   # for kernel submission with yogafan in official repo
 
 
 # ANSI Color Codes
@@ -67,8 +67,11 @@ esac
 full_postfix="${postfix}-${ARCH_SUFFIX}"
 
 
-# Admin login
+#Admin login
+echo  "Login as administrator to install"
 sudo ls >/dev/null
+echo  "Done"
+
 
 # Install libs
 sudo apt-get install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang libdw-dev:native bc
