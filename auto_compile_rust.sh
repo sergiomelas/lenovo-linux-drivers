@@ -68,7 +68,7 @@ sudo ls >/dev/null
 echo  "Done"
 
 #Install libs
-sudo apt-get install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang libdw-dev:native bc
+sudo apt-get install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang libclang-dev lld llvm libdw-dev:native bc
 
 # --- CONFIGURE KERNEL BASE (Smart Auto-Detect) ---
 echo -e "${BLUE}------------------------------------------------------------------${NC}"
@@ -106,22 +106,29 @@ scripts/config --enable CONFIG_DRM_PANIC                              # Graphica
 scripts/config --enable CONFIG_DRM_PANIC_SCREEN_USER                  # Blue background
 scripts/config --enable CONFIG_DRM_PANIC_SCREEN_QR_CODE               # Rust-generated scannable QR code
 
-# 3. Build Tweaks & Strict Debug Stripping (From your original script)
-scripts/config --set-str CONFIG_LOCALVERSION "-$full_postfix"         # Appends "-yoga-amd64" to kernel name string
-scripts/config --set-val CONFIG_LOCALVERSION_AUTO n                   # Cleaner versioning
-scripts/config --undefine CONFIG_DEBUG_INFO                           # Strip primary debug symbols
-scripts/config --undefine CONFIG_DEBUG_INFO_BTF                       # Disable BPF Type Format bloat
-scripts/config --set-val CONFIG_DEBUG_INFO_NONE y                     # Explicitly select 'None'
-scripts/config --disable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT    # Kills the compiler's default bloated symbols
-scripts/config --disable CONFIG_DEBUG_INFO_DWARF4                     # Disables the old DWARF v4 debug standard
-scripts/config --disable CONFIG_DEBUG_INFO_DWARF5                     # Disables the heavy DWARF v5 debug standard
-scripts/config --disable CONFIG_GDB_SCRIPTS                           # No Python helpers (saves space)
+# 6. Build Tweaks & Strict Debug Stripping
+scripts/config --set-val CONFIG_CC_IS_CLANG y                         # Force acknowledge Clang toolchain presence[cite: 12]
+scripts/config --enable  CONFIG_ARCH_SUPPORTS_LTO_CLANG               # Validate architecture LTO capabilities[cite: 12]
+scripts/config --enable  CONFIG_ARCH_SUPPORTS_LTO_CLANG_THIN          # Validate ThinLTO specific architecture support[cite: 12]
+scripts/config --enable  CONFIG_HAS_LTO_CLANG                         # Confirm toolchain LTO readiness[cite: 12]
+scripts/config --disable CONFIG_LTO_NONE                              # Turn off 'No LTO' choice[cite: 12]
+scripts/config --disable CONFIG_LTO_CLANG_FULL                        # Turn off Full LTO choice[cite: 12]
+scripts/config --enable  CONFIG_LTO_CLANG_THIN                        # Force enable ThinLTO choice[cite: 12]
+scripts/config --set-str CONFIG_LOCALVERSION "-$full_postfix"         # Identifies as -yoga-amd64[cite: 12]
+scripts/config --set-val CONFIG_LOCALVERSION_AUTO n                   # Cleaner versioning[cite: 12]
+scripts/config --undefine CONFIG_DEBUG_INFO                           # Strip primary debug symbols[cite: 12]
+scripts/config --undefine CONFIG_DEBUG_INFO_BTF                       # Disable BPF Type Format bloat[cite: 12]
+scripts/config --set-val CONFIG_DEBUG_INFO_NONE y                     # Explicitly select 'None'[cite: 12]
+scripts/config --disable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT    # Kills the compiler's default bloated symbols[cite: 12]
+scripts/config --disable CONFIG_DEBUG_INFO_DWARF4                     # Disables the old DWARF v4 debug standard[cite: 12]
+scripts/config --disable CONFIG_DEBUG_INFO_DWARF5                     # Disables the heavy DWARF v5 debug standard[cite: 12]
+scripts/config --disable CONFIG_GDB_SCRIPTS                           # No Python helpers (saves space)[cite: 12]
 
 # --- END OF OPTIMIZED MODULE CONFIGURATION ---
 
 
 #To prevent question
-make olddefconfig
+make LLVM=1 olddefconfig
 
 # --- Capture info for Post-Processing ---
 VERSION_BASE=$(make kernelversion)
@@ -129,7 +136,8 @@ FULL_VER="${VERSION_BASE}-${full_postfix}"
 
 #Compile kernel
 # KDEB_PKGVERSION to ensure the .deb filenames also include custom tag
-make -j$(nproc) bindeb-pkg \
+# Compile using Clang/LLVM for native Rust & ThinLTO support
+make -j$(nproc) LLVM=1 bindeb-pkg \
     KDEB_PKGVERSION="${FULL_VER}" \
     KDEB_SOURCENAME=linux-upstream \
     DEBUG_INFO=n \

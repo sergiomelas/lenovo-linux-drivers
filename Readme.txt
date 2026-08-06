@@ -311,6 +311,32 @@ References
 ##################################################################################################################
 Change log:
 
+V1.2: 2026-08-06 - Repository Restructuring & Commit History Rollback:
+                   - Restructuring following facility/infrastructure fire events,
+                     ensuring all core assets, documentation databases, and out-of-tree
+                     testing toolchains are safely consolidated.
+                   - Reverted and re-aligned pipeline commits back to stable baseline
+                     structures to eliminate upstream integration friction and resolve context drift.
+                   - Finalized precise DMI quirk ordering adjustments to eradicate DMI shadowing
+                     bugs across newer Lenovo portfolios
+                     (LOQ 15IAX9, XiaoXin Pro 13ARE 2020, IdeaPad 3 15ALC6, Legion Pro 7 16AFR10H,
+                     Yoga Pro 7 14IAH10, and Yoga 7 16ARP8).
+                   - Cleaned up documentation references, removing outdated version tags and
+                     enumerations to comply strictly with upstream maintainer (Guenter Roeck) guidelines.
+
+V1.1.1: 2026-07-17 - Modern Kernel Toolchain Alignment & LTO Fixes:
+                    - Watcher Utility Modernization: Integrated a dynamic POSIX-compliant fallback
+                      block progress bar engine, optimized tracking baseline algorithms to prevent 99%
+                      calculation freezes on clean trees, and tuned runtime monitoring thread refresh
+                      cycles to 30s intervals to eliminate disk I/O bottlenecks.
+                    - Fixed the interactive prompt loop during 'make olddefconfig' on modern
+                      kernels by injecting strict Clang toolchain parameters directly into
+                      the Kconfig pipeline.
+                    - Swapped the configuration check to 'make LLVM=1 olddefconfig' to native
+                      evaluate ThinLTO dependencies under LLVM instead of GCC.
+                    - Standardized package variables across all compilation scripts, ensuring
+                      automated renaming and clean .deb installations on newer kernel structures.
+
 V1.1: 2026-06-27 - Third Upstream Submission Wave: Released patch V1 (Part 3 / Create_next):
                    - Deprecated Part 2 development branch due to LLM context-drift and alignment
                      anomalies, resetting the pipeline to maintain strict reliability while
