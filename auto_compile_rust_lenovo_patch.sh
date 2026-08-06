@@ -74,8 +74,7 @@ echo  "Done"
 
 
 # Install libs
-sudo apt-get install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang libdw-dev:native bc
-
+sudo apt-get install -y build-essential libncurses-dev bison flex libssl-dev libelf-dev dwarves debhelper rustc rust-src bindgen rustfmt rust-clippy clang libclang-dev lld llvm libdw-dev:native bc
 
 # --- CONFIGURE KERNEL BASE (Smart Auto-Detect) ---
 echo -e "${BLUE}------------------------------------------------------------------${NC}"
@@ -136,12 +135,17 @@ scripts/config --set-val CONFIG_X86_AMD_PSTATE_DEFAULT_MODE 3         # "Active"
 scripts/config --enable  CONFIG_AMD_PMC                               # Vital for s2idle (Modern Standby) sleep support
 scripts/config --enable  CONFIG_SENSORS_K10TEMP                       # Accurate CPU temperature monitoring
 scripts/config --enable  CONFIG_PINCTRL_AMD                           # Crucial for Touchpad/GPIO interrupts
+scripts/config --enable  CONFIG_SCHED_MC_PRIO                         # Prioritize faster physical cores (AMD CPPC)
+scripts/config --enable  CONFIG_LRU_GEN                               # Enable modern Multi-Gen LRU memory page reclaiming
+
 
 # 2. Graphics (AMD Radeon Vega/Cezanne)
 scripts/config --enable CONFIG_DRM_AMDGPU                             # Main Radeon driver
 scripts/config --enable CONFIG_DRM_AMDGPU_USERPTR                     # Support for OpenCL/ROCm
 scripts/config --enable CONFIG_DRM_DISPLAY_HDMI_HELPER                # Essential for HDMI/HDR
 scripts/config --enable CONFIG_DRM_DISPLAY_DP_HELPER                  # Essential for DisplayPort/USB-C Alt Mode
+scripts/config --enable CONFIG_DRM_AMD_DC_FP                          # Enable floating-point math for advanced display core features
+scripts/config --enable CONFIG_DRM_AMD_SECURE_DISPLAY                 # Support modern panel self-refresh & display tracking
 
 # 3. Lenovo Yoga 14c Hardware Logic (The Fan & Sensor Fix)
 scripts/config --set-val CONFIG_HWMON y                               # REQUIRED: Base framework for all sensors
@@ -168,9 +172,18 @@ scripts/config --set-val DEBUG_INFO_BTF n                             # Prevents
 scripts/config --enable CONFIG_DRM_PANIC                              # Graphical panic core
 scripts/config --enable CONFIG_DRM_PANIC_SCREEN_USER                  # Blue background
 scripts/config --enable CONFIG_DRM_PANIC_SCREEN_QR_CODE               # Rust-generated scannable QR code
+scripts/config --enable CONFIG_FONT_TER16x32                          # High-res 16x32 font to prevent cut-off QR codes on HiDPI displays
+
 
 # 6. Build Tweaks & Strict Debug Stripping
-scripts/config --set-str CONFIG_LOCALVERSION "-$full_postfix"         # Identifies as -yoga-amd64
+scripts/config --set-val CONFIG_CC_IS_CLANG y                         # Force acknowledge Clang toolchain presence
+scripts/config --enable  CONFIG_ARCH_SUPPORTS_LTO_CLANG               # Validate architecture LTO capabilities
+scripts/config --enable  CONFIG_ARCH_SUPPORTS_LTO_CLANG_THIN          # Validate ThinLTO specific architecture support
+scripts/config --enable  CONFIG_HAS_LTO_CLANG                         # Confirm toolchain LTO readiness
+scripts/config --disable CONFIG_LTO_NONE                              # Turn off 'No LTO' choice
+scripts/config --disable CONFIG_LTO_CLANG_FULL                        # Turn off Full LTO choice
+scripts/config --enable  CONFIG_LTO_CLANG_THIN                        # Force enable ThinLTO choice[cite: 5, 6, 7, 8, 9, 10]
+scripts/config --set-str CONFIG_LOCALVERSION "-$full_postfix"         # Identifies as -yoga-amd64[cite: 5, 6, 7, 8, 9, 10]
 scripts/config --set-val CONFIG_LOCALVERSION_AUTO n                   # Cleaner versioning
 scripts/config --undefine CONFIG_DEBUG_INFO                           # Strip primary debug symbols
 scripts/config --undefine CONFIG_DEBUG_INFO_BTF                       # Disable BPF Type Format bloat
@@ -180,9 +193,11 @@ scripts/config --disable CONFIG_DEBUG_INFO_DWARF4                     # Disables
 scripts/config --disable CONFIG_DEBUG_INFO_DWARF5                     # Disables heavy DWARF v5
 scripts/config --disable CONFIG_GDB_SCRIPTS                           # No Python helpers
 
+scripts/config --disable CONFIG_DEBUG_KERNEL                          # Disables heavy diagnostic overhead
+scripts/config --disable CONFIG_SLUB_DEBUG                            # Speeds up memory allocation
 # --- END OF OPTIMIZED MODULE CONFIGURATION ---
 
-make olddefconfig
+make LLVM=1 olddefconfig
 
 # Get kernel version (e.g., 7.0.0-rc4)
 VERSION_BASE=$(make kernelversion)
@@ -192,7 +207,8 @@ PKG_VER="${VERSION_BASE}-${full_postfix}"
 echo -e "${BLUE}Starting Kernel Build (uname -r: ${FULL_VER})${NC}"
 
 # Compile using your naming logic
-make -j$(nproc) bindeb-pkg \
+# Compile using Clang/LLVM for native Rust & ThinLTO support
+make -j$(nproc) LLVM=1 bindeb-pkg \
     KDEB_PKGVERSION="${PKG_VER}" \
     KDEB_SOURCENAME=linux-upstream \
     DEBUG_INFO=n \
