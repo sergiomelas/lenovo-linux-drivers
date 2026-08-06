@@ -1,3 +1,0 @@
-System Product Name: 11DSS03000
-System Family: ThinkCentre M80q
-Provider:unlockxiaom
