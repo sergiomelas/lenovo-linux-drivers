@@ -1,0 +1,10 @@
+System Product Name: 83BS
+System Family: Yoga 7 16ARP8
+Provider:Splarkszter
+
+
+System Product Name: 83BS
+System Family: Yoga 7 16ARP8
+
+CPU (Ryzen 7 7735U)
+Kernel version (7.1.5-1-cachyos)
