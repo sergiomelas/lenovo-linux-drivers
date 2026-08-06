@@ -1,0 +1,25 @@
+ok now lets complete the data with the moment of inertia rules and the data sheet of fan search on line. we have to infere the other parameters with the dynamic rule we have established before you remember, compile xxx using the other as example and the 9 as dynamic reference
+
+
+#	Marketing Name (Ident)	Machine Type (DMI_PRODUCT_NAME)	1st Announce Year	Driver Target	Bit-Width	Multiplier	N_max	R_max	Tau_ms	Slew_time_s	Stop_Threshold	ACPI Path(s)	Physics Class	Source of Phisics 	Source of Paths	PSREF_Link (KO)
+
+
+131	ThinkCentre M80q	11DSS03000	2021	WMI	8-bit	1	0	N/A	N/A	N/A	N/A	\_SB_.IETM.FANS	N/A	N/A	User Of Machine PenPenIsGod	https://psref.lenovo.com/WDProduct/ThinkCentre/ThinkCentre_M80q
+
+
+49	ThinkBook 16 G7+ ASP	21Q5	2024	wmi	8-bit	100					50	\_SB.PCI0.LPC0.EC0.FA1S	   14-inch Slim (Low J)		Maintainer (Rong Zhang) Same Bios 21Q4	https://psref.lenovo.com/l/Product/ThinkBook/ThinkBook_16_G7plus_ASP
+
+
+9	Yoga 7 14ACN6	82N7	2021	Yogafan	8-bit	100	0	5500	1000	4	50	\_SB.PCI0.LPC0.EC0.FANS	14-inch Slim (Low J)	Author (Sergio Melas): First-Hand Data, Measured with tachometer, Identified Dynamics with FOPTD Identification	Author (Sergio Melas): First-Hand Data From DSTD	https://psref.lenovo.com/Product/Yoga/Yoga_7_14ACN6 	ok
+
+
+#	Marketing Name (Ident)	Machine Type (DMI_PRODUCT_NAME)	1st Announce Year	Driver Target	Bit-Width	Multiplier	N_max	R_max	Tau_ms	Slew_time_s	Stop_Threshold	ACPI Path(s)	Physics Class	Source of Phisics 	Source of Paths	PSREF_Link (KO)
+
+
+xxx	ThinkCentre M80q	11DSS03000	2021	WMI	8-bit	1	3500	3500	850	2	0	\_SB_.IETM.FANC;\_SB_.IETM.FANS	Desktop Form Factor (Medium J)	Intel Dynamic Tuning / ACPI Spec Framework	User Of Machine PenPenIsGod	https://psref.lenovo.com/Product/ThinkCentre/ThinkCentre_M80q
+
+
+49	ThinkBook 16 G7+ ASP	21Q5	2024	wmi	8-bit	100					50	\_SB.PCI0.LPC0.EC0.FA1S	   14-inch Slim (Low J)		Maintainer (Rong Zhang) Same Bios 21Q4	https://psref.lenovo.com/l/Product/ThinkBook/ThinkBook_16_G7plus_ASP
+
+
+9	Yoga 7 14ACN6	82N7	2021	Yogafan	8-bit	100	0	5500	1000	4	50	\_SB.PCI0.LPC0.EC0.FANS	14-inch Slim (Low J)	Author (Sergio Melas): First-Hand Data, Measured with tachometer, Identified Dynamics with FOPTD Identification	Author (Sergio Melas): First-Hand Data From DSTD	https://psref.lenovo.com/Product/Yoga/Yoga_7_14ACN6 	ok
