@@ -1,0 +1,5 @@
+System Product Name: 83KF
+System Family: XiaoXinPro-13ARE 2020 (83KF)
+Provider:HinataKato
+
+

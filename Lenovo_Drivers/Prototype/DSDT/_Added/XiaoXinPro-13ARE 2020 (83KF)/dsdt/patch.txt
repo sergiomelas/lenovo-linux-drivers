@@ -1,0 +1,13 @@
+static const struct yogafan_config xiaoxin_8bit_dual_cfg = {
+    .multiplier = 100,
+    .fan_count = 2,
+    .paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FA2S" }
+};
+    {
+        .ident = "Lenovo XiaoXin Pro 13ARE 2020",
+        .matches = {
+            DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+            DMI_MATCH(DMI_PRODUCT_FAMILY, "XiaoXinPro-13ARE 2020"),
+        },
+        .driver_data = (void *)&xiaoxin_8bit_dual_cfg,
+    },
