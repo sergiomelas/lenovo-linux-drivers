@@ -105,8 +105,19 @@ immediately to ensure the user knows the fan has stopped.
  83KF           | XiaoXinPro 13ARE    | 0x06/0xFE | \_SB.PCI0.LPC0.EC0.FANS/FA2S   |  8-bit | 100
  82KU           | IdeaPad 3 15ALC6    | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0        |  8-bit | 100
  83RU           | Legion Pro 7 16     | 0x03/0x06 | \_SB.PCI0.LPC0.EC0.FANS/FA2S   |  8-bit | 100
+ 83RU           | Legion Pro 7 16     | 0x04      | \_SB.PCI0.LPC0.EC0.FASF (Fan3) |  8-bit | 100
  83KF           | Yoga Pro 7 14IAH    | 0x06      | \_SB.PC00.LPCB.EC0.FANS        |  8-bit | 100
  83BS           | Yoga 7 16ARP8       | 0x03/0x06 | \_SB.PCI0.LPC0.EC0.FANS/FA2S   |  8-bit | 100
+ 82KR           | IdeaPad 3 15ADA6    | 0x06      | \_SB.PCI0.LPC0.EC0.FANS        |  8-bit | 100
+ 81YQ           | IdeaPad 5 15ARE05   | 0x06      | \_SB.PCI0.LPC0.EC0.FANS        |  8-bit | 100
+ 82N6           | Legion 7 16ACHg6    | 0x06/0xFE | \_SB.PCI0.LPC0.EC0.FANS/FA2S   |  8-bit | 100
+ 82Y5           | Legion Slim 5 14APH8| 0x06/0xFE | \_SB.PCI0.LPC0.EC0.FANS/FA2S   |  8-bit | 100
+ 83F5           | Legion Pro 7 16IAX10| 0x03/0x06 | \_SB.PC00.LPCB.EC0.FANS/FA2S   |  8-bit | 100
+ 83F5           | Legion Pro 7 16IAX10| 0x04      | \_SB.PC00.LPCB.EC0.FASF (Fan3) |  8-bit | 100
+ 82UF           | Yoga 7 16IAH7       | 0x06/0xFE | \_SB.PC00.LPCB.EC0.FANS/FA2S   |  8-bit | 100
+ 81JS           | YOGA 730-15IWL      | 0x06      | \_SB.PCI0.LPCB.EC0.ERPM        |  8-bit | 100
+ 83HM           | Yoga Slim 7 15ILL9  | 0x06/0xFE | \_SB.PC00.LPCB.EC0.FANS/FA2S   | 16-bit | 1
+ 83L0           | Yoga Pro 9 16IAH10  | 0x5A4     | \_SB.PC00.LPCB.H_EC.FANS/FA2S  | 16-bit | 1
  *Legacy*       | Pre-2020 Models     | 0x06      | \_SB.PCI0.LPC.EC.FAN0          |  8-bit | 100
  -------------------------------------------------------------------------------------------------------
 
@@ -165,3 +176,13 @@ Contributors & DSDT Providers:
 - **unlockxiaom** (Legion Pro 7 16AFR10H - 83RU, Yoga Pro 7 14IAH10 - 83KF, ThinkCentre M80q)
 - **Phani Pavan K** (Yoga Pro 7 14IAH10 - 83KF)
 - **Splarkszter** (Yoga 7 16ARP8 - 83BS)
+- **GabboRocchia** (Legion Pro 7 16AFR10H - 83RU 3rd fan)
+- **dubhater** (IdeaPad 3 15ADA6 - 82KR)
+- **Voltair88** (IdeaPad 5 15ARE05 - 81YQ)
+- **magnumsolo** (Legion 7 16ACHg6 - 82N6)
+- **Dolik64** (Legion Slim 5 14APH8 - 82Y5)
+- **rzsn** (Legion Pro 7 16IAX10H - 83F5)
+- **slap2572** (Yoga 7 16IAH7 - 82UF)
+- **Lassebq** (YOGA 730-15IWL - 81JS)
+- **msourada** (Yoga Slim 7 15ILL9 - 83HM)
+- **geniusss87** (Yoga Pro 9 16IAH10 - 83L0)

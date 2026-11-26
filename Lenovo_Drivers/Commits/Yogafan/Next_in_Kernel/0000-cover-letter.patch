@@ -1,0 +1,44 @@
+From 2b95728b4316498b6c4ab7c88e59a05f45d77c2c Mon Sep 17 00:00:00 2001
+From: Sergio Melas <sergiomelas@gmail.com>
+Date: Thu, 26 Nov 2026 17:51:36 +0100
+Subject: [PATCH 0/2] hwmon: (yogafan) Support >2 fans and add additional Lenovo laptops
+
+Hi Guenter, all,
+
+Apologies for being away over the last few months due to other
+commitments, and thank you for taking care of the Yoga Pro 7 14IAH10
+(83KF) fix in the meantime. I am back actively maintaining yogafan and
+have audited the pending user-reported DSDT dumps.
+
+This 2-patch series is based on hwmon-next (12c53b6b6):
+
+- Patch 1/2 expands struct yogafan_config.paths from 2 to MAX_FANS (8)
+  and adds the 3rd tachometer field (FASF) for the Legion Pro 7
+  16AFR10H (83RU).
+- Patch 2/2 adds DMI quirks and documentation for 9 user-reported
+  Lenovo laptops (reusing existing yogafan_config structs wherever
+  identical).
+
+To avoid merge conflicts and duplication, this series intentionally
+does not touch Yoga Pro 7 14IAH10 (83KF, already queued on hwmon fixes)
+or Yoga 9 2-in-1 14ILL10 (83LC, submitted separately on the list).
+
+Build-tested with W=1, checked with checkpatch.pl --strict --codespell
+(0 errors, 0 warnings), and documentation verified with
+SPHINXDIRS=hwmon make htmldocs.
+
+Best regards,
+Sergio
+
+Sergio Melas (2):
+  hwmon: (yogafan) Support more than two fans and add 3rd fan for Legion
+    Pro 7 16AFR10H
+  hwmon: (yogafan) Add support for additional Lenovo laptops
+
+ Documentation/hwmon/yogafan.rst |  21 ++++++
+ drivers/hwmon/yogafan.c         | 112 +++++++++++++++++++++++++++++++-
+ 2 files changed, 131 insertions(+), 2 deletions(-)
+
+-- 
+2.55.0
+

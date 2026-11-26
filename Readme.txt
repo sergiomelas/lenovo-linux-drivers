@@ -311,11 +311,23 @@ References
 ##################################################################################################################
 Change log:
 
-## Changelog - Yogafan V1.2
-
-* **DMI Matching Improvements**: Refined platform identification mechanisms to ensure robust detection across supported Lenovo Yoga and IdeaPad models.
-* **EC Path Resolution**: Optimized embedded controller register calls for improved temperature polling and fan profile handling.
-* **Stability & Field Testing**: Validated core thermal control loops against real-world user hardware telemetry and DSDT traces.
+V1.4: 2026-11-26    - Upstream hwmon-next Patch Series (2 patches, anchored on 12c53b6b6):
+                    - Patch 1/2: Expanded struct yogafan_config.paths from 2 to MAX_FANS (8)
+                      and added 3rd fan (FASF) support for Legion Pro 7 16AFR10H (83RU).
+                    - Patch 2/2: Added 9 user-reported Lenovo laptops (IdeaPad 3 15ADA6,
+                      IdeaPad 5 15ARE05, Legion 7 16ACHg6, Legion Slim 5 14APH8,
+                      Legion Pro 7 16IAX10H, Yoga 7 16IAH7, YOGA 730-15IWL, Yoga Slim 7 15ILL9,
+                      Yoga Pro 9 16IAH10) and updated Documentation/hwmon/yogafan.rst
+                      (checkpatch.pl --strict --codespell 0 errors/0 warnings, W=1 & htmldocs clean).
+                    - Master PSREF Quirk Database (yogafan_v3_quirks_database.ods):
+                      Cleaned to 929 pure x86 Lenovo models (removed 50 ChromeOS and 5 ARM/Qualcomm
+                      rows), fixed 233+ PSREF links, split ACPI paths into 5 columns (M..Q), added
+                      integer Slew_time_s, DSDT Status (Col W), Source of Paths (Col T), and
+                      physics/status reference tables in Notes.
+                    - DSDT Archive Expansion (Lenovo_Drivers/Prototype/DSDT/):
+                      Audited all 16 pending GitHub DSDT issues and imported/classified 38 consumer
+                      Lenovo DSDTs from linuxhw/ACPI (42 in _To add/, 10 in _Added/,
+                      11 in _Not Compatible/, 2 in _To explore/).
 
 V1.3: 2026-09-11    - Mainline Documentation & Model Integration:
                     - Officially merged documentation updates into the mainline Linux kernel,
