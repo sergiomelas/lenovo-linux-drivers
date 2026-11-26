@@ -148,7 +148,7 @@ PATCH SUBMISSION COMMAND send:
 git send-email --to="Guenter Roeck <linux@roeck-us.net>" \
                --cc="linux-hwmon@vger.kernel.org" \
                --cc="linux-kernel@vger.kernel.org" \
-               <path to patch>.patch \
+               <path to patch>.patch
 
 
 

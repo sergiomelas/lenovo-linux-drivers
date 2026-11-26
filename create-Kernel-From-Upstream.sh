@@ -13,30 +13,32 @@
 #                                                                #"
 ##################################################################"
 
-
-
-# ANSI Color Codes
-CYAN='\033[0;36m'
-GOLD='\033[1;33m'
-GREEN='\033[0;32m'
-BLUE='\033[1;34m'
-NC='\033[0m' # No Color
-
-echo -e "${GOLD} "
-echo -e " ##################################################################"
-echo -e " #                                                                #"
-echo -e " # ${CYAN}                 Kernel Compile Script  ${GOLD}                       #"
-echo -e " # ${CYAN}          Developed by Sergio Melas 2021-26 ${GOLD}                   #"
-echo -e " #                                                                #"
-echo -e " # ${BLUE}              Email: ${GREEN}sergiomelas@gmail.com ${GOLD}                    #"
-echo -e " # ${BLUE}                 Released under GPL V2.0 ${GOLD}                      #"
-echo -e " #                                                                #"
-echo -e " ##################################################################"
-echo -e " ${NC}"
-
-
 # 1. Your manual personalization string
 postfix="yoga"
+
+CYAN=$'\033[0;36m'
+GOLD=$'\033[1;33m'
+GREEN=$'\033[0;32m'
+BLUE=$'\033[1;34m'
+NC=$'\033[0m'
+
+box_line() {
+    local text="$1" colored="${2:-$1}" width=64
+    local pad=$(( width - ${#text} ))
+    local left=$(( pad / 2 )) right=$(( pad - pad / 2 ))
+    printf " %s║%s%*s%s%*s%s║%s\n" "$GOLD" "" "$left" "" "$colored" "$right" "" "$GOLD" "$NC"
+}
+
+border=$(printf '═%.0s' {1..64})
+printf "\n %s╔%s╗%s\n" "$GOLD" "$border" "$NC"
+box_line ""
+box_line "Kernel Compile Script"             "${CYAN}Kernel Compile Script"
+box_line "Developed by Sergio Melas 2021-26" "${CYAN}Developed by Sergio Melas 2021-26"
+box_line ""
+box_line "Email: sergiomelas@gmail.com"      "${BLUE}Email: ${GREEN}sergiomelas@gmail.com"
+box_line "Released under GPL V2.0"           "${BLUE}Released under GPL V2.0"
+box_line ""
+printf " %s╚%s╝%s\n\n" "$GOLD" "$border" "$NC"
 
 # 2. Automated Architecture Detection (Comprehensive Version)
 # Map hardware names (uname -m) to Debian architecture names

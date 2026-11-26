@@ -1,0 +1,28 @@
+# Local kernel source trees & patch build workspaces (prevent nested .git scanning)
+/linux-*/
+/_Patch-Builtd/
+/_github_replica/
+
+# Local-only personal archives, scratch work, and media
+/_OLD/
+/_NEW/
+/__My linux diploma/
+/Media/
+
+# Large Lenovo PSREF reference PDFs (~400 MB; exceeds GitHub 100 MB limit)
+Lenovo_Drivers/Prototype/PSREF/**/*.pdf
+
+# Sensitive local keys (NEVER commit or push)
+Tools/SasHiko/Key/
+
+# Local kernel module test-compile scratch directory
+Tools/Toolchain/src/
+
+# Kernel module kbuild artifacts
+*.ko
+*.o
+*.mod
+*.mod.c
+.*.cmd
+Module.symvers
+modules.order

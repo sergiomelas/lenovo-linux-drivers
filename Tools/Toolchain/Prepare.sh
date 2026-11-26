@@ -9,7 +9,7 @@ set -euo pipefail
 # DRIVER PROFILE CONFIGURATION
 # ------------------------------------------------------------------------------
 DRIVER_NAME="yogafan"   # Name of your .c file (without extension)
-DRIVER_PATH="Files"     # Reference directory containing the source files
+DRIVER_PATH="/home/sergio/Others/Kernel-Upstream-Development/Lenovo_Drivers/Commits/Yogafan/Current_in_Kernel/"     # Reference directory containing the source files
 KVERSION=$(uname -r)    # Autofilled via system telemetry
 # ------------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ fi
 echo "Staging latest ${DRIVER_NAME}.c source..."
 cp "${DRIVER_PATH}/${DRIVER_NAME}.c" "${SRC_DIR}/"
 
-# 4. Generate dynamic Makefile with protective path quoting
+# 4. Generate dynamic Makefile with protective path quoting and LLVM toolchain support
 echo "Generating dynamic out-of-tree Makefile for kernel ${KVERSION}..."
 cat << EOF > "${SRC_DIR}/Makefile"
 obj-m += ${DRIVER_NAME}.o
@@ -47,10 +47,10 @@ KVERSION = ${KVERSION}
 CUR_DIR  := \$(shell pwd)
 
 all:
-	\$(MAKE) -C "/lib/modules/\$(KVERSION)/build" M="\$(CUR_DIR)" modules
+	\$(MAKE) -C "/lib/modules/\$(KVERSION)/build" M="\$(CUR_DIR)" LLVM=1 modules
 
 clean:
-	\$(MAKE) -C "/lib/modules/\$(KVERSION)/build" M="\$(CUR_DIR)" clean
+	\$(MAKE) -C "/lib/modules/\$(KVERSION)/build" M="\$(CUR_DIR)" LLVM=1 clean
 EOF
 
 echo "=============================================================================="

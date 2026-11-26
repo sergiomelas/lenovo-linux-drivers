@@ -27,25 +27,29 @@ PATCH_DIR="../../Lenovo_Drivers"
  PATCH_NAME="Current-diff.patch"   # for kernel submission with yogafan in official repo
 
 
-# ANSI Color Codes
-CYAN='\033[0;36m'
-GOLD='\033[1;33m'
-GREEN='\033[0;32m'
-BLUE='\033[1;34m'
-NC='\033[0m'
+CYAN=$'\033[0;36m'
+GOLD=$'\033[1;33m'
+GREEN=$'\033[0;32m'
+BLUE=$'\033[1;34m'
+NC=$'\033[0m'
 
-echo -e "${GOLD} "
-echo -e " ##################################################################"
-echo -e " #                                                                #"
-echo -e " # ${CYAN}                    Kernel Compile Script                ${GOLD}      #"
-echo -e " # ${CYAN}            Developed by Sergio Melas 2021-26            ${GOLD}      #"
-echo -e " #                                                                #"
-echo -e " # ${BLUE}                 Email: ${GREEN}sergiomelas@gmail.com ${GOLD}                 #"
-echo -e " # ${BLUE}                     Released under GPL V2.0             ${GOLD}      #"
-echo -e " #                                                                #"
-echo -e " ##################################################################"
-echo -e " ${NC}"
+box_line() {
+    local text="$1" colored="${2:-$1}" width=64
+    local pad=$(( width - ${#text} ))
+    local left=$(( pad / 2 )) right=$(( pad - pad / 2 ))
+    printf " %s║%s%*s%s%*s%s║%s\n" "$GOLD" "" "$left" "" "$colored" "$right" "" "$GOLD" "$NC"
+}
 
+border=$(printf '═%.0s' {1..64})
+printf "\n %s╔%s╗%s\n" "$GOLD" "$border" "$NC"
+box_line ""
+box_line "Kernel Compile Script"             "${CYAN}Kernel Compile Script"
+box_line "Developed by Sergio Melas 2021-26" "${CYAN}Developed by Sergio Melas 2021-26"
+box_line ""
+box_line "Email: sergiomelas@gmail.com"      "${BLUE}Email: ${GREEN}sergiomelas@gmail.com"
+box_line "Released under GPL V2.0"           "${BLUE}Released under GPL V2.0"
+box_line ""
+printf " %s╚%s╝%s\n\n" "$GOLD" "$border" "$NC"
 
 
 # 1. Change to local directory
@@ -129,14 +133,27 @@ scripts/config --set-val CONFIG_SENSORS_YOGAFAN m
 # --- START OF OPTIMIZED MODULE CONFIGURATION (YOGA 14c ACN) ---
 
 # 1. AMD Zen 3 & Power (For Ryzen 5800U)
-scripts/config --set-val CONFIG_MZEN3 y                               # Zen 3 microarchitecture optimization
-scripts/config --enable  CONFIG_X86_AMD_PSTATE                        # Modern AMD P-State driver
-scripts/config --set-val CONFIG_X86_AMD_PSTATE_DEFAULT_MODE 3         # "Active" mode for performance/watt balance
-scripts/config --enable  CONFIG_AMD_PMC                               # Vital for s2idle (Modern Standby) sleep support
-scripts/config --enable  CONFIG_SENSORS_K10TEMP                       # Accurate CPU temperature monitoring
-scripts/config --enable  CONFIG_PINCTRL_AMD                           # Crucial for Touchpad/GPIO interrupts
-scripts/config --enable  CONFIG_SCHED_MC_PRIO                         # Prioritize faster physical cores (AMD CPPC)
-scripts/config --enable  CONFIG_LRU_GEN                               # Enable modern Multi-Gen LRU memory page reclaiming
+scripts/config --enable  CONFIG_X86_NATIVE_CPU                        # Mainline 7.x native CPU optimization (-march=native for Zen 3)
+scripts/config --set-val CONFIG_MZEN3 y                               # Legacy Zen 3 microarchitecture flag (fallback if patched tree)
+scripts/config --enable  CONFIG_X86_AMD_PSTATE                        # Modern AMD P-State CPPC frequency scaling driver
+scripts/config --set-val CONFIG_X86_AMD_PSTATE_DEFAULT_MODE 3         # "Active" EPP mode (3) for optimal performance/watt balance
+scripts/config --disable CONFIG_X86_AMD_PSTATE_UT                     # Disable internal AMD P-State synthetic unit-test module at boot
+scripts/config --enable  CONFIG_AMD_PMC                               # Vital for s2idle (Modern Standby) deep sleep residency
+scripts/config --module  CONFIG_AMD_PMF                               # AMD Platform Management Framework (dynamic thermal/power tuning)
+scripts/config --enable  CONFIG_AMD_WBRF                              # AMD Wi-Fi RF Band Mitigation (prevents SoC/Wi-Fi harmonic interference)
+scripts/config --enable  CONFIG_SENSORS_K10TEMP                       # Accurate Zen 3 CPU CCD/Tctl temperature monitoring
+scripts/config --enable  CONFIG_PINCTRL_AMD                           # Crucial for AMD GPIO controller & I2C touchpad interrupts
+scripts/config --enable  CONFIG_SCHED_MC_PRIO                         # Prioritize faster physical cores (AMD CPPC Preferred Core)
+scripts/config --enable  CONFIG_ENERGY_MODEL                          # Energy-aware scheduling model for CPU power efficiency
+scripts/config --enable  CONFIG_LRU_GEN                               # Enable modern Multi-Gen LRU (MGLRU) memory page reclaiming
+scripts/config --enable  CONFIG_LRU_GEN_ENABLED                       # Activate Multi-Gen LRU (MGLRU) by default at boot time
+scripts/config --disable CONFIG_PREEMPT_NONE                          # Disable server non-preemptible model
+scripts/config --disable CONFIG_PREEMPT_VOLUNTARY                     # Disable legacy voluntary preemption model
+scripts/config --disable CONFIG_PREEMPT                               # Disable eager full preemption in favor of Lazy Preemption
+scripts/config --enable  CONFIG_PREEMPT_LAZY                          # Enable 7.x Scheduler-Controlled Lazy Preemption (low latency + high efficiency)
+scripts/config --disable CONFIG_HZ_250                                # Disable 250Hz server timer tick (4ms granularity)
+scripts/config --enable  CONFIG_HZ_1000                               # Enable 1000Hz desktop timer tick (1ms granularity for Wayland/Touch/Wacom)
+scripts/config --set-val CONFIG_HZ 1000                               # Set kernel internal timer frequency value to 1000Hz
 
 
 # 2. Graphics (AMD Radeon Vega/Cezanne)

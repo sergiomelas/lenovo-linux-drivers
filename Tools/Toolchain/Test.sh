@@ -9,7 +9,7 @@ set -euo pipefail
 # DRIVER PROFILE CONFIGURATION
 # ------------------------------------------------------------------------------
 DRIVER_NAME="yogafan"
-DRIVER_PATH="Files"
+DRIVER_PATH="/home/sergio/Others/Kernel-Upstream-Development/Lenovo_Drivers/Commits/Yogafan/Next"
 # ------------------------------------------------------------------------------
 
 # Root validation check - Preserves exact execution paths (PWD) across sudo

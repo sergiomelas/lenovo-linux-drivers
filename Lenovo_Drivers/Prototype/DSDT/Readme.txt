@@ -21,6 +21,9 @@ your operating system to extract your ACPI tables and help expand compatibility!
 
 2. Extract your binary DSDT table:
    sudo acpidump -b -t DSDT -o dsdt.dat
+   Decompile the binary DSDT table into a source file:
+   iasl -d dsdt.dat
+
 
 3. Get your System Family Name:
    sudo dmidecode -s system-family

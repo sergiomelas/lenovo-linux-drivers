@@ -27,7 +27,11 @@ echo "$current_total_init" > "$T_LAST_COUNT_FILE"
 date +%s > "$T_LAST_TIME_FILE"
 echo "0" > "$T_SPEED_FILE"
 
-watch -c -n "$INTERVAL" '
+watch -c -t -n "$INTERVAL" '
+  echo "================================================================================="
+  echo "                        LINUX KERNEL COMPILATION MONITOR                         "
+  echo "                           (c) Sergio Melas 2026                                 "
+  echo "================================================================================="
   # Count live compiled targets
   current_o=$(find . -name "*.o" | wc -l)
   current_total=$(find . -name "*.o" -o -name ".*.d" | wc -l)
@@ -99,18 +103,18 @@ watch -c -n "$INTERVAL" '
 
   # --- DYNAMIC TARGET ESTIMATE ENGINE ---
   if [ -f .config ]; then
-    if [ "$current_o" -gt 500 ]; then
-      dynamic_target=$(( current_total * 100 / 38 ))
-    else
-      raw_source_count=$(find . -type f \( -name "*.c" -o -name "*.S" -o -name "*.rs" \) \
+    if [ -z "$CACHED_C_COUNT" ]; then
+      CACHED_C_COUNT=$(find . -type f \( -name "*.c" -o -name "*.S" -o -name "*.rs" \) \
         -not -path "./Documentation/*" \
         -not -path "./tools/*" \
         -not -path "./scripts/*" \
         -not -path "./samples/*" | wc -l)
-      dynamic_target=$(( (raw_source_count * 3 * 65) / 100 ))
     fi
+    # Initialize baseline target to source count, letting elastic scaling take over smoothly during heavy module phases
+    dynamic_target=$(( CACHED_C_COUNT ))
+    [ "$dynamic_target" -lt 15000 ] && dynamic_target=15000
   else
-    dynamic_target=35000
+    dynamic_target=15000
   fi
 
   # 1. CHECK FOR .DEB COMPLETION
@@ -154,14 +158,15 @@ watch -c -n "$INTERVAL" '
     echo "$smoothed_speed" > "'$T_SPEED_FILE'"
   fi
 
-  # 4. Progress & Dynamic Target tracking
+  # 4. Progress & Dynamic Target tracking (Elastic target expansion for module/linking phase)
   target=$dynamic_target
-  if [ "$current_total" -gt "$target" ]; then
-    target=$current_total
+  if [ "$current_total" -ge "$target" ]; then
+    target=$(( current_total + 3000 ))
   fi
 
   percent=$((current_total * 100 / target))
-  [ "$percent" -gt 99 ] && percent=99
+  [ "$percent" -gt 98 ] && percent=98
+  [ -d "debian/tmp" ] && percent=100
 
   # --- GENERATORE FUNZIONE BARRE ---
   gen_bar() {
@@ -197,29 +202,32 @@ watch -c -n "$INTERVAL" '
   elapsed_min=$(( elapsed_sec / 60 ))
   elapsed_hr=$(( elapsed_min / 60 ))
   elapsed_min_rem=$(( elapsed_min % 60 ))
+  elapsed_sec_rem=$(( elapsed_sec % 60 ))
 
   # Calculate remaining units safely
   remaining=$((target - current_total))
   remaining_o=$(( (remaining * 10) / 30 ))
 
-  # 6. Calculate Stabilized ETA in minutes
+  # 6. Calculate Stabilized ETA in minutes using true total units remaining
   if [ "$is_warmup" -eq 1 ]; then
     eta_min="Calibrating..."
     speed_display="Warming up..."
   else
-    if [ "$smoothed_speed" -gt 0 ] && [ "$remaining_o" -gt 0 ]; then
-      eta_min=$(( remaining_o / smoothed_speed ))
+    remaining_units=$((target - current_total))
+    [ "$remaining_units" -lt 0 ] && remaining_units=0
+    if [ "$smoothed_speed" -gt 0 ] && [ "$remaining_units" -gt 0 ]; then
+      eta_min=$(( remaining_units / smoothed_speed ))
       [ "$eta_min" -eq 0 ] && eta_min=1
       eta_min="${eta_min} min"
     else
-      eta_min="..."
+      eta_min="0 min"
     fi
     speed_display="$smoothed_speed files/min"
   fi
 
   # 7. UI Output
   printf "Build Progress:   [%s] %d%% (%d / %d units)\\n" "$bar_string" "$percent" "$current_total" "$target"
-  printf "Elapsed Time:     %dh %dm | Speed: %s | ETA: %s\\n" "$elapsed_hr" "$elapsed_min_rem" "$speed_display" "$eta_min"
+  printf "Elapsed Time:     %dh %dm %ds | Speed: %s | ETA: %s\\n" "$elapsed_hr" "$elapsed_min_rem" "$elapsed_sec_rem" "$speed_display" "$eta_min"
   echo "---------------------------------------------------------------------------------"
   printf "CPU Load Bar:     [%s%s%s] %s%d%%%s (Load: %s / Cores: %s)\\n" "$(printf '\''%b'\'' "$load_color")" "$cpu_bar" "$(printf '\''%b'\'' "$NC")" "$(printf '\''%b'\'' "$load_color")" "$cpu_load_pct" "$(printf '\''%b'\'' "$NC")" "$load_avg" "$core_count"
   printf "RAM Usage Bar:    [%s%s%s] %s%d%%%s (%s/%s MB)\\n" "$(printf '\''%b'\'' "$ram_color")" "$ram_bar" "$(printf '\''%b'\'' "$NC")" "$(printf '\''%b'\'' "$ram_color")" "$ram_pct" "$(printf '\''%b'\'' "$NC")" "$ram_used" "$ram_total"
@@ -227,14 +235,26 @@ watch -c -n "$INTERVAL" '
   echo "---------------------------------------------------------------------------------"
 
   # 8. DEB CONSTRUCTION MONITORING
-  if [ -d "debian/tmp" ]; then
-    pkg_size=$(du -sh debian/tmp 2>/dev/null | cut -f1)
+  if [ -d "debian/linux-image-*" ] || [ -d "debian/tmp" ] || [ -n "$(find debian -maxdepth 1 -name 'linux-image-*' -print -quit 2>/dev/null)" ]; then
+    pkg_size=$(du -sh debian/linux-image-* debian/tmp 2>/dev/null | tail -n1 | cut -f1)
+    [ -z "$pkg_size" ] && pkg_size="compressing..."
     echo "Status: PACKAGING .DEB (Current size: $pkg_size)"
   elif [ "$percent" -gt 90 ] && [ "$smoothed_speed" -lt 10 ] && [ "$is_warmup" -eq 0 ]; then
     echo "Status: FINAL LINKING (vmlinux)..."
-  else
-    last_dir=$(find . -name "*.o" -type f -exec stat -c "%Y %n" {} + 2>/dev/null | sort -n | tail -n 1 | cut -d" " -f2- | xargs dirname 2>/dev/null)
+else
+    # Majority voting across last 10 object files parsed safely with pure bash
+    winning_line=$(find . -name "*.o" -type f -exec stat -c "%Y %n" {} + 2>/dev/null | sort -n | tail -n 10 | cut -d" " -f2- | while read -r f; do dirname "$f"; done 2>/dev/null | sort | uniq -c | sort -rn | head -n 1)
+    last_dir=""
+    while read -r count dir; do
+      [ -n "$dir" ] && last_dir="$dir"
+    done <<EOF
+$winning_line
+EOF
     [ -z "$last_dir" ] && last_dir="."
-    echo "Status: COMPILING PHASE [${last_dir#./}]"
+    # Strip any potential file prefix or trailing artifacts, ensuring just the clean path remains
+    clean_dir="${last_dir#./}"
+    [ -f "$clean_dir" ] && clean_dir=$(dirname "$clean_dir")
+    echo "Status: COMPILING PHASE [$clean_dir]"
   fi
+  echo "================================================================================="
 '

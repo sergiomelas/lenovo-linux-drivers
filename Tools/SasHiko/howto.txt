@@ -1,0 +1,94 @@
+================================================================================
+SASHIKO LOCAL: COMPLETE TOOLCHAIN HOWTO (2026)
+Author: Sergio Melas
+================================================================================
+
+This guide explains step by step how to install and configure Sashiko on your
+system, designed specifically for anyone cloning the repository from GitHub and
+wanting to proceed smoothly.
+
+--------------------------------------------------------------------------------
+1. INSTALLING BASIC TOOLS (PREREQUISITES)
+--------------------------------------------------------------------------------
+Before downloading the code, make sure you have the essential packages
+(Python 3, Git, and build tools) installed on your system.
+
+Detailed actions for Debian/Ubuntu-based systems:
+1. Open your terminal.
+2. Update the list of available packages:
+   $ sudo apt update
+3. Install Git, Python 3, the pip package manager, and core build tools:
+   $ sudo apt install -y git python3 python3-pip build-essential python3-venv
+
+--------------------------------------------------------------------------------
+2. GITHUB DOWNLOAD AND PYTHON VIRTUAL ENVIRONMENT
+--------------------------------------------------------------------------------
+Now let's download the source code directly from your GitHub repository and
+set up a clean working environment.
+
+1. Clone the repository onto your computer:
+   $ git clone https://github.com/sergiomelas/lenovo-linux-drivers
+2. Enter the downloaded folder and navigate to the target subdirectory:
+   $ cd lenovo-linux-drivers/Sashiko
+3. Create a Python virtual environment to isolate dependencies:
+   $ python3 -m venv venv
+4. Activate the virtual environment:
+   $ source venv/bin/activate
+5. Upgrade pip and install the required packages from the configuration file:
+   $ pip install --upgrade pip
+   $ pip install -r requirements.txt
+
+--------------------------------------------------------------------------------
+3. API TOKEN CONFIGURATION & GENERATION
+--------------------------------------------------------------------------------
+To connect Sashiko to your Google AI subscription and enable it to query Gemini:
+
+1. Open your browser and go to Google AI Studio: https://aistudio.google.com/
+2. Log in using the same Google account tied to your Google AI Pro subscription.
+3. In the sidebar/interface, click on the API keys icon (the wrench symbol) or go
+    directly to: https://aistudio.google.com/api-keys
+4. Click on the "Create API key" button in the top right.
+5. In the dropdown menu, select "Create project", type your project name
+    (e.g., "Kernel Development"), and create it.
+6. Choose a name for your key (e.g., "Sashiko Local Key") and click "Create key".
+7. Copy the generated alphanumeric API key string (e.g., starting with `AQ...`).
+8. Save the key permanently in your shell profile by running:
+   $ echo 'export GEMINI_API_KEY="your_api_key_here"' >> ~/.bashrc
+9. Reload your shell configuration to make it active:
+   $ source ~/.bashrc
+
+--------------------------------------------------------------------------------
+4. CREATING THE SETTINGS.TOML FILE
+--------------------------------------------------------------------------------
+Create a configuration file in the main Sashiko folder by typing:
+   $ nano Settings.toml
+
+Paste this exact text inside, save with `Ctrl+O`, press `Enter`, and exit with `Ctrl+X`:
+
+[core]
+model = "gemini-pro"
+max_tokens = 8192
+timeout = 30
+
+[checks]
+strict_checkpatch = true
+verify_commit_message = true
+check_rest_syntax = true
+
+[auth]
+use_env_key = true
+
+--------------------------------------------------------------------------------
+5. PRACTICAL USAGE EXAMPLES
+--------------------------------------------------------------------------------
+Now your toolchain is ready. You can run checks based on what you need to verify:
+
+* To check a single source code file:
+  $ python3 sashiko_engine.py --file drivers/hwmon/yogafan.c
+
+* To scan an entire folder recursively:
+  $ python3 sashiko_engine.py --folder drivers/hwmon/yogafansrc/
+
+* To validate a patch file before sending it to the mailing list:
+  $ python3 sashiko_engine.py --patch ./patches/0001-yogafan-update.patch
+================================================================================
