@@ -1,0 +1,21 @@
+System Product Name: 83LC
+System Family: Yoga 9 2-in-1 14ILL10
+Provider: kennysgithub
+GitHub Issue: #25 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/25)
+Date: 2026-10-26
+Title: [DSDT Entry] Yoga 9 2-in-1 14ILL10
+
+--- Issue Body ---
+$ sudo dmidecode -s system-family
+Yoga 9 2-in-1 14ILL10
+$  sudo dmidecode -s system-product-name
+83LC
+
+<!-- Failed to upload "dsdt.tgz" -->
+
+[dsdt.zip](https://github.com/user-attachments/files/33982602/dsdt.zip)
+
+--- Comment 1 by kennysgithub (2026-10-26) ---
+... and as I build my own kernels @sergiomelas could you post the patch to` drivers/hwmon/yogafan.c` here as well so I can incorporate it immediately, please?
+
+LMK if you need any further info.

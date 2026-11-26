@@ -1,0 +1,87 @@
+System Product Name: 81YQ
+System Family: IdeaPad 5 15ARE05
+Provider: Voltair88
+GitHub Issue: #27 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/27)
+Date: 2026-11-10
+Title: [DSDT Entry] Lenovo IdeaPad 5 15ARE05 (81YQ)
+
+--- Issue Body ---
+### Hardware strings
+
+| Field | Value |
+|---|---|
+| `system-family` | IdeaPad 5 15ARE05 |
+| `system-product-name` | 81YQ |
+| Vendor | LENOVO |
+| Board | LNVNB161216 |
+| BIOS | E7CN51WW |
+| DSDT OEM ID / Table ID | `LENOVO` / `AMD` (revision 1, 38518 bytes) |
+
+The strings come from `/sys/class/dmi/id/`.
+
+### Environment
+
+- CachyOS, kernel `7.3.3-1-cachyos`
+- Mainline `yogafan` is present and loaded (`lsmod` shows it)
+
+### What happens
+
+The module loads and matches the generic `IdeaPad` family quirk, which uses
+`ideapad_8bit_fan0_cfg` (`\_SB.PCI0.LPC0.EC0.FAN0`). No `yogafan` hwmon device
+appears under `/sys/class/hwmon/`. This DSDT has no `FAN0`, so I assume probe
+finds no fan handle and returns `-ENODEV`.
+
+### Why (from the DSDT)
+
+Decompiled with `iasl -d`. The EC is at `\_SB.PCI0.LPC0.EC0` and the fan
+tachometer is an 8-bit field in the EC memory-mapped window:
+
+```
+OperationRegion (ERAX, SystemMemory, 0xFE00D400, 0xFF)
+Field (ERAX, ByteAcc, Lock, Preserve)
+{
+    Offset (0x01),
+    VDAT,   8,
+    VPCS,   8,
+    Offset (0x06),
+    FANS,   8,
+    ...
+    Offset (0xFE),
+    FA2S,   8
+}
+```
+
+`FA2S` is always 0. This model has a single fan.
+
+### Readings
+
+Read-only from `/dev/mem` at `0xFE00D406` (`FANS`), multiplied by 100:
+
+| State | CPU (Tctl) | FANS | RPM |
+|---|---|---|---|
+| Light use | ~65 °C | 34 | ~3400 |
+| All cores loaded for 45 s | 80-85 °C | 36 | ~3600 |
+| Cooling down | 61 → 43 °C | 32 → 27 → 25 → 24 | ~3200 → 2400 |
+
+The value follows the temperature and load, so the existing 8-bit ×100
+handling fits.
+
+### Suggested entry
+
+The existing `yoga_8bit_fans_cfg` (`\_SB.PCI0.LPC0.EC0.FANS`, multiplier 100,
+one fan) matches this machine. It needs a DMI entry placed before the generic
+`IdeaPad` one:
+
+```c
+	{
+		.ident = "Lenovo IdeaPad 5 15ARE05",
+		.matches = {
+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+			DMI_MATCH(DMI_PRODUCT_FAMILY, "IdeaPad 5 15ARE05"),
+		},
+		.driver_data = (void *)&yoga_8bit_fans_cfg,
+	},
+```
+
+The 14ARE05 is the same platform and may share the layout, but I can't test it.
+Happy to test a patch or provide the full `acpidump`.

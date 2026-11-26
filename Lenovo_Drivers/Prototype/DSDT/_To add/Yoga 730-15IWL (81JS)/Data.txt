@@ -1,0 +1,12 @@
+System Product Name: 81JS
+System Family: YOGA 730-15IWL
+Provider: Lassebq
+GitHub Issue: #17 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/17)
+Date: 2026-09-16
+Title: [DSDT Entry] Lenovo Yoga 730-15IWL
+
+--- Issue Body ---
+System Family: YOGA 730-15IWL
+System Product Name: 81JS
+
+DSDT: [dsdt.zip](https://github.com/user-attachments/files/32310509/dsdt.zip)

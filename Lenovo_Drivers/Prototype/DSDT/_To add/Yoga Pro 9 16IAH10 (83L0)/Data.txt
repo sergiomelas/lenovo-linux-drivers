@@ -1,0 +1,38 @@
+System Product Name: 83L0
+System Family: Yoga Pro 9 16IAH10
+Provider: geniusss87
+GitHub Issue: #24 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/24)
+Date: 2026-10-24
+Title: Yoga Pro 9 16IAH10 (83L0): no fan RPM source – acpidump
+
+--- Issue Body ---
+<!-- obsidian --><p>Hi Sergio,</p>
+<p>as you asked on the platform-driver-x86 thread ("lenovo-wmi-other: no fan HWMON on Yoga Pro 9 16IAH10 (83L0)"), here is the acpidump of my machine.</p>
+<h3 data-heading="Machine">Machine</h3>
+
+  |  
+-- | --
+Model | Lenovo Yoga Pro 9 16IAH10
+product_name | 83L0
+product_sku | LENOVO_MT_83L0_BU_idea_FM_Yoga Pro 9 16IAH10
+board_name | LNVNB161216
+BIOS | QVCN50WW (01/28/2026)
+CPU / dGPU | Intel Core Ultra 7 255H (Arrow Lake-H) / RTX 5050
+Kernel | 7.2.11-200.fc44.x86_64 (Fedora 44)
+
+
+<h3 data-heading="Attachment">Attachment</h3>
+<p><code>acpidump.txt</code>: output of <code>sudo acpidump</code>, 48 tables (DSDT + 28 SSDT + the rest). The MSDM table (Windows license key) was removed on purpose. Everything else is unchanged.</p>
+<h3 data-heading="What I found (for yogafan)">What I found (for yogafan)</h3>
+<ul>
+<li>The machine falls into the generic "Yoga" quirk (<code>\_SB.PCI0.LPC0.EC0.FANS</code>). There is no <code>FANS</code> / <code>FA1S</code> / <code>FA2S</code> / <code>FAN0</code> object in the DSDT or in any SSDT.</li>
+<li><code>\_SB.PC00.LPCB.EC0</code> (<code>LCFC0002</code>) is an empty stub. The real EC is <code>\_SB.PC00.LPCB.H_EC</code> (SSDT "CB-01", <code>ssdt20</code> in the dump).</li>
+<li>The EC region <code>ECF2</code> (EmbeddedControl) has no RPM field. The only fan-related field is <code>\_SB.PC00.LPCB.H_EC.FLVL</code> (EC offset <code>0x4A</code>), and no ACPI method reads it. It is a named field, so in principle a yogafan quirk could read it, but it looks like a fan level, not an RPM.</li>
+<li>The other candidates don't help: <code>\_SB.VFAN._FST</code> returns a synthetic RPM (0 / 2500 / 3500 / 4500) chosen by <code>\_SB.FANL</code>, which only Windows sets via WMI. DPTF <code>TFN1._FST</code> calls an undefined method (<code>H_EC.DPTF.GFNS</code>). <code>ITE8</code> is disabled (<code>_STA</code> 0). Lenovo WMI (Other Mode) has no fan RPM attribute on this BIOS either. I tested this with Rong's series on the mailing list thread.</li>
+</ul>
+<h3 data-heading="Possible next step">Possible next step</h3>
+<p>The EC might keep the real tach value in an unnamed byte that the DSDT doesn't declare. I can load <code>ec_sys</code> and record EC RAM dumps (<code>/sys/kernel/debug/ec/ec0/io</code>) at idle and under full load, to see which bytes change along with the fan, besides <code>FLVL</code> at <code>0x4A</code>. Would that be useful to you? If you see anything I missed in the tables, I'm also happy to test a yogafan build.</p>
+<p>Thanks,<br>
+Géza</p>
+
+[acpidump.txt](https://github.com/user-attachments/files/33898475/acpidump.txt)

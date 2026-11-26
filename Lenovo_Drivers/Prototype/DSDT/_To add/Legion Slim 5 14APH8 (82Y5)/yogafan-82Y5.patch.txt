@@ -1,0 +1,31 @@
+--- yogafan.c.bak	2026-10-08 22:03:27.323902375 +0200
++++ yogafan.c	2026-10-08 22:03:43.375567950 +0200
+@@ -65,6 +65,13 @@
+ 	.paths = { "\\_SB.PCI0.LPC0.EC0.FAN0", NULL }
+ };
+ 
++/* Legion Slim 5 14APH8 (82Y5): 8-bit fan tachometers, 100 RPM/step. */
++static const struct yogafan_config legion_14aph8_8bit_dual_cfg = {
++	.multiplier = 100,
++	.fan_count = 2,
++	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FA2S" }
++};
++
+ static const struct yogafan_config legion_16bit_dual_cfg = {
+ 	.multiplier = 1,
+ 	.fan_count = 2,
+@@ -179,6 +186,14 @@
+ 		.driver_data = (void *)&yoga_8bit_fans_cfg,
+ 	},
+ 	{
++		.ident = "Lenovo Legion Slim 5 14APH8 (82Y5)",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
++			DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "82Y5"),
++		},
++		.driver_data = (void *)&legion_14aph8_8bit_dual_cfg,
++	},
++	{
+ 		.ident = "Lenovo Legion",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),

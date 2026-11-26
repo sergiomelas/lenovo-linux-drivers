@@ -1,0 +1,20 @@
+System Product Name: 83F5
+System Family: Legion Pro 7 16IAX10H
+Provider: rzsn
+GitHub Issue: #16 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/16)
+Date: 2026-09-16
+Title: [DSDT Entry] Legion Pro 7 16IAX10H (83F5)
+
+--- Issue Body ---
+Here is the extracted DSDT as per request.
+
+[dsdt_LegionPro7_16IAX10H_83F5.zip](https://github.com/user-attachments/files/32309972/dsdt_LegionPro7_16IAX10H_83F5.zip)
+
+Other notes:
+* current kernel from gentoo-sources is 7.2.5-gentoo-x86_64
+* enabled yogafan
+* kernel rebuilt
+* modprobe yogafan
+* sensors-detect
+* lm_sensors service restart
+* **sensors: no fans or yogafan is shown**

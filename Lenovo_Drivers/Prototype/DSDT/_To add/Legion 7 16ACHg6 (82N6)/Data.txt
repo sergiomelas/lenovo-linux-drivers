@@ -1,0 +1,11 @@
+System Product Name: 82N6
+System Family: Legion 7 16ACHg6
+Provider: magnumsolo
+GitHub Issue: #22 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/22)
+Date: 2026-09-30
+Title: [DSDT Entry] Legion 7 16ACHg6 (82N6)
+
+--- Issue Body ---
+[dsdt.zip](https://github.com/user-attachments/files/32857300/dsdt.zip)
+
+Thanks!

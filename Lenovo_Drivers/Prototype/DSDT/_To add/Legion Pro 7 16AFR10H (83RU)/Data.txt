@@ -1,0 +1,14 @@
+System Product Name: 83RU
+System Family: Legion Pro 7 16AFR10H
+Provider: GabboRocchia
+GitHub Issue: #12 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/12)
+Date: 2026-09-07
+Title: Legion Pro 7 16AFR10H only 2 out of 3 fans monitored
+
+--- Issue Body ---
+Kernel: 7.3.0-rc1-1-cachyos-rc
+sudo dmidecode -s system-family: Legion Pro 7 16AFR10H
+sudo dmidecode -s system-product-name: 83RU
+sudo acpidump -b DSDT -o dsdt.dat: [dsdt.dat.zip](https://github.com/user-attachments/files/31909431/dsdt.dat.zip)
+
+This laptop has 3 fans but only two are currently monitored.

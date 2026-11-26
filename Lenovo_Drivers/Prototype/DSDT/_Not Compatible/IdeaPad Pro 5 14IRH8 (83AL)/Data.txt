@@ -1,0 +1,13 @@
+System Product Name: 83AL
+System Family: IdeaPad Pro 5 14IRH8
+Provider: repinger
+GitHub Issue: #10 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/10)
+Date: 2026-08-11
+Title: [DSDT Entry] IdeaPad Pro 5 14IRH8 (83AL)
+
+--- Issue Body ---
+Hi, I wonder if you could add support for IdeaPad Pro 5 14IRH8 (83AL). Here's the DSDT file:
+
+[dsdt_14irh8.zip](https://github.com/user-attachments/files/30923417/dsdt_14irh8.zip)
+
+Please let me know if you need a follow-up. Thanks!

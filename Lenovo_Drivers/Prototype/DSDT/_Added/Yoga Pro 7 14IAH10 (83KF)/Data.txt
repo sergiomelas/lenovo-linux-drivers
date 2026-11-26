@@ -1,0 +1,44 @@
+System Product Name: 83KF
+System Family: Yoga Pro 7 14IAH10
+Provider: Magniquick
+GitHub Issue: #21 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/21)
+Date: 2026-09-27
+Title: [DSDT Entry] Lenovo Yoga Pro 7 14IAH10 (83KF)
+
+--- Issue Body ---
+- Laptop Model Name: Lenovo Yoga Pro 7 14IAH10
+- System Family: Yoga Pro 7 14IAH10
+- Product Identifier: 83KF
+
+BIOS: QGCN35WW. dsdt.dat is attached in the first comment. It was dumped with `sudo acpidump -b -n DSDT`, because this acpidump (20260408) has no `-t` option.
+
+### Details
+
+ACPI paths:
+\_SB.PC00.LPCB.EC0.FA1S (EC offset 0x104, 8-bit)
+\_SB.PC00.LPCB.EC0.FA2S (EC offset 0x137, 8-bit)
+
+The current entry (yoga_pro_7_14iah10_cfg) points at \_SB.PC00.LPCB.EC0.FANS, which does not exist in this DSDT, so the driver returns -ENODEV with no message. The AML reads the fans as FA1S * 0x64 and FA2S * 0x64.
+
+Tested configuration (reuses the existing loq_15iax9_8bit_dual_cfg):
+
+```
+static const struct yogafan_config loq_15iax9_8bit_dual_cfg = {
+	.multiplier = 100,
+	.fan_count = 2,
+	.paths = { "\\_SB.PC00.LPCB.EC0.FA1S", "\\_SB.PC00.LPCB.EC0.FA2S" }
+};
+```
+
+Result: both fans report through hwmon, 1500/1800 rpm at idle on the firmware curve, 0 when stopped, and up to 5100/5400 under stress-ng. The readings match the EC tach fields and the vendor WMI fan method.
+
+Patch on the list: https://lore.kernel.org/all/20260913214713.205208-1-navonjohnlukose@gmail.com/
+
+[dsdt.zip](https://github.com/user-attachments/files/32708804/dsdt.zip)
+
+--- Comment 1 by Magniquick (2026-10-12) ---
+@prateekpurohit13 your response makes no sense. You (or more likely your LLM) seem to have mixed up yogafan and lenovo-wmi-other. yogafan doesn't have the ability to set fan speeds.
+
+The capdata patch in https://github.com/prateekpurohit13/lenovo-fan-fix is the same one I sent to LKML a while ago, and it is superseded by Rong's series, which is more robust. I encourage you to read the LKML thread to see why.
+
+If you really wish to speed up the lenovo-wmi series at https://lore.kernel.org/all/20261009-lwmi-wmi-new-api-v2-0-402828382679@rong.moe/, build and test it, then send a Tested-by there.

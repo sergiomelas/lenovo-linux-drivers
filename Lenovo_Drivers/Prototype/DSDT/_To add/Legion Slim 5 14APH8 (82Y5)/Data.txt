@@ -1,0 +1,103 @@
+System Product Name: 82Y5
+System Family: Legion Slim 5 14APH8
+Provider: Dolik64
+GitHub Issue: #23 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/23)
+Date: 2026-10-08
+Title: [DSDT Entry] Lenovo Legion Slim 5 14APH8 (82Y5) – Fix fan RPM readings
+
+--- Issue Body ---
+Hi Sergio,
+
+I'd like to contribute a tested fix for the `yogafan` driver on the **Lenovo Legion Slim 5 14APH8 (82Y5)**.
+
+I managed to identify why both fans were incorrectly reporting 0 RPM, and I have successfully built and tested a modified version of the driver.
+
+### System information
+
+- **Model:** Lenovo Legion Slim 5 14APH8
+- **DMI product name:** 82Y5
+- **DMI product family:** Legion Slim 5 14APH8
+- **BIOS:** MACN38WW
+- **OS:** Pop!_OS with COSMIC
+- **Kernel:** 7.1.5-76070105-generic
+- **GPU:** NVIDIA RTX 4050
+
+### Original problem
+
+The default `yogafan` driver reports:
+
+```
+yogafan-isa-0000
+fan1: 0 RPM
+fan2: 0 RPM
+```
+
+Both fans are physically spinning.
+
+### Investigation
+
+After disassembling the ACPI DSDT, I found that the firmware exposes the following 8-bit fields:
+
+```
+FANS, 8
+FA2S, 8
+```
+
+The firmware also contains methods that multiply these values by `0x64` (100):
+
+```
+Local0 = (^^PCI0.LPC0.EC0.FANS * 0x64)
+Local0 = (^^PCI0.LPC0.EC0.FA2S * 0x64)
+```
+
+Reading the ACPI fields directly using `acpi_call` returned:
+
+```
+FANS = 0x17 (23)
+FA2S = 0x1B (27)
+```
+
+These correspond to 2300 and 2700 RPM when multiplied by 100.
+
+The existing generic Legion configuration uses a multiplier of 1, so these small values appear to be interpreted as less than 50 RPM and filtered to zero.
+
+### Tested fix
+
+I added a model-specific configuration:
+
+```c
+static const struct yogafan_config legion_14aph8_8bit_dual_cfg = {
+    .multiplier = 100,
+    .fan_count = 2,
+    .paths = {
+        "\\_SB.PCI0.LPC0.EC0.FANS",
+        "\\_SB.PCI0.LPC0.EC0.FA2S"
+    }
+};
+```
+
+I also added a DMI match for product `82Y5` before the generic Legion entry.
+
+The modified module compiled successfully against kernel 7.1.5 and loaded successfully using `insmod`.
+
+**Result with the patched driver:**
+
+```
+yogafan-isa-0000
+fan1: 2100 RPM
+fan2: 2200 RPM
+```
+
+Both fan channels now report plausible nonzero RPM values. Independent tachometer calibration and longer-term testing have not yet been performed.
+
+### Contribution
+
+I've attached the patch containing the changes to `yogafan.c`.
+
+Would you be interested in including model-specific support for this laptop upstream?
+
+I'm happy to provide the full DSDT, additional debug logs, or perform further testing.
+
+Thank you for your work on this driver!
+
+[yogafan-82Y5.patch.txt](https://github.com/user-attachments/files/33223429/yogafan-82Y5.patch.txt)

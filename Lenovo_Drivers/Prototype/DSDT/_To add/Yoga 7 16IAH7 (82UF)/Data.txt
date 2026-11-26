@@ -1,0 +1,200 @@
+System Product Name: 82UF
+System Family: Yoga 7 16IAH7
+Provider: slap2572
+GitHub Issue: #13 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/13)
+Date: 2026-09-08
+Title: Support for Lenovo Yoga 7 16IAH7 82UF
+
+--- Issue Body ---
+Family: Yoga 7 16IAH7
+Product: 82UF
+Board: LNVNB161216
+BIOS: J1CN35WW
+Kernel: 7.2.3-070203-generic
+
+My fans have been acting in a very sporadic (for lack of a better term) manner on Ubuntu Linux. I am using kernel 7.2.3, so I should have support for yogafan. However, yogafan does not support my machine.
+I also updated my graphics driver for Intel Arc A370M back in April, but that was before I switched to Linux. My Windows installation is still present and accessible if needed. I went digging around with help from Claude and found some stuff:
+```
+Lenovo Yoga 7 16IAH7 (82UF) — Fan Control Investigation
+System info
+$ dmidecode -s system-manufacturer
+LENOVO
+$ dmidecode -s system-product-name
+82UF
+$ dmidecode -s system-version
+Yoga 7 16IAH7
+$ dmidecode -s system-family
+Yoga 7 16IAH7
+$ dmidecode -s baseboard-product-name
+LNVNB161216
+$ dmidecode -s bios-version
+J1CN35WW
+$ lscpu | grep -i "model name"
+Model name:    12th Gen Intel(R) Core(TM) i7-12700H
+$ uname -r
+7.2.3-070203-generic
+sensors-detect: no supported Super I/O chip
+Probing for Super-I/O at 0x4e/0x4f
+Trying family `National Semiconductor/ITE'...               Yes
+Found unknown chip with ID 0x8227
+
+No driver in it87/nct6775 claims chip ID 0x8227. Other users have hit this exact ID with no resolution (Linux Mint forum thread references the same chip ID and the same "unknown chip" result).
+
+yogafan module: loads, no DMI match
+$ modinfo yogafan
+filename:    /lib/modules/7.2.3-070203-generic/kernel/drivers/hwmon/yogafan.ko.zst
+alias:       dmi*:svn*LENOVO*:
+intree:      Y
+
+$ sudo modprobe yogafan
+$ sensors
+# no yogafan-* block appears — module probed and returned -ENODEV
+# (82UF / LNVNB161216 not present in the driver's DMI quirk table)
+ECDT — standard EC, nothing unusual
+$ iasl -d ecdt.dat && cat ecdt.dsl
+Command/Status Register: SystemIO, Address 0x66
+Data Register:           SystemIO, Address 0x62
+Namepath: "\_SB.PC00.LPCB.H_EC"
+DSDT/SSDT: CFAN and TFN1-3 are declared but never defined
+$ grep -n "H_EC" dsdt.dsl
+105:  External (_SB_.PC00.LPCB.H_EC.BAT0, DeviceObj)
+106:  External (_SB_.PC00.LPCB.H_EC.BAT1, DeviceObj)
+107:  External (_SB_.PC00.LPCB.H_EC.BAT2, DeviceObj)
+108:  External (_SB_.PC00.LPCB.H_EC.BNUM, IntObj)
+109:  External (_SB_.PC00.LPCB.H_EC.CFAN, FieldUnitObj)
+110:  External (_SB_.PC00.LPCB.H_EC.LID0, DeviceObj)
+111:  External (_SB_.PC00.LPCB.H_EC.LSTE, FieldUnitObj)
+112:  External (_SB_.PC00.LPCB.H_EC.ONTM, IntObj)
+113:  External (_SB_.PC00.LPCB.H_EC.RPWR, FieldUnitObj)
+114:  External (_SB_.PC00.LPCB.H_EC.VPWR, FieldUnitObj)
+115:  External (_SB_.PC00.LPCB.H_EC.WTMM, FieldUnitObj)
+116:  External (_SB_.PC00.LPCB.H_EC.WTMV, FieldUnitObj)
+
+$ grep -n "H_EC" ssdt1.dsl
+48:  External (_SB_.PC00.LPCB.H_EC.CHRG, DeviceObj)
+49:  External (_SB_.PC00.LPCB.H_EC.DGPU, DeviceObj)
+50:  External (_SB_.PC00.LPCB.H_EC.SEN2, DeviceObj)
+51:  External (_SB_.PC00.LPCB.H_EC.SEN3, DeviceObj)
+52:  External (_SB_.PC00.LPCB.H_EC.SEN4, DeviceObj)
+53:  External (_SB_.PC00.LPCB.H_EC.SEN5, DeviceObj)
+54:  External (_SB_.PC00.LPCB.H_EC.TFN1, DeviceObj)
+55:  External (_SB_.PC00.LPCB.H_EC.TFN2, DeviceObj)
+56:  External (_SB_.PC00.LPCB.H_EC.TFN3, DeviceObj)
+
+# TFN1/2/3 map to Intel DPTF hardware ID INTC1048 (fan participant):
+$ sed -n '218,236p' ssdt1.dsl
+    If ((Arg0 == "TFN1")) { Return ("INTC1048") }
+    If ((Arg0 == "TFN2")) { Return ("INTC1048") }
+    If ((Arg0 == "TFN3")) { Return ("INTC1048") }
+
+# Neither CFAN nor Device(H_EC) nor Device(TFN1/2/3) is actually DEFINED
+# (only External()) in the DSDT or any of the 25 SSDTs dumped via
+# `acpidump -b`:
+$ grep -n "CFAN," dsdt.dsl ssdt*.dsl
+109:dsdt.dsl:  External (_SB_.PC00.LPCB.H_EC.CFAN, FieldUnitObj)
+# (no other matches — no real Field definition anywhere)
+
+$ grep -rn "Device (H_EC)" *.dsl
+$ grep -rn "Device (TFN1" *.dsl
+# both empty
+DPTF fan participant (INTC1048) never enumerates
+$ ls /sys/bus/platform/devices/ | grep -i INTC
+INTC1041:00
+INTC1046:00 .. INTC1046:06
+INTC1055:00
+INTC1099:00
+INTC6001:00
+# no INTC1048 present
+
+$ sudo dmesg | grep -i INTC1048
+# no output
+
+$ lsmod | grep -i int34
+int3403_thermal   16384  0
+int3400_thermal   24576  0
+acpi_thermal_rel  24576  1 int3400_thermal
+int340x_thermal_zone 16384  2 int3403_thermal,processor_thermal_device
+# DPTF core is loaded and bound to other participants, just not INTC1048
+Generic ACPI PNP0C0B fan objects: writable but no physical effect
+$ for i in 3 4 5 6 7; do
+    echo "cooling_device$i: max_state=$(cat /sys/class/thermal/cooling_device$i/max_state) cur_state=$(cat /sys/class/thermal/cooling_device$i/cur_state)"
+  done
+cooling_device3: max_state=1 cur_state=0
+cooling_device4: max_state=1 cur_state=0
+cooling_device5: max_state=1 cur_state=0
+cooling_device6: max_state=1 cur_state=0
+cooling_device7: max_state=1 cur_state=0
+# type == "Fan" for all five
+
+$ echo 1 | sudo tee /sys/class/thermal/cooling_device3/cur_state
+$ echo 0 | sudo tee /sys/class/thermal/cooling_device3/cur_state
+# no audible change in fan behavior in either state — write succeeds,
+# has no observable effect on the physical fan
+Summary
+EC is confirmed present and standard (ECDT, ports 0x66/0x62).
+Every ACPI object that plausibly represents fan control (H_EC.CFAN, H_EC.TFN1/2/3) exists only as an External() forward-declaration — never actually defined in any of the 26 ACPI tables (DSDT + 25 SSDTs) obtained via acpidump -b.
+The DPTF fan participant these objects map to (INTC1048) never enumerates on Linux.
+The only writable, OS-visible fan interface (cooling_device3-7, ACPI PNP0C0B fan class) has zero observed effect on physical fan behavior — either disconnected or fully overridden by the EC.
+Conclusion: real fan control logic on this model is not reachable through any ACPI table exposed to the OS. It's likely resolved via vendor-specific/SMI-level EC firmware logic outside the standard ACPI namespace, which would explain why Windows also has no direct OS-level control and instead relies on Lenovo's own (closed, unreverse-engineered) Vantage-EC channel.
+```
+(ABOVE PASSAGE IS CLAUDE'S INTERPRETATION OF WHAT WAS FOUND, INCLUDING RAW INFO)
+
+I am willing to do whatever you need me to to help fix this.
+
+--- Comment 1 by slap2572 (2026-09-08) ---
+### **_BIG DEVELOPMENT_** 
+some more digging around yielded that LenovoLegionLinux has similar EC calls to my specific Yoga machine and trying those out got me real fan readings! Arc fan still reports nothing however
+
+<img width="2435" height="1356" alt="Image" src="https://github.com/user-attachments/assets/c4d4b016-5d3b-4ee9-946c-fa3c28bbd066" />
+--- Comment 2 by sergiomelas (2026-09-08) ---
+Hello i need you dsdl extraction bin as explained in the howto. Thx in
+advance
+
+On Tue, Sep 8, 2026, 12:12 Slap ***@***.***> wrote:
+
+> *slap2572* left a comment (sergiomelas/lenovo-linux-drivers#13)
+> <https://github.com/sergiomelas/lenovo-linux-drivers/issues/13#issuecomment-5583490270>
+> *BIG DEVELOPMENT*
+>
+> some more digging around yielded that LenovoLegionLinux has similar EC
+> calls to my specific Yoga machine and trying those out got me real fan
+> readings! Arc fan still reports nothing however
+> Image: Image (view on web)
+> <https://github.com/user-attachments/assets/c4d4b016-5d3b-4ee9-946c-fa3c28bbd066>
+>
+> —
+> Reply to this email directly, view it on GitHub
+> <https://github.com/sergiomelas/lenovo-linux-drivers/issues/13?email_source=notifications&email_token=APRR4YNX3AABUNS7HX6E5Q35N7LSPA5CNFSNUABFM5UWIORPF5TWS5BNNB2WEL2JONZXKZKDN5WW2ZLOOQXTKNJYGM2DSMBSG4YKM4TFMFZW63VKON2WE43DOJUWEZLEUVSXMZLOOSWGM33PORSXEX3DNRUWG2Y#issuecomment-5583490270>,
+> or unsubscribe
+> <https://github.com/notifications/unsubscribe-auth/APRR4YICKEULEI3QIA4RWX35N7LSPAVCNFSNUABFKJSXA33TNF2G64TZHM4DGMJVHE3DMNJRHNEXG43VMU5TKMZYGQ4DANZSGAZKC5QC>
+> .
+> You are receiving this because you are subscribed to this thread.Message
+> ID: ***@***.***>
+>
+--- Comment 3 by slap2572 (2026-09-08) ---
+[dsdt.dat.zip](https://github.com/user-attachments/files/31977916/dsdt.dat.zip)
+--- Comment 4 by slap2572 (2026-09-12) ---
+Hello. I am replying back again to check how things are going. Do you need me to open a new issue that follows the template? If you are busy or have already started that is okay, I don't want to rush you
+--- Comment 5 by sergiomelas (2026-09-16) ---
+I am busy but i can do this only on my vacation leave me 2 3 weeks. sorry
+about that
+
+On Sat, Sep 12, 2026 at 12:15 PM Slap ***@***.***> wrote:
+
+> *slap2572* left a comment (sergiomelas/lenovo-linux-drivers#13)
+> <https://github.com/sergiomelas/lenovo-linux-drivers/issues/13#issuecomment-5645268576>
+>
+> Hello. I am replying back again to check how things are going. Do you need
+> me to open a new issue that follows the template? If you are busy or have
+> already started that is okay, I don't want to rush you
+>
+> —
+> Reply to this email directly, view it on GitHub
+> <https://github.com/sergiomelas/lenovo-linux-drivers/issues/13?email_source=notifications&email_token=APRR4YMNM7MPCK3NSIN5OBL5OUO5VA5CNFSNUABFM5UWIORPF5TWS5BNNB2WEL2JONZXKZKDN5WW2ZLOOQXTKNRUGUZDMOBVG43KM4TFMFZW63VHMNXW23LFNZ2KKZLWMVXHJLDGN5XXIZLSL5RWY2LDNM#issuecomment-5645268576>,
+> or unsubscribe
+> <https://github.com/notifications/unsubscribe-auth/APRR4YOOSDQWFCIEJMFTBOL5OUO5VAVCNFSNUABFKJSXA33TNF2G64TZHM4DGMJVHE3DMNJRHNEXG43VMU5TKMZYGQ4DANZSGAZKC5QC>
+> .
+> You are receiving this because you commented.Message ID:
+> <sergiomelas/lenovo-linux-drivers/issues/13/5645268576 <(564)%20526-8576>@
+> github.com>
+>

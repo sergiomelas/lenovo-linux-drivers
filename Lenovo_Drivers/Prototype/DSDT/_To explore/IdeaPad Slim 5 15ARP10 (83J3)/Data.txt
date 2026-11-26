@@ -1,0 +1,27 @@
+System Product Name: 83J3
+System Family: IdeaPad Slim 5 15ARP10
+Provider: Elsensee
+GitHub Issue: #14 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/14)
+Date: 2026-09-16
+Title: [DSDT Entry] IdeaPad Slim 5 15ARP10
+
+--- Issue Body ---
+Hey, I noticed that the modern IdeaPad Slim series is completely missing so far. I have also noticed that the path is very different. Through a lot of testing I figured out that the entry to watch would be:
+
+`\_SB.PCI0.LPC0.EC0.F1CS`
+(there also is `\_SB.PCI0.LPC0.EC0.F2CS` for a second fan, which is missing in my device, as well as `\_SB.PCI0.LPC0.EC0.F1TS` and `\_SB.PCI0.LPC0.EC0.F2TS` for their respective target speeds)
+The register-width is 8-bit and the multiplier is 100.
+
+Further, those values are mapped into an ACPI `SystemMemory` region named `ECMB` (MMIO at `0xFE802000`).
+
+This definition can't be found inside the DSDT but resides inside SSDT22. I will still attach both files here:
+[dsdt+ssdt22_83j3.zip](https://github.com/user-attachments/files/32309066/dsdt%2Bssdt22_83j3.zip)
+
+I can also provide a PR and patch to this driver, adding the quirk for the model myself, if you like.
+
+```
+$ sudo dmidecode -s system-family
+IdeaPad Slim 5 15ARP10
+$ sudo dmidecode -s system-product-name
+83J3
+```

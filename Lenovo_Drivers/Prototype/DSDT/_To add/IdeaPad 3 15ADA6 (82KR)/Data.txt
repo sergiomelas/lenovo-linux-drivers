@@ -1,0 +1,32 @@
+System Product Name: 82KR
+System Family: IdeaPad 3 15ADA6
+Provider: dubhater
+GitHub Issue: #19 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/19)
+Date: 2026-09-19
+Title: [DSDT Entry] Lenovo IdeaPad 3 15ADA6
+
+--- Issue Body ---
+Hi!
+
+yogafan can handle IdeaPad 3 15ADA6 using ``yoga_8bit_fans_cfg``.
+
+At first I tried with ``ideapad_8bit_fan0_cfg``, like 15ALC6, but that doesn't work. acpi_get_handle() returns an error and no hwmon device gets created.
+
+``yoga_8bit_fans_cfg`` works, a new hwmon device gets created and ``/sys/class/hwmon/hwmon5/fan1_input`` contains plausible values. ``sensors`` shows it too.
+
+Tested on Arch Linux with kernel 7.2.2.
+
+```
+Handle 0x000E, DMI type 1, 27 bytes                                                  
+System Information                                                                                                                                                         
+        Manufacturer: LENOVO                                                                                                                                               
+        Product Name: 82KR      
+        Version: IdeaPad 3 15ADA6
+        Serial Number: ...
+        UUID: ...
+        Wake-up Type: Power Switch
+        SKU Number: LENOVO_MT_82KR_BU_idea_FM_IdeaPad 3 15ADA6
+        Family: IdeaPad 3 15ADA6
+```
+
+[dsdt.zip](https://github.com/user-attachments/files/32424156/dsdt.zip)

@@ -1,0 +1,72 @@
+System Product Name: 83HM
+System Family: Yoga Slim 7 15ILL9
+Provider: msourada
+GitHub Issue: #20 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/20)
+Date: 2026-09-26
+Title: [DSDT Entry] Lenovo Yoga Slim 7 15ILL9 (83HM)
+
+--- Issue Body ---
+Model:
+Lenovo Yoga Slim 7 15ILL9 (83HM)
+
+DMI:
+sys_vendor=LENOVO
+product_family=Yoga Slim 7 15ILL9
+product_name=83HM
+
+ACPI paths:
+\_SB.PC00.LPCB.EC0.FANS
+\_SB.PC00.LPCB.EC0.FA2S
+
+Tested configuration:
+
+```
+static const struct yogafan_config yoga_slim_7_15ill9_cfg = {
+        .multiplier = 1,
+        .fan_count = 2,
+        .paths = {
+                "\\_SB.PC00.LPCB.EC0.FANS",
+                "\\_SB.PC00.LPCB.EC0.FA2S",
+        }
+};
+```
+
+Result:
+Driver loads correctly and exposes both fans through hwmon. I have tested that it measures the fan speeds correctly using stress-ng and sensors utilities. I attach diff (yogafan.c from linux kernel 7.2.7). 
+
+Diff:
+```
+--- a/drivers/hwmon/yogafan.c
++++ b/drivers/hwmon/yogafan.c
+@@ -71,6 +71,15 @@ static const struct yogafan_config legion_16bit_dual_cfg = {
+ 	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FA2S" }
+ };
+ 
++static const struct yogafan_config yoga_slim_7_15ill9_cfg = {
++	.multiplier = 1,
++	.fan_count = 2,
++	.paths = {
++		"\\_SB.PC00.LPCB.EC0.FANS",
++		"\\_SB.PC00.LPCB.EC0.FA2S",
++	}
++};
++
+ static void apply_rllag_filter(struct yoga_fan_data *data, int idx, long raw_rpm)
+ {
+ 	ktime_t now = ktime_get_boottime();
+@@ -171,6 +180,14 @@ static const struct hwmon_chip_info yoga_fan_chip_info = {
+ 
+ static const struct dmi_system_id yogafan_quirks[] = {
+ 	{
++		.ident = "Lenovo Yoga Slim 7 15ILL9",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
++			DMI_MATCH(DMI_PRODUCT_FAMILY, "Yoga Slim 7 15ILL9"),
++		},
++		.driver_data = (void *)&yoga_slim_7_15ill9_cfg,
++	},
++	{
+ 		.ident = "Lenovo Yoga",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
+```

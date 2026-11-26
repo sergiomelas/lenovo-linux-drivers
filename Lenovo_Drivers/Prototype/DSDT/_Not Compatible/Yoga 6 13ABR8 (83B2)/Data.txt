@@ -1,0 +1,59 @@
+System Product Name: 83B2
+System Family: Yoga 6 13ABR8
+Provider: crabsgit
+GitHub Issue: #26 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/26)
+Date: 2026-11-02
+Title: [DSDT Entry] Lenovo Yoga 6 13ABR8 (83B2)
+
+--- Issue Body ---
+[](url)
+### Hardware strings
+
+| Field | Value |
+|---|---|
+| `system-family` | Yoga 6 13ABR8 |
+| `system-product-name` | 83B2 |
+| Vendor | LENOVO |
+| Board | LNVNB161216 |
+| BIOS | L5CN19WW |
+| DSDT OEM ID / Table ID | `LENOVO` / `CB-01` (revision 1, 48436 bytes) |
+
+The strings come from `/sys/class/dmi/id/` (same values `dmidecode` prints).
+
+### Environment
+
+- Fedora, kernel `7.2.13-200.fc44.x86_64`
+- Mainline `yogafan` is present (`/lib/modules/.../kernel/drivers/hwmon/yogafan.ko.xz`) and loaded (`lsmod` shows it)
+
+### What happens
+
+The module loads and matches the generic `Yoga` family quirk, but no `yogafan`
+hwmon device appears under `/sys/class/hwmon/`. As far as I can tell from reading
+the source, `probe()` finds no fan handle and returns `-ENODEV`.
+
+### Why (from the DSDT)
+
+The `Yoga` quirk looks for `\_SB.PCI0.LPC0.EC0.FANS`. My decompiled DSDT
+(`iasl -d`, attached as `dsdt.dat`) has the EC at that path but defines no
+`FANS`, `FAN0`, `FA1S` or `FA2S`, and no tach/RPM named object.
+
+What it does have under `\_SB.PCI0.LPC0.EC0`:
+
+- `FANG(Arg0)` / `FANW(Arg0, Arg1)`, thin wrappers around `EIDR` / `EIDW`
+  (EC indexed read/write routines, with a `FAMX` mutex)
+- EC status bits `FAN1`, `FAN2`, `FANT`, `FANU`, `FSSN` in the EC memory-mapped
+  window (`SystemMemory` at `0xFE0B0800`)
+
+Other EC notes that may help with mapping: the EC uses ports 0x62/0x66, `_GPE` 0x03,
+and the battery/thermal fields (`CTML`, `BAM0`, `BDC0`, ...) all live in that
+`0xFE0B0800` MMIO window rather than the `EmbeddedControl` region.
+
+### Ask
+
+Could a quirk for this model be added, or could you tell me whether `FANG` /
+`EIDR` is the intended path to read fan speed on this EC? Happy to test patches
+and report `sensors` / `dmesg` output.
+
+### Attachment 
+find dat file here:
+https://github.com/crabsgit/yogafan-dsdt-dat/blob/82863f5882ef32b698ea983bed5276a0e98057c2/dsdt.dat

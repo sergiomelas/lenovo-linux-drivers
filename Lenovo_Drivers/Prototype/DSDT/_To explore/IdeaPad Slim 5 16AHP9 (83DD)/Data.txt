@@ -1,0 +1,13 @@
+System Product Name: 83DD
+System Family: IdeaPad Slim 5 16AHP9
+Provider: fakasheh
+GitHub Issue: #18 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/18)
+Date: 2026-09-18
+Title: [DSDT Entry] IdeaPad Slim 5 16AHP9 (83DD)
+
+--- Issue Body ---
+[dsdt.zip](https://github.com/user-attachments/files/32470789/dsdt.zip)
+
+   - Laptop Model Name: Lenovo IdeaPad Slim 5
+   - System Family: IdeaPad Slim 5 16AHP9
+   - Product Identifier: 83DD
