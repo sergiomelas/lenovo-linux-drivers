@@ -1,0 +1,35 @@
+System Product Name: 82XV
+System Family: LOQ 15IRH8
+Provider: linuxhw/ACPI (probe 2941E20C751F)
+Source URL: https://github.com/linuxhw/ACPI/tree/master/Notebook/Lenovo/LOQ/LOQ%2015IRH8%2082XV
+
+--- ACPI Table Summary ---
+Intel ACPI Component Architecture
+ACPI Binary Table Extraction Utility version 20230628
+Copyright (c) 2000 - 2023 Intel Corporation
+
+
+ Signature  Length    Version Oem       Oem         Oem         Compiler Compiler
+                              Id        TableId     RevisionId  Name     Revision
+ _________  __________  ____  ________  __________  __________  _______  __________
+
+ 01)  SSDT  0x000167D3  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20200717
+ 02)  MCFG  0x0000003C  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 03)  APIC  0x000001DC  0x03  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 04)  SSDT  0x00000106  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20200717
+ 05)  SSDT  0x00003AEA  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20200717
+ 06)  TPM2  0x0000004C  0x04  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 07)  SSDT  0x0001260C  0x01  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20200717
+ 08)  SSDT  0x00000033  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20200717
+ 09)  NHLT  0x000002F1  0x00  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 10)  SSDT  0x00005C7A  0x02  "LENOVO"  "CB-01   "  0x00000001  "    "   0x01000013
+ 11)  UEFI  0x00000236  0x01  "INSYDE"  "ADL-P-M "  0x00000001  "ACPI"   0x00040000
+ 12)  DSDT  0x00096DA7  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 13)  SSDT  0x000033E9  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20200717
+ 14)  WSMT  0x00000028  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 15)  SSDT  0x00000AD9  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20200717
+ 16)  LPIT  0x000000CC  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 17)  SSDT  0x00005D34  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20200717
+ 18)  SSDT  0x000010B5  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20200717
+ 19)  DBG2  0x00000054  0x00  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 20)  SSDT  0x0000120

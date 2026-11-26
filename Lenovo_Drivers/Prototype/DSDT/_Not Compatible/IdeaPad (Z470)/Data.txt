@@ -1,0 +1,41 @@
+System Product Name: Z470
+System Family: IdeaPad
+Provider: linuxhw/ACPI (probe C7F3CC0C50BF)
+Source URL: https://github.com/linuxhw/ACPI/tree/master/Notebook/Lenovo/IdeaPad/IdeaPad%20Z470
+
+--- ACPI Table Summary ---
+Intel ACPI Component Architecture
+ACPI Binary Table Extraction Utility version 20210604
+Copyright (c) 2000 - 2021 Intel Corporation
+
+
+ Signature  Length    Version Oem       Oem         Oem         Compiler Compiler
+                              Id        TableId     RevisionId  Name     Revision
+ _________  __________  ____  ________  __________  __________  _______  __________
+
+ 01)  SSDT  0x00000996  0x01  "PmRef "  "CpuPm   "  0x00003000  "INTL"   0x20060912
+ 02)  MCFG  0x0000003C  0x01  "LENOVO"  "CB-01   "  0x06040000  "PTEC"   0x00000001
+ 03)  APIC  0x00000084  0x01  "LENOVO"  "CB-01   "  0x06040000  " LTP"   0x00000000
+ 04)  SLIC  0x00000176  0x01  "LENOVO"  "CB-01   "  0x06040000  " LTP"   0x00000000
+ 05)  SSDT  0x0000349E  0x01  "NvdRef"  "NvdTabl "  0x00001000  "INTL"   0x20060912
+ 06)  BOOT  0x00000028  0x01  "LENOVO"  "CB-01   "  0x06040000  " LTP"   0x00000001
+ 07)  DSDT  0x0000C133  0x02  "LENOVO"  "CB-01   "  0x06040000  "INTL"   0x20060912
+ 08)  SSDT  0x000007C2  0x01  "PmRef "  "Cpu0Ist "  0x00003000  "INTL"   0x20060912
+ 09)  FACP  0x000000F4  0x03  "LENOVO"  "CB-01   "  0x06040000  "PTEC"   0x00000001
+ 10)  SSDT  0x00001068  0x01  "LENOVO"  "CB-01   "  0x06040000  "INTL"   0x20060912
+ 11)  HPET  0x00000038  0x01  "LENOVO"  "CB-01   "  0x06040000  "PTEC"   0x00000001
+ 12)  FACS  0x00000040  0x01
+ 13)  SSDT  0x00000119  0x01  "PmRef "  "ApCst   "  0x00003000  "INTL"   0x20060912
+ 14)  SSDT  0x0000067C  0x01  "PmRef "  "Cpu0Cst "  0x00003001  "INTL"   0x20060912
+ 15)  SSDT  0x00000303  0x01  "PmRef "  "ApIst   "  0x00003000  "INTL"   0x20060912
+
+Found 15 ACPI tables in acpidump
+
+APIC
+----
+[000h 0000   4]                    Signature : "APIC"    [Multiple APIC Description Table (MADT)]
+[004h 0004   4]                 Table Length : 00000084
+[008h 0008   1]                     Revision : 01
+[009h 0009   1]                     Checksum : 9C
+[00Ah 0010   6]                       Oem ID : "LENOVO"
+[010h 0016   8]                 Oem Table ID : "CB-01   "

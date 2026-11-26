@@ -1,0 +1,35 @@
+System Product Name: 81N3
+System Family: IdeaPad S145-15AST
+Provider: linuxhw/ACPI (probe 5A86CF3EECC0)
+Source URL: https://github.com/linuxhw/ACPI/tree/master/Notebook/Lenovo/IdeaPad/IdeaPad%20S145-15AST%2081N3
+
+--- ACPI Table Summary ---
+Intel ACPI Component Architecture
+ACPI Binary Table Extraction Utility version 20220331
+Copyright (c) 2000 - 2022 Intel Corporation
+
+
+ Signature  Length    Version Oem       Oem         Oem         Compiler Compiler
+                              Id        TableId     RevisionId  Name     Revision
+ _________  __________  ____  ________  __________  __________  _______  __________
+
+ 01)  SSDT  0x000006B2  0x01  "LENOVO"  "AGESA   "  0x00000001  "AMD "   0x00000001
+ 02)  MCFG  0x0000003C  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 03)  APIC  0x00000090  0x02  "LENOVO"  "CB-01   "  0x00000000  "PTEC"   0x00000002
+ 04)  CRAT  0x000002E8  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 05)  SSDT  0x00000643  0x01  "LENOVO"  "Tpm2Tabl"  0x00009999  "INTL"   0x20120711
+ 06)  TPM2  0x00000034  0x03  "LENOVO"  "CB-01   "  0x00000000  "PTEC"   0x00000002
+ 07)  VFCT  0x0000FC84  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 08)  BATB  0x0000004A  0x02  "LENOVO"  "CB-01   "  0x00000000  "PTEC"   0x00000002
+ 09)  IVRS  0x000000B0  0x02  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 10)  DSDT  0x00008ABB  0x01  "LENOVO"  "AMD     "  0x00001000  "INTL"   0x20120711
+ 11)  SBST  0x00000030  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 12)  WSMT  0x00000028  0x01  "LENOVO"  "CB-01   "  0x00000000  "PTEC"   0x00000002
+ 13)  SSDT  0x00001689  0x01  "LENOVO"  "CPMDFIGP"  0x00000001  "INTL"   0x20120711
+ 14)  UEFI  0x00000042  0x01  "LENOVO"  "CB-01   "  0x00000002  "PTEC"   0x00000002
+ 15)  SSDT  0x000003E2  0x02  "LENOVO"  "Tpm2Tabl"  0x00001000  "INTL"   0x20120711
+ 16)  FACP  0x0000010C  0x05  "LENOVO"  "CB-01   "  0x00000003  "PTEC"   0x00000002
+ 17)  FPDT  0x00000034  0x01  "LENOVO"  "CB-01   "  0x00000002  "PTEC"   0x00000002
+ 18)  SSDT  0x00004B62  0x02  "LENOVO"  "AGESA   "  0x00000002  "MSFT"   0x04000000
+ 19)  MSDM  0x00000055  0x03  "LENOVO"  "CB-01   "  0x00000000  "PTEC"   0x00000002
+ 20)  HPET  0x0000003

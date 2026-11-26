@@ -1,0 +1,35 @@
+System Product Name: 81YR
+System Family: XiaoXin-15ARE 2020
+Provider: linuxhw/ACPI (probe 6FCEB8CB0FC2)
+Source URL: https://github.com/linuxhw/ACPI/tree/master/Notebook/Lenovo/XiaoXin-15ARE/XiaoXin-15ARE%202020%2081YR
+
+--- ACPI Table Summary ---
+Intel ACPI Component Architecture
+ACPI Binary Table Extraction Utility version 20190509
+Copyright (c) 2000 - 2019 Intel Corporation
+
+
+ Signature  Length    Version Oem       Oem         Oem         Compiler Compiler
+                              Id        TableId     RevisionId  Name     Revision
+ _________  __________  ____  ________  __________  __________  _______  __________
+
+ 01)  SSDT  0x00001497  0x01  "LENOVO"  "AmdTable"  0x00000001  "INTL"   0x20180313
+ 02)  MCFG  0x0000003C  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 03)  APIC  0x00000138  0x02  "LENOVO"  "CB-01   "  0x00000000  "PTEC"   0x00000002
+ 04)  CRAT  0x00000F00  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 05)  SSDT  0x00007216  0x02  "LENOVO"  "AmdTable"  0x00000002  "MSFT"   0x04000000
+ 06)  VFCT  0x0000D484  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 07)  BATB  0x0000004A  0x02  "LENOVO"  "CB-01   "  0x00000000  "PTEC"   0x00000002
+ 08)  CDIT  0x00000029  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 09)  UEFI  0x000000EE  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 10)  IVRS  0x000001A4  0x02  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 11)  DSDT  0x00009657  0x01  "LENOVO"  "AMD     "  0x00001000  "INTL"   0x20180313
+ 12)  SSDT  0x00000090  0x01  "LENOVO"  "AmdTable"  0x00000001  "INTL"   0x20180313
+ 13)  SSDT  0x00001576  0x01  "LENOVO"  "AmdTable"  0x00000001  "INTL"   0x20180313
+ 14)  SSDT  0x000039F4  0x01  "LENOVO"  "AmdTable"  0x00000001  "AMD "   0x00000001
+ 15)  FACP  0x0000010C  0x05  "LENOVO"  "CB-01   "  0x00000003  "PTEC"   0x00000002
+ 16)  FPDT  0x00000034  0x01  "LENOVO"  "CB-01   "  0x00000002  "PTEC"   0x00000002
+ 17)  SSDT  0x00000CC9  0x01  "LENOVO"  "UsbCTabl"  0x00000001  "INTL"   0x20180313
+ 18)  MSDM  0x00000055  0x03  "LENOVO"  "CB-01   "  0x00000000  "PTEC"   0x00000002
+ 19)  SSDT  0x000009AD  0x01  "LENOVO"  "AmdTable"  0x00000001  "INTL"   0x20180313
+ 20)  HPET  0x0000003

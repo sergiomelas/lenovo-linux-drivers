@@ -1,0 +1,35 @@
+System Product Name: 82XM
+System Family: IdeaPad Slim 3 15ABR8
+Provider: linuxhw/ACPI (probe F9685D1E4132)
+Source URL: https://github.com/linuxhw/ACPI/tree/master/Notebook/Lenovo/IdeaPad/IdeaPad%20Slim%203%2015ABR8%2082XM
+
+--- ACPI Table Summary ---
+Intel ACPI Component Architecture
+ACPI Binary Table Extraction Utility version 20230628
+Copyright (c) 2000 - 2023 Intel Corporation
+
+
+ Signature  Length    Version Oem       Oem         Oem         Compiler Compiler
+                              Id        TableId     RevisionId  Name     Revision
+ _________  __________  ____  ________  __________  __________  _______  __________
+
+ 01)  SSDT  0x0000053A  0x01  "LENOVO"  "Tpm2Tabl"  0x00009999  "INTL"   0x20180313
+ 02)  MCFG  0x0000003C  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 03)  APIC  0x00000138  0x02  "LENOVO"  "CB-01   "  0x00000000  "PTEC"   0x00000002
+ 04)  CRAT  0x00000EC0  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 05)  SSDT  0x000072B0  0x02  "LENOVO"  "AmdTable"  0x00000002  "MSFT"   0x04000000
+ 06)  TPM2  0x00000038  0x04  "LENOVO"  "CB-01   "  0x00000002  "PTEC"   0x00000002
+ 07)  VFCT  0x0000D884  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 08)  BATB  0x0000004A  0x02  "LENOVO"  "CB-01   "  0x00000000  "PTEC"   0x00000002
+ 09)  SSDT  0x00000058  0x01  "LENOVO"  "AmdTable"  0x00000001  "INTL"   0x20180313
+ 10)  SSDT  0x0000096A  0x01  "LENOVO"  "AmdTable"  0x00000001  "INTL"   0x20180313
+ 11)  CDIT  0x00000029  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 12)  UEFI  0x000000EE  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 13)  IVRS  0x000001E4  0x02  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 14)  DSDT  0x0000BE5D  0x01  "LENOVO"  "AMD     "  0x00001000  "INTL"   0x20180313
+ 15)  SSDT  0x000015A8  0x01  "LENOVO"  "AmdTable"  0x00000001  "INTL"   0x20180313
+ 16)  WSMT  0x00000028  0x01  "LENOVO"  "CB-01   "  0x00000000  "PTEC"   0x00000002
+ 17)  SSDT  0x00000B5D  0x01  "LENOVO"  "AmdTable"  0x00000001  "INTL"   0x20180313
+ 18)  SSDT  0x00000149  0x01  "LENOVO"  "AmdTable"  0x00000001  "INTL"   0x20180313
+ 19)  SSDT  0x0000024D  0x01  "LENOVO"  "AmdTable"  0x00000001  "INTL"   0x20180313
+ 20)  SSDT  0x0000535

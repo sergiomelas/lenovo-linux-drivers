@@ -1,0 +1,35 @@
+System Product Name: 80R2
+System Family: IdeaPad 100S-11IBY
+Provider: linuxhw/ACPI (probe EE707040AC1A)
+Source URL: https://github.com/linuxhw/ACPI/tree/master/Notebook/Lenovo/IdeaPad/IdeaPad%20100S-11IBY%2080R2
+
+--- ACPI Table Summary ---
+Intel ACPI Component Architecture
+ACPI Binary Table Extraction Utility version 20221020
+Copyright (c) 2000 - 2022 Intel Corporation
+
+
+ Signature  Length    Version Oem       Oem         Oem         Compiler Compiler
+                              Id        TableId     RevisionId  Name     Revision
+ _________  __________  ____  ________  __________  __________  _______  __________
+
+ 01)  SSDT  0x000000FF  0x01  "LENOVO"  "SoCDptf "  0x00000003  "ACPI"   0x00040000
+ 02)  MCFG  0x0000003C  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 03)  APIC  0x0000006C  0x03  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 04)  SLIC  0x00000176  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 05)  SSDT  0x000024BC  0x01  "LENOVO"  "DptfTab "  0x00000003  "ACPI"   0x00040000
+ 06)  TPM2  0x00000034  0x03  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 07)  DSDT  0x0000ECBE  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 08)  SSDT  0x00000290  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 09)  LPIT  0x00000104  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 10)  SSDT  0x0000043A  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 11)  UEFI  0x00000236  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 12)  DBG2  0x00000072  0x00  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 13)  WDAT  0x00000104  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 14)  SSDT  0x00000058  0x01  "LENOVO"  "LowPwrM "  0x00000003  "ACPI"   0x00040000
+ 15)  FACP  0x0000010C  0x05  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 16)  FPDT  0x00000044  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 17)  SSDT  0x000005C1  0x01  "LENOVO"  "CpuDptf "  0x00000003  "ACPI"   0x00040000
+ 18)  MSDM  0x00000055  0x03  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 19)  OEM0  0x00000084  0x05  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 20)  CSRT  0x0000014

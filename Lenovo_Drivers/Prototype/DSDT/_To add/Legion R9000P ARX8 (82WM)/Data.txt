@@ -1,0 +1,35 @@
+System Product Name: 82WM
+System Family: Legion R9000P ARX8
+Provider: linuxhw/ACPI (probe FFC488E39502)
+Source URL: https://github.com/linuxhw/ACPI/tree/master/Notebook/Lenovo/Legion/Legion%20R9000P%20ARX8%2082WM
+
+--- ACPI Table Summary ---
+Intel ACPI Component Architecture
+ACPI Binary Table Extraction Utility version 20230628
+Copyright (c) 2000 - 2023 Intel Corporation
+
+
+ Signature  Length    Version Oem       Oem         Oem         Compiler Compiler
+                              Id        TableId     RevisionId  Name     Revision
+ _________  __________  ____  ________  __________  __________  _______  __________
+
+ 01)  SSDT  0x0000352F  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 02)  MCFG  0x0000003C  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 03)  ASF!  0x000000A5  0x20  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 04)  APIC  0x00000218  0x03  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 05)  CRAT  0x00001D50  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 06)  SLIC  0x00000176  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 07)  SSDT  0x000083EA  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 08)  TPM2  0x00000034  0x04  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 09)  VFCT  0x0000AE84  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 10)  BOOT  0x00000028  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 11)  SSDT  0x000012FC  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 12)  SSDT  0x00000777  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 13)  SSDT  0x00000946  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 14)  CDIT  0x00000029  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 15)  UEFI  0x00000236  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 16)  IVRS  0x000001A4  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 17)  DSDT  0x00021DE0  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 18)  SSDT  0x000015B8  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 19)  WSMT  0x00000028  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 20)  SSDT  0x000006D

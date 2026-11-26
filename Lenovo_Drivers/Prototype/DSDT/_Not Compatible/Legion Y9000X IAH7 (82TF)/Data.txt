@@ -1,0 +1,35 @@
+System Product Name: 82TF
+System Family: Legion Y9000X IAH7
+Provider: linuxhw/ACPI (probe CB118A4005F6)
+Source URL: https://github.com/linuxhw/ACPI/tree/master/Notebook/Lenovo/Legion/Legion%20Y9000X%20IAH7%2082TF
+
+--- ACPI Table Summary ---
+Intel ACPI Component Architecture
+ACPI Binary Table Extraction Utility version 20221020
+Copyright (c) 2000 - 2022 Intel Corporation
+
+
+ Signature  Length    Version Oem       Oem         Oem         Compiler Compiler
+                              Id        TableId     RevisionId  Name     Revision
+ _________  __________  ____  ________  __________  __________  _______  __________
+
+ 01)  SSDT  0x00001040  0x01  "LENOVO"  "WmiTable"  0x00000001  "INTL"   0x20200717
+ 02)  MCFG  0x0000003C  0x01  "LENOVO"  "CB-01   "  0x00000002  "PTEC"   0x00000002
+ 03)  APIC  0x000001DC  0x05  "LENOVO"  "CB-01   "  0x00000002  "PTEC"   0x00000002
+ 04)  SSDT  0x00005D01  0x02  "LENOVO"  "CpuSsdt "  0x00003000  "INTL"   0x20200717
+ 05)  SSDT  0x00002B2A  0x02  "LENOVO"  "SocCmn  "  0x00003000  "INTL"   0x20200717
+ 06)  TPM2  0x0000004C  0x04  "LENOVO"  "CB-01   "  0x00000002  "PTEC"   0x00000002
+ 07)  BATB  0x0000004A  0x02  "LENOVO"  "CB-01   "  0x00000000  "PTEC"   0x00000002
+ 08)  SSDT  0x00000DC1  0x02  "LENOVO"  "xh_adlMR"  0x00000000  "INTL"   0x20200717
+ 09)  SSDT  0x00008755  0x02  "LENOVO"  "TcssSsdt"  0x00001000  "INTL"   0x20200717
+ 10)  NHLT  0x00001B35  0x00  "LENOVO"  "CB-01   "  0x00000002  "PTEC"   0x00000002
+ 11)  SSDT  0x0000124F  0x02  "LENOVO"  "UsbCTabl"  0x00001000  "INTL"   0x20200717
+ 12)  UEFI  0x000000C6  0x01  "LENOVO"  "CB-01   "  0x00000001  "PTEC"   0x00000002
+ 13)  DSDT  0x000805A8  0x02  "LENOVO"  "ADL-P-M "  0x00000002  "    "   0x01000013
+ 14)  SSDT  0x00002B22  0x02  "LENOVO"  "SaSsdt  "  0x00003000  "INTL"   0x20200717
+ 15)  WSMT  0x00000028  0x01  "LENOVO"  "CB-01   "  0x00000002  "PTEC"   0x00000002
+ 16)  SSDT  0x00002A83  0x02  "LENOVO"  "PtidDevc"  0x00001000  "INTL"   0x20200717
+ 17)  LPIT  0x000000CC  0x01  "LENOVO"  "CB-01   "  0x00000002  "PTEC"   0x00000002
+ 18)  SSDT  0x000000FC  0x01  "LENOVO"  "SmiTable"  0x00000001  "INTL"   0x20200717
+ 19)  SSDT  0x00000144  0x02  "LENOVO"  "ADebTabl"  0x00001000  "INTL"   0x20200717
+ 20)  DBG2  0x0000005

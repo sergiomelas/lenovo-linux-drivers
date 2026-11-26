@@ -1,0 +1,35 @@
+System Product Name: 80SW
+System Family: IdeaPad 710S-13ISK
+Provider: linuxhw/ACPI (probe F29621040FDC)
+Source URL: https://github.com/linuxhw/ACPI/tree/master/Notebook/Lenovo/IdeaPad/IdeaPad%20710S-13ISK%2080SW
+
+--- ACPI Table Summary ---
+Intel ACPI Component Architecture
+ACPI Binary Table Extraction Utility version 20221020
+Copyright (c) 2000 - 2022 Intel Corporation
+
+
+ Signature  Length    Version Oem       Oem         Oem         Compiler Compiler
+                              Id        TableId     RevisionId  Name     Revision
+ _________  __________  ____  ________  __________  __________  _______  __________
+
+ 01)  SSDT  0x0000019A  0x02  "LENOVO"  "Sata0Ide"  0x00001000  "INTL"   0x20141107
+ 02)  MCFG  0x0000003C  0x01  "LENOVO"  "CB-01   "  0x00000001  "LENO"   0x00000001
+ 03)  ASF!  0x000000A5  0x20  "LENOVO"  "CB-01   "  0x00000001  "LENO"   0x00000001
+ 04)  APIC  0x000000BC  0x03  "LENOVO"  "CB-01   "  0x00000001  "LENO"   0x00000001
+ 05)  SLIC  0x00000176  0x01  "LENOVO"  "CB-01   "  0x00000001  "LENO"   0x00000001
+ 06)  SSDT  0x00005300  0x02  "LENOVO"  "SaSsdt  "  0x00003000  "INTL"   0x20141107
+ 07)  BOOT  0x00000028  0x01  "LENOVO"  "CB-01   "  0x00000002  "LENO"   0x00000001
+ 08)  BATB  0x00000046  0x01  "LENOVO"  "CB-01   "  0x000000B4  "LENO"   0x00000001
+ 09)  DSDT  0x0002341E  0x02  "LENOVO"  "SKL     "  0x00000000  "INTL"   0x20141107
+ 10)  SSDT  0x00000178  0x01  "LENOVO"  "PhxASD_T"  0x00001000  "INTL"   0x20130927
+ 11)  LPIT  0x00000094  0x01  "LENOVO"  "CB-01   "  0x00000000  "LENO"   0x00000001
+ 12)  SSDT  0x0000053B  0x02  "LENOVO"  "xh_rvp07"  0x00000000  "INTL"   0x20141107
+ 13)  UEFI  0x00000042  0x01  "LENOVO"  "CB-01   "  0x00000002  "LENO"   0x00000001
+ 14)  DBG2  0x00000054  0x00  "LENOVO"  "CB-01   "  0x00000000  "LENO"   0x00000001
+ 15)  WDAT  0x00000134  0x01  "LENOVO"  "CB-01   "  0x00000000  "LENO"   0x00000001
+ 16)  SSDT  0x000005C5  0x02  "LENOVO"  "PerfTune"  0x00001000  "INTL"   0x20141107
+ 17)  FACP  0x000000F4  0x05  "LENOVO"  "CB-01   "  0x00000000  "LENO"   0x00000001
+ 18)  FPDT  0x00000044  0x01  "LENOVO"  "CB-01   "  0x00000002  "LENO"   0x00000001
+ 19)  SSDT  0x00002AA6  0x02  "LENOVO"  "DptfTabl"  0x00001000  "INTL"   0x20141107
+ 20)  MSDM  0x0000005

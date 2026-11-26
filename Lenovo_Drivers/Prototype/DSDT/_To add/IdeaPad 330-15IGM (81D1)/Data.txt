@@ -1,0 +1,35 @@
+System Product Name: 81D1
+System Family: IdeaPad 330-15IGM
+Provider: linuxhw/ACPI (probe 08CD7AA84FAC)
+Source URL: https://github.com/linuxhw/ACPI/tree/master/Notebook/Lenovo/IdeaPad/IdeaPad%20330-15IGM%2081D1
+
+--- ACPI Table Summary ---
+Intel ACPI Component Architecture
+ACPI Binary Table Extraction Utility version 20210604
+Copyright (c) 2000 - 2021 Intel Corporation
+
+
+ Signature  Length    Version Oem       Oem         Oem         Compiler Compiler
+                              Id        TableId     RevisionId  Name     Revision
+ _________  __________  ____  ________  __________  __________  _______  __________
+
+ 01)  SSDT  0x0000072B  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 02)  MCFG  0x0000003C  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 03)  APIC  0x00000084  0x03  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 04)  SSDT  0x0000132B  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 05)  TPM2  0x00000034  0x04  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 06)  DSDT  0x0000B526  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 07)  SSDT  0x0000281C  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 08)  WSMT  0x00000028  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 09)  LPIT  0x0000005C  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 10)  SSDT  0x0000032D  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 11)  UEFI  0x00000236  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 12)  DBG2  0x00000072  0x00  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 13)  WDAT  0x00000104  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 14)  POAT  0x00000055  0x03  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 15)  SSDT  0x00000439  0x02  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 16)  DMAR  0x000000A8  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 17)  FACP  0x00000114  0x06  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 18)  FPDT  0x00000034  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 19)  SSDT  0x00000554  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 20)  NPKT  0x0000006

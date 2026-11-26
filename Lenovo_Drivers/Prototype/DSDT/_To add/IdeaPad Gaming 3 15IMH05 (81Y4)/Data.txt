@@ -1,0 +1,35 @@
+System Product Name: 81Y4
+System Family: IdeaPad Gaming 3 15IMH05
+Provider: linuxhw/ACPI (probe 7FC011278ACD)
+Source URL: https://github.com/linuxhw/ACPI/tree/master/Notebook/Lenovo/IdeaPad/IdeaPad%20Gaming%203%2015IMH05%2081Y4
+
+--- ACPI Table Summary ---
+Intel ACPI Component Architecture
+ACPI Binary Table Extraction Utility version 20210604
+Copyright (c) 2000 - 2021 Intel Corporation
+
+
+ Signature  Length    Version Oem       Oem         Oem         Compiler Compiler
+                              Id        TableId     RevisionId  Name     Revision
+ _________  __________  ____  ________  __________  __________  _______  __________
+
+ 01)  SSDT  0x000031DB  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20160422
+ 02)  MCFG  0x0000003C  0x01  "LENOVO"  "CB-01   "  0x00000001  "    "   0x01000013
+ 03)  APIC  0x00000164  0x03  "LENOVO"  "CB-01   "  0x00000001  "    "   0x01000013
+ 04)  SSDT  0x00002087  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20160422
+ 05)  TPM2  0x00000034  0x03  "LENOVO"  "CB-01   "  0x00000001  "    "   0x01000013
+ 06)  SSDT  0x00002901  0x02  "LENOVO"  "CB-01   "  0x00000001  "    "   0x01000013
+ 07)  NHLT  0x0000002D  0x00  "LENOVO"  "CB-01   "  0x00000001  "    "   0x01000013
+ 08)  UEFI  0x00000236  0x01  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 09)  DSDT  0x00036EEC  0x02  "LENOVO"  "CB-01   "  0x00000001  "    "   0x01000013
+ 10)  SSDT  0x00000B70  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20160422
+ 11)  WSMT  0x00000028  0x01  "LENOVO"  "CB-01   "  0x00000001  "    "   0x01000013
+ 12)  SSDT  0x00000161  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20160422
+ 13)  LPIT  0x00000094  0x01  "LENOVO"  "CB-01   "  0x00000001  "    "   0x01000013
+ 14)  SSDT  0x0000045A  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20160422
+ 15)  DBG2  0x00000054  0x00  "LENOVO"  "CB-01   "  0x00000001  "ACPI"   0x00040000
+ 16)  SSDT  0x0000195D  0x01  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20160422
+ 17)  SSDT  0x000031E4  0x02  "LENOVO"  "CB-01   "  0x00000001  "INTL"   0x20160422
+ 18)  DMAR  0x00000098  0x01  "LENOVO"  "CB-01   "  0x00000001  "    "   0x01000013
+ 19)  FACP  0x0000010C  0x05  "LENOVO"  "CB-01   "  0x00000001  "    "   0x01000013
+ 20)  BGRT  0x0000003
