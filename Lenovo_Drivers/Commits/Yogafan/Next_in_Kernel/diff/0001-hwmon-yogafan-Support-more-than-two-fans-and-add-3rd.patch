@@ -1,6 +1,6 @@
-From 7f329ce5ec8df11aed6962c4c066d99bea2161d1 Mon Sep 17 00:00:00 2001
+From dcc856a0a9b990db955cc5fdad36a2690f1798ce Mon Sep 17 00:00:00 2001
 From: Sergio Melas <sergiomelas@gmail.com>
-Date: Thu, 26 Nov 2026 15:58:48 +0100
+Date: Thu, 26 Nov 2026 20:45:24 +0100
 Subject: [PATCH 1/2] hwmon: (yogafan) Support more than two fans and add 3rd
  fan for Legion Pro 7 16AFR10H
 
@@ -19,24 +19,24 @@ Signed-off-by: Sergio Melas <sergiomelas@gmail.com>
  2 files changed, 12 insertions(+), 2 deletions(-)
 
 diff --git a/Documentation/hwmon/yogafan.rst b/Documentation/hwmon/yogafan.rst
-index 239c7b576..6e0e172de 100644
+index 239c7b576..c30cd9c81 100644
 --- a/Documentation/hwmon/yogafan.rst
 +++ b/Documentation/hwmon/yogafan.rst
-@@ -105,6 +105,7 @@ immediately to ensure the user knows the fan has stopped.
-  83KF           | XiaoXinPro 13ARE    | 0x06/0xFE | \_SB.PCI0.LPC0.EC0.FANS/FA2S   |  8-bit | 100
-  82KU           | IdeaPad 3 15ALC6    | 0x06      | \_SB.PCI0.LPC0.EC0.FAN0        |  8-bit | 100
+@@ -107,6 +107,7 @@ immediately to ensure the user knows the fan has stopped.
   83RU           | Legion Pro 7 16     | 0x03/0x06 | \_SB.PCI0.LPC0.EC0.FANS/FA2S   |  8-bit | 100
-+ 83RU           | Legion Pro 7 16     | 0x04      | \_SB.PCI0.LPC0.EC0.FASF (Fan3) |  8-bit | 100
   83KF           | Yoga Pro 7 14IAH    | 0x06      | \_SB.PC00.LPCB.EC0.FANS        |  8-bit | 100
   83BS           | Yoga 7 16ARP8       | 0x03/0x06 | \_SB.PCI0.LPC0.EC0.FANS/FA2S   |  8-bit | 100
++ 83RU           | Legion Pro 7 16     | 0x04      | \_SB.PCI0.LPC0.EC0.FASF (Fan3) |  8-bit | 100
   *Legacy*       | Pre-2020 Models     | 0x06      | \_SB.PCI0.LPC.EC.FAN0          |  8-bit | 100
+  -------------------------------------------------------------------------------------------------------
+ 
 @@ -165,3 +166,4 @@ Contributors & DSDT Providers:
  - **unlockxiaom** (Legion Pro 7 16AFR10H - 83RU, Yoga Pro 7 14IAH10 - 83KF, ThinkCentre M80q)
  - **Phani Pavan K** (Yoga Pro 7 14IAH10 - 83KF)
  - **Splarkszter** (Yoga 7 16ARP8 - 83BS)
 +- **GabboRocchia** (Legion Pro 7 16AFR10H - 83RU 3rd fan)
 diff --git a/drivers/hwmon/yogafan.c b/drivers/hwmon/yogafan.c
-index 6d1284c09..112356c50 100644
+index 6d1284c09..172fdc198 100644
 --- a/drivers/hwmon/yogafan.c
 +++ b/drivers/hwmon/yogafan.c
 @@ -41,7 +41,7 @@
@@ -48,8 +48,8 @@ index 6d1284c09..112356c50 100644
  };
  
  struct yoga_fan_data {
-@@ -89,6 +89,14 @@ static const struct yogafan_config xiaoxin_8bit_dual_cfg = {
- 	.paths = { "\\_SB.PCI0.LPC0.EC0.FANS", "\\_SB.PCI0.LPC0.EC0.FA2S" }
+@@ -106,6 +106,14 @@ static const struct yogafan_config yoga_pro_83dn_cfg = {
+ 		   "\\_SB.PC00.LPCB.EC0.FA2S" }
  };
  
 +static const struct yogafan_config legion_8bit_triple_cfg = {
@@ -60,9 +60,9 @@ index 6d1284c09..112356c50 100644
 +		   "\\_SB.PCI0.LPC0.EC0.FASF" }
 +};
 +
- static const struct yogafan_config yoga_pro_7_14iah10_cfg = {
- 	.multiplier = 100,
- 	.fan_count = 1,
+ static void apply_rllag_filter(struct yoga_fan_data *data, int idx, long raw_rpm)
+ {
+ 	ktime_t now = ktime_get_boottime();
 @@ -259,7 +267,7 @@ static const struct dmi_system_id yogafan_quirks[] = {
  			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
  			DMI_MATCH(DMI_PRODUCT_FAMILY, "Legion Pro 7 16AFR10H"),

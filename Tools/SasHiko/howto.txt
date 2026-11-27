@@ -1,94 +1,108 @@
 ================================================================================
-SASHIKO LOCAL: COMPLETE TOOLCHAIN HOWTO (2026)
-Author: Sergio Melas
+SASHIKO LOCAL: COMPLETE INSTALLATION & USAGE HOWTO (2026)
+Author: Sergio Melas <sergiomelas@gmail.com>
 ================================================================================
 
-This guide explains step by step how to install and configure Sashiko on your
-system, designed specifically for anyone cloning the repository from GitHub and
-wanting to proceed smoothly.
+This guide documents the real, verified local setup for the official Rust-based
+Sashiko AI Linux kernel reviewer (https://sashiko.dev / sashiko v0.9.5+)
+paired with local static checks (checkpatch.pl, sparse, htmldocs).
 
 --------------------------------------------------------------------------------
-1. INSTALLING BASIC TOOLS (PREREQUISITES)
+1. PREREQUISITES (DEBIAN / UBUNTU)
 --------------------------------------------------------------------------------
-Before downloading the code, make sure you have the essential packages
-(Python 3, Git, and build tools) installed on your system.
+Make sure Git, Rust/Cargo (1.90+), and Sparse are installed:
 
-Detailed actions for Debian/Ubuntu-based systems:
-1. Open your terminal.
-2. Update the list of available packages:
-   $ sudo apt update
-3. Install Git, Python 3, the pip package manager, and core build tools:
-   $ sudo apt install -y git python3 python3-pip build-essential python3-venv
+  $ sudo apt update
+  $ sudo apt install -y git cargo rustc sparse
 
---------------------------------------------------------------------------------
-2. GITHUB DOWNLOAD AND PYTHON VIRTUAL ENVIRONMENT
---------------------------------------------------------------------------------
-Now let's download the source code directly from your GitHub repository and
-set up a clean working environment.
-
-1. Clone the repository onto your computer:
-   $ git clone https://github.com/sergiomelas/lenovo-linux-drivers
-2. Enter the downloaded folder and navigate to the target subdirectory:
-   $ cd lenovo-linux-drivers/Sashiko
-3. Create a Python virtual environment to isolate dependencies:
-   $ python3 -m venv venv
-4. Activate the virtual environment:
-   $ source venv/bin/activate
-5. Upgrade pip and install the required packages from the configuration file:
-   $ pip install --upgrade pip
-   $ pip install -r requirements.txt
+Verify:
+  $ rustc --version
+  $ cargo --version
+  $ which sparse
 
 --------------------------------------------------------------------------------
-3. API TOKEN CONFIGURATION & GENERATION
+2. INSTALL OFFICIAL SASHIKO CLI (CRATES.IO)
 --------------------------------------------------------------------------------
-To connect Sashiko to your Google AI subscription and enable it to query Gemini:
+Install the official Sashiko binaries (`sashiko` and `sashiko-cli`) into
+`~/.cargo/bin/`:
 
-1. Open your browser and go to Google AI Studio: https://aistudio.google.com/
-2. Log in using the same Google account tied to your Google AI Pro subscription.
-3. In the sidebar/interface, click on the API keys icon (the wrench symbol) or go
-    directly to: https://aistudio.google.com/api-keys
-4. Click on the "Create API key" button in the top right.
-5. In the dropdown menu, select "Create project", type your project name
-    (e.g., "Kernel Development"), and create it.
-6. Choose a name for your key (e.g., "Sashiko Local Key") and click "Create key".
-7. Copy the generated alphanumeric API key string (e.g., starting with `AQ...`).
-8. Save the key permanently in your shell profile by running:
-   $ echo 'export GEMINI_API_KEY="your_api_key_here"' >> ~/.bashrc
-9. Reload your shell configuration to make it active:
-   $ source ~/.bashrc
+  $ cargo install sashiko
+
+Add `~/.cargo/bin` permanently to your PATH:
+
+  $ echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
+  $ source ~/.bashrc
+
+Verify installation:
+  $ sashiko --version
 
 --------------------------------------------------------------------------------
-4. CREATING THE SETTINGS.TOML FILE
+3. INITIALIZE CONFIGURATION & KERNEL PROMPTS
 --------------------------------------------------------------------------------
-Create a configuration file in the main Sashiko folder by typing:
-   $ nano Settings.toml
+Run once to create `~/.config/sashiko.toml` and install the official kernel
+review prompts in `~/.local/share/sashiko/prompts/`:
 
-Paste this exact text inside, save with `Ctrl+O`, press `Enter`, and exit with `Ctrl+X`:
+  $ sashiko init
 
-[core]
-model = "gemini-pro"
-max_tokens = 8192
-timeout = 30
+Example `~/.config/sashiko.toml`:
 
-[checks]
-strict_checkpatch = true
-verify_commit_message = true
-check_rest_syntax = true
+  [ai]
+  provider = "gemini"
+  model = "gemini-3.8-flash"
+  max_input_tokens = 900000
 
-[auth]
-use_env_key = true
+  [review]
+  concurrency = 4
+
+NOTE ON FREE-TIER QUOTA:
+- The default model written by `sashiko init` (`gemini-4-argon`) may report
+  Free Tier daily quota exceeded.
+- Use `gemini-3.8-flash` (either in `~/.config/sashiko.toml` or via
+  `-m gemini-3.8-flash`) for Free Tier Gemini API keys.
 
 --------------------------------------------------------------------------------
-5. PRACTICAL USAGE EXAMPLES
+4. API KEY CONFIGURATION (NEVER COMMIT KEYS TO GIT!)
 --------------------------------------------------------------------------------
-Now your toolchain is ready. You can run checks based on what you need to verify:
+Get a Gemini API key from Google AI Studio: https://aistudio.google.com/api-keys
 
-* To check a single source code file:
-  $ python3 sashiko_engine.py --file drivers/hwmon/yogafan.c
+Option A — Export for the current terminal session:
+  $ export LLM_API_KEY="YOUR_GEMINI_API_KEY"
+  $ export GEMINI_API_KEY="$LLM_API_KEY"
 
-* To scan an entire folder recursively:
-  $ python3 sashiko_engine.py --folder drivers/hwmon/yogafansrc/
+Option B — Load silently from a local key file (e.g. in Tools/SasHiko/Key/):
+  $ export LLM_API_KEY="$(tr -d ' \t\r\n' < /path/to/your_key_file)"
+  $ export GEMINI_API_KEY="$LLM_API_KEY"
 
-* To validate a patch file before sending it to the mailing list:
-  $ python3 sashiko_engine.py --patch ./patches/0001-yogafan-update.patch
+Option C — Persist in `~/.bashrc` (outside the Git repository):
+  $ echo 'export LLM_API_KEY="YOUR_GEMINI_API_KEY"' >> ~/.bashrc
+  $ source ~/.bashrc
+
+--------------------------------------------------------------------------------
+5. RUNNING LOCAL STATIC CHECKS + SASHIKO REVIEW ON YOGAFAN PATCHES
+--------------------------------------------------------------------------------
+Move into the working kernel tree where your commits sit on top of hwmon-next:
+
+  $ cd /home/sergio/Others/Kernel-Upstream-Development/_Patch-Builtd/linux-guenter-last/linux-guenter-last
+
+Step 1 — Checkpatch (style & spelling, skip 0000-cover-letter.patch):
+  $ ./scripts/checkpatch.pl --strict --codespell ../000[1-9]-hwmon-yogafan-*.patch
+
+Step 2 — Sparse + Compiler W=1 (type safety, endianness, strict warnings):
+  $ rm -f drivers/hwmon/yogafan.o
+  $ make C=1 CF="-Wbitwise -Wnon-pointer-null" W=1 drivers/hwmon/yogafan.o
+
+Step 3 — Documentation check (hwmon-only Sphinx build):
+  $ make SPHINXDIRS=hwmon htmldocs
+
+Step 4 — Sashiko AI review on your commit range (e.g. last 2 commits):
+  $ sashiko review --project linux -m gemini-3.8-flash HEAD~2..HEAD
+
+Useful Sashiko flags:
+  --cheap    : Combine exploratory stages to reduce latency and API calls
+  --no-ai    : Validate patch extraction/application only (no API calls)
+  --resume   : Resume an interrupted review from recorded answers
+  --design   : Add series-level design assessment alongside bug review
+
+================================================================================
+END OF SASHIKO LOCAL HOWTO - (C) SERGIO MELAS 2026
 ================================================================================

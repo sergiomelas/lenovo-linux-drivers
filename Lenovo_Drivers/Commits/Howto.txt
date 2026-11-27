@@ -91,8 +91,9 @@ PHASE 3: PATCH GENERATION (THE FINAL EXPORT)
 # - drivers/hwmon/Makefile
 # - drivers/hwmon/yogafan.c          <<< only this for driver in kernel already
 
-# 2. Clean the directory of any non-kernel files
-make mrproper
+# 2. Clean the directory of any non-kernel files (only before final patch export;
+#    do NOT run 'make mrproper' right before building yogafan.ko as it wipes .config)
+# make mrproper
 
 # 3. Force Git to recognize your changes
 # Case A: New driver or old kernel setup
@@ -112,43 +113,65 @@ git add drivers/hwmon/yogafan.c \
 git status
 
 # 5. Commit with the PROFESSIONAL v1 message layout
+#    (One logical change per commit: e.g., Commit 1 = infra/multi-fan, Commit 2 = new models)
 git commit -s
-# (Paste the finalized v1 text into the editor, -s auto-appends Signed-off-by)
+# (Paste the finalized message into the editor; -s auto-appends Signed-off-by)
 
-# 6. Generate the patch with the correct version suffix
-git format-patch -1 --subject-prefix="PATCH"  # For a full standalone patch
+# 6. Generate the patch(es) with the correct version suffix
+git format-patch -1 --subject-prefix="PATCH"                  # Single standalone patch
+git format-patch --cover-letter -2 --subject-prefix="PATCH"   # Multi-patch series (0000 + 0001..N)
+git format-patch -v2 --cover-letter -2                        # Revised v2 series
+# (Edit 0000-cover-letter.patch: replace *** SUBJECT HERE *** and *** BLURB HERE ***)
 
-git format-patch -v3 --numbered HEAD~1           # For multiple iterations and local history edits
+# 7. Repository Layout & Symlinks (Lenovo_Drivers/)
+#    - Commits/Yogafan/Next_in_Kernel/diff/ : Multi-patch series (0000-cover-letter + 0001..N)
+#                                             for hwmon-next / 7.1+ kernels (already have yogafan).
+#    - Commits/Yogafan/Next_in_Kernel/full/ : Standalone full patch (yogafan.c + yogafan.rst,
+#                                             using devm_kzalloc for 6.x legacy compatibility).
+#    - Lenovo_Drivers/Current-diff          : Folder symlink -> Commits/Yogafan/Next_in_Kernel/diff
+#    - Lenovo_Drivers/Current-full          : Folder symlink -> Commits/Yogafan/Next_in_Kernel/full
+#    NOTE: auto_compile_rust_lenovo_patch.sh supports single files, symlinks, and multi-patch
+#          directories (automatically skips 0000-cover-letter.patch and already-applied patches,
+#          and auto-registers Kconfig/Makefile on legacy kernels when missing).
 
 ====================================================================================================
 PHASE 4: FINAL VALIDATION
 ====================================================================================================
-# 1. Check for coding style and spelling errors:
-./scripts/checkpatch.pl --strict --codespell v1-0001-hwmon-yogafan-*.patch
+# 1. Check for coding style and spelling errors (skip 0000-cover-letter.patch):
+./scripts/checkpatch.pl --strict --codespell 000[1-9]-hwmon-yogafan-*.patch
 
-# 2. Verify Build:
+# 2. Verify Build (use W=1 to catch extra warnings checked by upstream bots):
 scripts/config --module CONFIG_SENSORS_YOGAFAN
 make olddefconfig
-make drivers/hwmon/yogafan.ko
+make -j$(nproc) W=1 drivers/hwmon/yogafan.ko
 
-# 3. Verify Docs:
-make htmldocs
+# 3. Verify Docs (fast hwmon-only Sphinx build):
+make SPHINXDIRS=hwmon htmldocs
+
+# 4. Verify Maintainers & Lists:
+./scripts/get_maintainer.pl -f drivers/hwmon/yogafan.c Documentation/hwmon/yogafan.rst
 
 ====================================================================================================
 PHASE 5: Submission
 ====================================================================================================
 
-PATCH SUBMISSION COMMAND test:
+# Single patch or multi-patch series (git send-email auto-threads 0001..N under 0000-cover-letter)
+PATCH SUBMISSION COMMAND test (--dry-run):
 git send-email --to="Guenter Roeck <linux@roeck-us.net>" \
                --cc="linux-hwmon@vger.kernel.org" \
                --cc="linux-kernel@vger.kernel.org" \
-               <path to patch>.patch \
-               --dry-run        #<<<<<<<<<<<<<,
+               0000-cover-letter.patch \
+               0001-hwmon-yogafan-*.patch \
+               0002-hwmon-yogafan-*.patch \
+               --dry-run        #<<<<<<<<<<<<<
+
 PATCH SUBMISSION COMMAND send:
 git send-email --to="Guenter Roeck <linux@roeck-us.net>" \
                --cc="linux-hwmon@vger.kernel.org" \
                --cc="linux-kernel@vger.kernel.org" \
-               <path to patch>.patch
+               0000-cover-letter.patch \
+               0001-hwmon-yogafan-*.patch \
+               0002-hwmon-yogafan-*.patch
 
 
 

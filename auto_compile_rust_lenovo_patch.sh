@@ -21,10 +21,10 @@ export DEBEMAIL="sergiomelas@gmail.com"
 # Your kernel personalization string
 postfix="yoga"
 
-# Your Patch data
+# Your Patch data (supports single .patch file, symlink, or directory of 0001..N *.patch files)
 PATCH_DIR="../../Lenovo_Drivers"
-#PATCH_NAME="Current-full.patch"   # for old kernel
- PATCH_NAME="Current-diff.patch"   # for kernel submission with yogafan in official repo
+#PATCH_NAME="Current-full"     # symlink to full patch folder for legacy kernels (6.x / 7.0 without yogafan)
+PATCH_NAME="Current-diff"      # symlink to multi-patch diff folder for hwmon-next / 7.1+ kernels
 
 
 CYAN=$'\033[0;36m'
@@ -101,29 +101,77 @@ echo -e "${GOLD} [ACTION REQUIRED] Check the config above.${NC}"
 read -p " Press ENTER to continue or CTRL+C to abort..."
 echo -e "${BLUE}------------------------------------------------------------------${NC}"
 
-# --- NEW DRIVER INJECTION (Via Patch File) ---
-echo -e "${BLUE}Injecting Yoga Fan Driver via Official Patch...${NC}"
+# --- NEW DRIVER INJECTION (Via Single or Multi-Patch) ---
+echo -e "${BLUE}Injecting Yoga Fan Driver via Official Patch(es)...${NC}"
 
-# Resolve the relative path to an absolute path for safety
-FULL_PATCH_FILE="$(readlink -f "$PATCH_DIR/$PATCH_NAME")"
+# Resolve the relative path to an absolute path for safety (follows symlinks)
+FULL_PATCH_TARGET="$(readlink -f "$PATCH_DIR/$PATCH_NAME")"
+PATCH_FILES=()
 
-if [ -f "$FULL_PATCH_FILE" ]; then
-    echo -e "${BLUE}Found patch at: ${CYAN}$FULL_PATCH_FILE${NC}"
-    # Apply the p1 patch (must be executed from the kernel source root)
-    if patch -p1 < "$FULL_PATCH_FILE"; then
-        echo -e "${GREEN}Patch applied successfully!${NC}"
-    else
-        echo -e "${GOLD}Warning: Patch failed or already applied. Checking files...${NC}"
-        # Check if the driver file already exists (likely from a previous run)
-        if [ ! -f "./drivers/hwmon/yogafan.c" ]; then
-            echo -e "${GOLD}Error: Patching failed! Driver source not found.${NC}"
-            exit 1
-        fi
-    fi
+if [ -d "$FULL_PATCH_TARGET" ]; then
+    echo -e "${BLUE}Found patch directory: ${CYAN}$FULL_PATCH_TARGET${NC}"
+    while IFS= read -r pfile; do
+        # Skip cover letters (0000-cover-letter.patch has no diff)
+        [[ "$(basename "$pfile")" == 0000-* ]] && continue
+        PATCH_FILES+=("$pfile")
+    done < <(find "$FULL_PATCH_TARGET" -maxdepth 1 -type f -name "*.patch" | sort)
+elif [ -f "$FULL_PATCH_TARGET" ]; then
+    PATCH_FILES+=("$FULL_PATCH_TARGET")
 else
-    echo -e "${GOLD}Error: Patch file NOT found at $PATCH_DIR/$PATCH_NAME${NC}"
-    echo -e "${GOLD}Ensure the 'Lenovo Drivers' folder is located next to your kernel source folder.${NC}"
+    echo -e "${GOLD}Error: Patch file/directory NOT found at $PATCH_DIR/$PATCH_NAME${NC}"
+    echo -e "${GOLD}Ensure the 'Lenovo_Drivers' folder is located next to your kernel source folder.${NC}"
     exit 1
+fi
+
+if [ "${#PATCH_FILES[@]}" -eq 0 ]; then
+    echo -e "${GOLD}Error: No applicable .patch files found in $FULL_PATCH_TARGET${NC}"
+    exit 1
+fi
+
+for pfile in "${PATCH_FILES[@]}"; do
+    echo -e "${BLUE}Applying patch: ${CYAN}$(basename "$pfile")${NC}"
+    if patch -p1 --dry-run -R -s < "$pfile" >/dev/null 2>&1; then
+        echo -e "${GOLD}Already applied, skipping: $(basename "$pfile")${NC}"
+    elif patch -p1 < "$pfile"; then
+        echo -e "${GREEN}Patch applied successfully: $(basename "$pfile")${NC}"
+    else
+        echo -e "${GOLD}Error: Patch failed: $(basename "$pfile")${NC}"
+        exit 1
+    fi
+done
+
+# Auto-register yogafan in Makefile and Kconfig on legacy kernels (no-op if already present)
+if ! grep -q "yogafan.o" ./drivers/hwmon/Makefile; then
+    echo -e "${BLUE}Adding yogafan.o to drivers/hwmon/Makefile...${NC}"
+    printf 'obj-$(CONFIG_SENSORS_YOGAFAN)\t+= yogafan.o\n' >> ./drivers/hwmon/Makefile
+fi
+
+if ! grep -q "config SENSORS_YOGAFAN" ./drivers/hwmon/Kconfig; then
+    echo -e "${BLUE}Adding SENSORS_YOGAFAN to drivers/hwmon/Kconfig...${NC}"
+    python3 - <<'PYEOF'
+kpath = "./drivers/hwmon/Kconfig"
+txt = open(kpath).read()
+entry = """
+config SENSORS_YOGAFAN
+\ttristate "Lenovo Yoga Fan Hardware Monitoring"
+\tdepends on ACPI && HWMON && DMI
+\thelp
+\t  If you say yes here you get support for fan speed monitoring
+\t  on Lenovo Yoga, Legion, IdeaPad, Slim and LOQ laptops.
+\t  The driver interfaces with the Embedded Controller via ACPI
+\t  and uses a Rate-Limited Lag filter to smooth RPM readings.
+
+\t  This driver can also be built as a module. If so, the module
+\t  will be called yogafan.
+
+"""
+idx = txt.rfind("endif")
+if idx == -1:
+    txt += entry
+else:
+    txt = txt[:idx] + entry + txt[idx:]
+open(kpath, "w").write(txt)
+PYEOF
 fi
 
 # Activate the yogafan driver

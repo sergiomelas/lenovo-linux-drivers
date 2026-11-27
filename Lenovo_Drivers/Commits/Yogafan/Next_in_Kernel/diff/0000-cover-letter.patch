@@ -1,6 +1,6 @@
-From 2b95728b4316498b6c4ab7c88e59a05f45d77c2c Mon Sep 17 00:00:00 2001
+From 0a3fb8aea7748d0d35aeb2845b28183b27ef6002 Mon Sep 17 00:00:00 2001
 From: Sergio Melas <sergiomelas@gmail.com>
-Date: Thu, 26 Nov 2026 17:51:36 +0100
+Date: Thu, 26 Nov 2026 20:45:24 +0100
 Subject: [PATCH 0/2] hwmon: (yogafan) Support >2 fans and add additional Lenovo laptops
 
 Hi Guenter, all,
