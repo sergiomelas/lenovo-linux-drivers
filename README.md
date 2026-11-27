@@ -48,9 +48,17 @@ The open-source `yogafan` hardware abstraction layer maps Embedded Controller (E
 Every Lenovo line utilizes slightly different Embedded Controller (EC) offsets for thermal registers and fan telemetry. Help us safely map your device:
 
 1. **Extract your DSDT binary table:**
-   - **Linux:**
+   - **Linux (Debian / Ubuntu / Fedora):**
      ```bash
      sudo acpidump -b -t DSDT -o dsdt.dat   # requires acpica-tools
+     ```
+   - **Linux (Gentoo):**
+     ```bash
+     # Using sys-power/iasl:
+     sudo acpidump -b -o dsdt.dat
+
+     # Or using sys-power/pmtools:
+     sudo acpidump-pmtools -b -t DSDT -o dsdt.dat
      ```
    - **Windows:** Run `iasl.exe -b -t DSDT` via the portable Intel ASL compiler.
 2. **Collect system hardware strings:**
@@ -96,7 +104,7 @@ These scripts install build dependencies, configure a kernel using your official
 | `auto_Compile_Rust.sh` | Compile a Debian kernel with Rust-for-Linux support |
 | `auto_compile_rust_lenovo.sh` | Rust + AMD Zen 3 optimization (vanilla upstream-compliant build) |
 | `auto_compile_rust_lenovo_drivers.sh` | Rust + AMD optimization + `yogafan` injected directly from source via `Lenovo_Drivers/yogafan.c` symlink |
-| `auto_compile_rust_lenovo_patch.sh` | Rust + AMD optimization + single or multi-patch injection via `Lenovo_Drivers/Current-diff` (`hwmon-next` / `7.1+`) or `Lenovo_Drivers/Current-full` (legacy `6.x` / `7.0` with auto `Kconfig`/`Makefile` registration) |
+| `auto_compile_rust_lenovo_patch.sh` | Rust + AMD optimization + single or multi-patch injection via `Lenovo_Drivers/Current-diff` (`hwmon-next` / `7.4+`) or `Lenovo_Drivers/Current-full` (legacy `< 7.1` kernels without `yogafan`, with auto `Kconfig`/`Makefile` registration) |
 
 4. Three `.deb` packages are generated in the parent directory:
    - `linux-headers-<version>.deb`

@@ -21,14 +21,27 @@
 ## How to Extract Your DSDT on Linux
 
 1. Install ACPI and DMI utilities:
-   ```bash
-   sudo apt install acpica-tools dmidecode
-   ```
+   - **Debian / Ubuntu:**
+     ```bash
+     sudo apt install acpica-tools dmidecode
+     ```
+   - **Gentoo:** install `sys-power/iasl` (or `sys-power/pmtools`, which pulls `iasl`) and `sys-apps/dmidecode`.
 2. Dump and decompile your DSDT (and EC SSDTs if needed):
-   ```bash
-   sudo acpidump -b -t DSDT -o dsdt.dat
-   iasl -d dsdt.dat
-   ```
+   - **Debian / Ubuntu / Fedora (`acpica-tools`):**
+     ```bash
+     sudo acpidump -b -t DSDT -o dsdt.dat
+     iasl -d dsdt.dat
+     ```
+   - **Gentoo (`sys-power/iasl`):**
+     ```bash
+     sudo acpidump -b -o dsdt.dat
+     iasl -d dsdt.dat
+     ```
+   - **Gentoo (`sys-power/pmtools`):**
+     ```bash
+     sudo acpidump-pmtools -b -t DSDT -o dsdt.dat
+     iasl -d dsdt.dat
+     ```
 3. Collect DMI hardware strings:
    ```bash
    sudo dmidecode -s system-family

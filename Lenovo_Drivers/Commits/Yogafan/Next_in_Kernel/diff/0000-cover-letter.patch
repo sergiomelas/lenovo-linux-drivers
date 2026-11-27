@@ -5,8 +5,8 @@ Subject: [PATCH 0/2] hwmon: (yogafan) Support >2 fans and add additional Lenovo 
 
 Hi Guenter, all,
 
-Apologies for being away over the last few months due to other
-commitments, and thank you for taking care of the Yoga Pro 7 14IAH10
+Apologies for being away over the last few months due to a family
+illness, and thank you for taking care of the Yoga Pro 7 14IAH10
 (83KF) fix in the meantime. I am back actively maintaining yogafan and
 have audited the pending user-reported DSDT dumps.
 

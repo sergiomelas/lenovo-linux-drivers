@@ -1,0 +1,17 @@
+System Product Name: 83DD
+System Family: IdeaPad Slim 5 16AHP9
+System Version: IdeaPad Slim 5 16AHP9
+SKU Number: LENOVO_MT_83DD_BU_idea_FM_IdeaPad Slim 5 16AHP9
+Provider: fakasheh
+GitHub Issue: #18 (https://github.com/sergiomelas/lenovo-linux-drivers/issues/18)
+Date: 2026-11-27
+OS / Kernel: CachyOS 7.3.6
+Status: Not Compatible (WMI — lenovo-wmi-other)
+
+--- ACPI Forensic Analysis ---
+- DSDT (52215 bytes, LENOVO CB-01) + ssdt2.dat (41145 bytes) verified.
+- EC at \_SB.PCI0.LPC0.EC0 (ECMM/CCMM SystemMemory 0xFEEC2800 + ECF2) exposes
+  only generic indexed FANG(Arg0)/FANW(Arg0, Arg1) methods and no named EC
+  fan tachometer fields (no FANS/FA1S/FA2S/FAN0/ERPM/F1CS).
+- ssdt2 defines Device (WMI5) (_UID "GMZN") with Lenovo WMI Other Mode GUID
+  DC2A8805-3A8C-41BA-A6F7-092E0089CD3B (handled by lenovo-wmi-other).

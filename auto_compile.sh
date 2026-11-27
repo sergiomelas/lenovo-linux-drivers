@@ -20,6 +20,7 @@ CYAN=$'\033[0;36m'
 GOLD=$'\033[1;33m'
 GREEN=$'\033[0;32m'
 BLUE=$'\033[1;34m'
+RED=$'\033[1;31m'
 NC=$'\033[0m'
 
 box_line() {
@@ -101,6 +102,10 @@ echo -e "${BLUE}----------------------------------------------------------------
 
 # --- START OF OPTIMIZED MODULE CONFIGURATION ---
 
+# Ensure pure-C build (override any CONFIG_RUST=y inherited from /boot/config-*)
+scripts/config --disable CONFIG_RUST                                  # Pure-C script: do not inherit Rust from newer /boot/config-*
+scripts/config --disable CONFIG_DRM_PANIC_SCREEN_QR_CODE              # QR panic screen requires CONFIG_RUST
+
 # 6. Build Tweaks & Strict Debug Stripping
 scripts/config --set-val CONFIG_CC_IS_CLANG y                         # Force acknowledge Clang toolchain presence
 scripts/config --enable  CONFIG_ARCH_SUPPORTS_LTO_CLANG               # Validate architecture LTO capabilities
@@ -122,40 +127,52 @@ scripts/config --disable CONFIG_GDB_SCRIPTS                           # No Pytho
 # --- END OF OPTIMIZED MODULE CONFIGURATION ---
 
 #To prevent question
-make LLVM=1 olddefconfig
+if ! make LLVM=1 olddefconfig; then
+    echo -e "${RED}Error: 'make LLVM=1 olddefconfig' failed. Aborting.${NC}"
+    exit 1
+fi
 
 #Capture version for renaming logic
 VERSION_BASE=$(make kernelversion)
 FULL_VER="${VERSION_BASE}-${full_postfix}"
 
+echo -e "${BLUE}Starting Kernel Build (uname -r: ${FULL_VER}, Rust: false)${NC}"
+
 #Compile kernel
 # KDEB_PKGVERSION to ensure the .deb filenames also include custom tag
-# Compile using Clang/LLVM for native Rust & ThinLTO support
-make -j$(nproc) LLVM=1 bindeb-pkg \
+# Compile using Clang/LLVM for native ThinLTO support (pure C)
+if ! make -j$(nproc) LLVM=1 bindeb-pkg \
     KDEB_PKGVERSION="${FULL_VER}" \
     KDEB_SOURCENAME=linux-upstream \
     DEBUG_INFO=n \
-    NO_VMLINUX_DEBUG=1
+    NO_VMLINUX_DEBUG=1; then
+    echo -e "${RED}Error: Kernel build failed for ${FULL_VER}. Aborting before packaging/install.${NC}"
+    exit 1
+fi
 
 #Clean up and Post-Process Renaming
-cd ../
+cd ../ || exit 1
 
 echo -e "${BLUE}Post-Processing: Fixing filenames...${NC}"
 
 # Exact renaming to achieve: name-version.deb
 # e.g. linux-image-7.0.0-rc4-yoga-amd64_7.0.0-rc4-yoga-amd64_amd64.deb -> linux-image-7.0.0-rc4-yoga-amd64.deb
-mv "linux-image-${FULL_VER}_${FULL_VER}_${ARCH_SUFFIX}.deb" "linux-image-${FULL_VER}.deb" 2>/dev/null
-mv "linux-headers-${FULL_VER}_${FULL_VER}_${ARCH_SUFFIX}.deb" "linux-headers-${FULL_VER}.deb" 2>/dev/null
-mv "linux-libc-dev_${FULL_VER}_${ARCH_SUFFIX}.deb" "linux-libc-dev_${FULL_VER}.deb" 2>/dev/null
+mv "linux-image-${FULL_VER}_${FULL_VER}_${ARCH_SUFFIX}.deb" "linux-image-${FULL_VER}.deb" || exit 1
+mv "linux-headers-${FULL_VER}_${FULL_VER}_${ARCH_SUFFIX}.deb" "linux-headers-${FULL_VER}.deb" || exit 1
+mv "linux-libc-dev_${FULL_VER}_${ARCH_SUFFIX}.deb" "linux-libc-dev_${FULL_VER}.deb" || exit 1
 
 rm -f *.buildinfo
 rm -f *.changes
 
 #Install new kernel using the clean names
 sudo apt-mark unhold linux-libc-dev
-sudo dpkg -i "linux-image-${FULL_VER}.deb" \
-             "linux-headers-${FULL_VER}.deb" \
-             "linux-libc-dev_${FULL_VER}.deb"
+if ! sudo dpkg -i "linux-image-${FULL_VER}.deb" \
+                  "linux-headers-${FULL_VER}.deb" \
+                  "linux-libc-dev_${FULL_VER}.deb"; then
+    sudo apt-mark hold linux-libc-dev
+    echo -e "${RED}Error: dpkg installation failed for ${FULL_VER}.${NC}"
+    exit 1
+fi
 sudo apt-mark hold linux-libc-dev
 
 echo -e "${CYAN}Success! kernel ${FULL_VER} installed with clean names.${NC}"
