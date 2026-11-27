@@ -8,8 +8,9 @@ set -euo pipefail
 # ------------------------------------------------------------------------------
 # DRIVER PROFILE CONFIGURATION
 # ------------------------------------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DRIVER_NAME="yogafan"
-DRIVER_PATH="/home/sergio/Others/Kernel-Upstream-Development/Lenovo_Drivers/Commits/Yogafan/Next"
+DRIVER_PATH="${SCRIPT_DIR}/../../Lenovo_Drivers/Commits/Yogafan/Next_in_Kernel"
 # ------------------------------------------------------------------------------
 
 # Root validation check - Preserves exact execution paths (PWD) across sudo

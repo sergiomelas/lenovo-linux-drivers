@@ -3,11 +3,10 @@
 /_Patch-Builtd/
 /_github_replica/
 
-# Local-only personal archives, scratch work, and media
+# Local-only personal archives and scratch work
 /_OLD/
 /_NEW/
 /__My linux diploma/
-/Media/
 
 # Large Lenovo PSREF reference PDFs (~400 MB; exceeds GitHub 100 MB limit)
 Lenovo_Drivers/Prototype/PSREF/**/*.pdf

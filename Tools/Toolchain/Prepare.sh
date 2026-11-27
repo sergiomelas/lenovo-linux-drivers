@@ -8,8 +8,9 @@ set -euo pipefail
 # ------------------------------------------------------------------------------
 # DRIVER PROFILE CONFIGURATION
 # ------------------------------------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DRIVER_NAME="yogafan"   # Name of your .c file (without extension)
-DRIVER_PATH="/home/sergio/Others/Kernel-Upstream-Development/Lenovo_Drivers/Commits/Yogafan/Current_in_Kernel/"     # Reference directory containing the source files
+DRIVER_PATH="${SCRIPT_DIR}/../../Lenovo_Drivers/Commits/Yogafan/Next_in_Kernel"     # Reference directory containing the source files
 KVERSION=$(uname -r)    # Autofilled via system telemetry
 # ------------------------------------------------------------------------------
 
