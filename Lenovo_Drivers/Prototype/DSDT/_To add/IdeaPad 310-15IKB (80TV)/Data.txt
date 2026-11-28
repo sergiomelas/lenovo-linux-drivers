@@ -1,0 +1,7 @@
+Model: IdeaPad 310-15IKB 80TV (80TV)
+MT: 80TV
+Source: linuxhw/ACPI/Notebook/Lenovo/IdeaPad/IdeaPad 310-15IKB 80TV/B9544046A48A
+URL: https://github.com/linuxhw/ACPI/blob/master/Notebook/Lenovo/IdeaPad/IdeaPad%20310-15IKB%2080TV/B9544046A48A
+Files: dsdt.dsl
+Quick Scan: EC:FA2S,FANS
+Forensic Audit: To add — \_SB.PCI0.LPCB.EC0 | FANS(8b@0x06), FA2S(8b@0xFE) | x100

@@ -1,0 +1,7 @@
+Model: IdeaPad (U310)
+MT: U310
+Source: linuxhw/ACPI/Notebook/Lenovo/IdeaPad/IdeaPad U310/3AC887234B79
+URL: https://github.com/linuxhw/ACPI/blob/master/Notebook/Lenovo/IdeaPad/IdeaPad%20U310/3AC887234B79
+Files: dsdt.dsl
+Quick Scan: No obvious named tach
+Forensic Audit: Not Compatible — No named EC fan tachometer

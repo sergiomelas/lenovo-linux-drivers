@@ -1,0 +1,7 @@
+Summary: Lenovo Ideapad Slim 3 AMD 7520U - Keyboard & Trackpad not working with multiple Kernel versions.
+Source: kernel.org Bugzilla #217873
+URL: https://bugzilla.kernel.org/show_bug.cgi?id=217873
+Date: 2023-09-05
+Files: dsdt.dsl
+Quick Scan: EC:FA2S,FANS
+Forensic Audit: To add — \_SB.PCI0.LPC0.EC0 | FANS(8b@0x06), FA2S(8b@0xFE) | x100

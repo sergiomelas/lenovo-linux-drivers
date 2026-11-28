@@ -1,0 +1,7 @@
+Title: [BUG] Errors after make reloadmodule on Legion 5 15IMH6
+Source: johnfanv2/LenovoLegionLinux #328
+URL: https://github.com/johnfanv2/LenovoLegionLinux/issues/328
+Date: 2025-06-09
+Files: dsdt.dsl
+Quick Scan: EC:FA2S,FANS | WMI:DC2A8805
+Forensic Audit: To add — \_SB.PCI0.LPCB.EC0 | FANS(8b@0x06), FA2S(8b@0xFE) | x100 (+WMI)

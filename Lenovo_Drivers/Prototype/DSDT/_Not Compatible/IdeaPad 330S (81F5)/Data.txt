@@ -1,0 +1,7 @@
+Summary: "Could not resolve symbol [^^^GFX0.AFN2]" errors on Lenovo Ideapad 330s
+Source: kernel.org Bugzilla #210751
+URL: https://bugzilla.kernel.org/show_bug.cgi?id=210751
+Date: 2020-12-17
+Files: dsdt.dat, ssdt11.dat, ssdt2.dat
+Quick Scan: No obvious named tach
+Forensic Audit: Not Compatible — No named EC fan tachometer

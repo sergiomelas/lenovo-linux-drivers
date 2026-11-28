@@ -1,0 +1,6 @@
+Model: IdeaPad Flex 5 14ITL05 (82HS)
+Source: linuxhw/ACPI/Convertible/Lenovo/IdeaPadFlex/IdeaPadFlex 5 14ITL05 82HS/9192B985B108
+URL: https://github.com/linuxhw/ACPI/blob/master/Convertible/Lenovo/IdeaPadFlex/IdeaPadFlex%205%2014ITL05%2082HS/9192B985B108
+Files: dsdt.dsl
+Quick Scan: EC:FANS
+Forensic Audit: To add — \_SB.PC00.LPCB.EC0 | FANS(8b@0x95 Compal/LCFC EC) | x100

@@ -1,0 +1,7 @@
+Model: Lenovo (80E5)
+MT: 80E5
+Source: linuxhw/ACPI/Notebook/Lenovo/G50-80/G50-80 80E5/85BA8C2D5AAE
+URL: https://github.com/linuxhw/ACPI/blob/master/Notebook/Lenovo/G50-80/G50-80%2080E5/85BA8C2D5AAE
+Files: dsdt.dsl
+Quick Scan: EC:FANS
+Forensic Audit: To add — \_SB.PCI0.LPCB.EC0 | FANS(8b@0x06) | x100

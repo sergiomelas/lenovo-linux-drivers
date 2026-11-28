@@ -1,0 +1,6 @@
+Model: 13w Yoga (82S1)
+Source: linuxhw/ACPI/Convertible/Lenovo/13w/13w Yoga 82S1/60A19B2806BE
+URL: https://github.com/linuxhw/ACPI/blob/master/Convertible/Lenovo/13w/13w%20Yoga%2082S1/60A19B2806BE
+Files: dsdt.dsl
+Quick Scan: EC:FANS
+Forensic Audit: To add — \_SB.PCI0.LPC0.EC0 | FANS(8b@0x95 Compal/LCFC EC) | x100

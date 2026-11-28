@@ -1,0 +1,7 @@
+Model: G570 (20079)
+MT: 20079
+Source: linuxhw/ACPI/Notebook/Lenovo/G570/G570 20079/45D05063F068
+URL: https://github.com/linuxhw/ACPI/blob/master/Notebook/Lenovo/G570/G570%2020079/45D05063F068
+Files: dsdt.dsl
+Quick Scan: EC:ERPM
+Forensic Audit: To add — \_SB.PCI0.LPCB.EC0 | ERPM(8b@0x06) | x100

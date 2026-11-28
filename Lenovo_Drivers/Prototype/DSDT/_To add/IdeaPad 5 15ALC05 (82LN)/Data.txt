@@ -1,0 +1,7 @@
+Model: IdeaPad 5 15ALC05 (82LN)
+MT: 82LN
+Source: linuxhw/ACPI/Notebook/Lenovo/Rev/Rev B 82LN/A3246D0C174D
+URL: https://github.com/linuxhw/ACPI/blob/master/Notebook/Lenovo/Rev/Rev%20B%2082LN/A3246D0C174D
+Files: dsdt.dsl
+Quick Scan: EC:FA2S,FANS
+Forensic Audit: To add — \_SB.PCI0.LPC0.EC0 | FANS(8b@0x06), FA2S(8b@0xFE) | x100

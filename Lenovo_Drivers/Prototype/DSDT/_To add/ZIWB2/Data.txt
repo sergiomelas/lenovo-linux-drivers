@@ -1,0 +1,7 @@
+Model: ZIWB2
+MT: Unknown
+Source: linuxhw/ACPI/Notebook/Lenovo/ZIWB/ZIWB2/C65EF6307E0B
+URL: https://github.com/linuxhw/ACPI/blob/master/Notebook/Lenovo/ZIWB/ZIWB2/C65EF6307E0B
+Files: dsdt.dsl
+Quick Scan: EC:ERPM
+Forensic Audit: To add — \_SB.PCI0.LPCB.EC0 | ERPM(8b@0x06) | x100

@@ -1,0 +1,6 @@
+Title: Hardware report: LENOVO 83N3 (LENOVO_MT_83N3_BU_idea_FM_IdeaPad Slim 3 15Q8X10)
+Source: https://github.com/turbineBMW/omarchy-hardware-reports/issues/60
+Date: 2026-11-21
+Files: dsdt.dat
+Quick Scan: No obvious named tach
+Forensic Audit: Not Compatible — WMI only (DC2A8805, lenovo-wmi-other); no named EC tach

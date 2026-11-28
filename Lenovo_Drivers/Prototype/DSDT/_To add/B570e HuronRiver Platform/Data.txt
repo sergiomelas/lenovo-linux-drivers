@@ -1,0 +1,7 @@
+Model: B570e HuronRiver Platform
+MT: Unknown
+Source: linuxhw/ACPI/Notebook/Lenovo/B570e/B570e HuronRiver Platform/85AAC0905285
+URL: https://github.com/linuxhw/ACPI/blob/master/Notebook/Lenovo/B570e/B570e%20HuronRiver%20Platform/85AAC0905285
+Files: dsdt.dsl
+Quick Scan: EC:FANS
+Forensic Audit: To add — \_SB.PCI0.LPCB.EC0 | FANS(8b@0x95 Compal/LCFC EC) | x100

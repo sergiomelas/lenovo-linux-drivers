@@ -1,0 +1,7 @@
+Model: Yoga 9 2-in-1 14IMH9 (83AC)
+MT: 83AC
+Source: https://bugzilla.kernel.org/show_bug.cgi?id=222291
+Files: dsdt.dat, ssdt1.dat, ssdt2.dat
+Quick Scan: No obvious named tach
+Note: Lenovo Yoga Slim 7i (Meteor Lake): FocalTech I2C touchpad (FTCS0038) intermittently stalls/jumps; ACPI BIOS Error in EC _Q18 (cannot resolve AWAC.HOR)
+Forensic Audit: Not Compatible — No named EC fan tachometer

@@ -1,0 +1,6 @@
+Model: Yoga 6 13ALC6 (82ND)
+Source: linuxhw/ACPI/Convertible/Lenovo/Yoga/Yoga 6 13ALC6 82ND/4B89F57A5AA6
+URL: https://github.com/linuxhw/ACPI/blob/master/Convertible/Lenovo/Yoga/Yoga%206%2013ALC6%2082ND/4B89F57A5AA6
+Files: dsdt.dsl
+Quick Scan: EC:ERPM
+Forensic Audit: To add — \_SB.PCI0.LPC0.EC0 | ERPM(8b@0x06) | x100

@@ -1,0 +1,7 @@
+Model: Lenovo (82N9)
+MT: 82N9
+Source: linuxhw/ACPI/Notebook/Lenovo/14w/14w Gen 2 82N9/A1579356D706
+URL: https://github.com/linuxhw/ACPI/blob/master/Notebook/Lenovo/14w/14w%20Gen%202%2082N9/A1579356D706
+Files: dsdt.dsl
+Quick Scan: No obvious named tach
+Forensic Audit: Not Compatible — No named EC fan tachometer

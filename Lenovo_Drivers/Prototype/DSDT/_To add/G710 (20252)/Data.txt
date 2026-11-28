@@ -1,0 +1,7 @@
+Model: G710 (20252)
+MT: 20252
+Source: linuxhw/ACPI/Notebook/Lenovo/G710/G710 20252/CD846FB97BC3
+URL: https://github.com/linuxhw/ACPI/blob/master/Notebook/Lenovo/G710/G710%2020252/CD846FB97BC3
+Files: dsdt.dsl
+Quick Scan: EC:F1CS,FANS
+Forensic Audit: To add — \_SB.PCI0.LPCB.EC0 | FANS(8b@0x06), F1CS(8b@0x60) | x100

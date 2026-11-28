@@ -1,0 +1,7 @@
+Summary: [Lenovo IdeaPad Pro 5 14AHP9] ACPI BIOS Error on every resume: AE_NOT_FOUND [^^^GPP6.RTKW] aborts \_SB.PEP._DSM; EC mutex contention AE_AML_NOT_OWNER [ECMT] after long suspend
+Source: kernel.org Bugzilla #221179
+URL: https://bugzilla.kernel.org/show_bug.cgi?id=221179
+Date: 2026-03-07
+Files: dsdt.dat
+Quick Scan: No obvious named tach
+Forensic Audit: Not Compatible — WMI only (DC2A8805, lenovo-wmi-other); no named EC tach

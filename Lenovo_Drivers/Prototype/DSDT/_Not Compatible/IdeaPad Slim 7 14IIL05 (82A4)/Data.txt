@@ -1,0 +1,7 @@
+Summary: Touchpad not recognized on Lenovo IdeaPad Slim 7 (Intel)
+Source: kernel.org Bugzilla #209199
+URL: https://bugzilla.kernel.org/show_bug.cgi?id=209199
+Date: 2020-09-08
+Files: dsdt.dsl
+Quick Scan: No obvious named tach
+Forensic Audit: Not Compatible — No named EC fan tachometer

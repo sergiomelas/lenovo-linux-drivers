@@ -1,0 +1,7 @@
+Model: G580 (20150)
+MT: 20150
+Source: linuxhw/ACPI/Notebook/Lenovo/G580/G580 20150/0D75B079ABA0
+URL: https://github.com/linuxhw/ACPI/blob/master/Notebook/Lenovo/G580/G580%2020150/0D75B079ABA0
+Files: dsdt.dsl
+Quick Scan: EC:ERPM
+Forensic Audit: To add — \_SB.PCI0.LPCB.EC0 | ERPM(8b@0x06) | x100

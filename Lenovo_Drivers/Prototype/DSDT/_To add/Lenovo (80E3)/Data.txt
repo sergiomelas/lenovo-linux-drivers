@@ -1,0 +1,7 @@
+Model: Lenovo (80E3)
+MT: 80E3
+Source: linuxhw/ACPI/Notebook/Lenovo/G50-45/G50-45 80E3/795503221AEA
+URL: https://github.com/linuxhw/ACPI/blob/master/Notebook/Lenovo/G50-45/G50-45%2080E3/795503221AEA
+Files: dsdt.dsl
+Quick Scan: EC:ERPM
+Forensic Audit: To add — \_SB.PCI0.LPC0.EC0 | ERPM(8b@0x06) | x100

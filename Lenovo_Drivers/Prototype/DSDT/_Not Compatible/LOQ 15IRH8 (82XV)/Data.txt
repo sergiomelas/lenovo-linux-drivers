@@ -1,0 +1,7 @@
+Summary: platform/x86: lenovo-wmi-gamezone: EC fallback to Quiet (blue LED) desyncs with SMARTFAN_GET (max-power) on AC unplug on Lenovo LOQ 15IRH8
+Source: kernel.org Bugzilla #221908
+URL: https://bugzilla.kernel.org/show_bug.cgi?id=221908
+Date: 2026-08-22
+Files: dsdt.dsl
+Quick Scan: WMI:DC2A8805
+Forensic Audit: Not Compatible — WMI only (DC2A8805, lenovo-wmi-other); only indexed FANG/FANW

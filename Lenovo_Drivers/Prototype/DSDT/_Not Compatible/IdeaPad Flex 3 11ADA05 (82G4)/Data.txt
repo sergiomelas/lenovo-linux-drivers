@@ -1,0 +1,6 @@
+Model: IdeaPad Flex 3 11ADA05 (82G4)
+MT: 82G4
+Source: https://github.com/simonsummer/lenovo-flex3-11ada05-touchpad-fix/blob/main/prebuilt/dsdt.aml
+Repo Desc: DSDT-Override, der das Touchpad (ELAN 04F3:3072 / ACPI MSFT0001) des Lenovo IdeaPad Flex 3 11ADA05 unter Linux zum Laufen bringt - ohne BIOS-Downgrade
+Quick Scan: No obvious named tach
+Forensic Audit: Not Compatible — No named EC fan tachometer

@@ -1,0 +1,7 @@
+Summary: Re: [REGRESSION] [BISECTED] power button stopped working on lenovo ideapad 5 since a855724dc08b
+Source: kernel.org Bugzilla #217833
+URL: https://bugzilla.kernel.org/show_bug.cgi?id=217833
+Date: 2023-08-27
+Files: dsdt.dat
+Quick Scan: No obvious named tach
+Forensic Audit: To add — \_SB.PCI0.LPC0.EC0 | ERPM(8b@0x06) | x100
